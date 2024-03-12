@@ -19,6 +19,5 @@ Requires-Dist: matplotlib
 Requires-Dist: tqdm
 Requires-Dist: plotly
 Requires-Dist: fanchart
-Requires-Dist: pickle
 
 Multifrequency Bayesian VAR Model
