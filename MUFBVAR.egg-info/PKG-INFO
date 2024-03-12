@@ -12,8 +12,6 @@ Classifier: Programming Language :: Python :: 3
 Classifier: Operating System :: Linux :: Linux
 Classifier: Operating System :: Microsoft :: Windows
 Requires-Dist: numpy
-Requires-Dist: math
-Requires-Dist: collections
 Requires-Dist: scipy
 Requires-Dist: pandas
 Requires-Dist: datetime
