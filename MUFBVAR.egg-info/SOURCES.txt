@@ -10,3 +10,6 @@ examples/hist.xlsx
 examples/python_example.py
 examples/trans.xlsx
 src/__init__.py
+src/MUFBVAR/MUFBVAR.py
+src/MUFBVAR/__init__.py
+src/MUFBVAR/mfbvar_funcs.py
