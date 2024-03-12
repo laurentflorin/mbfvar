@@ -25,5 +25,7 @@ setup(
             "Programming Language :: Python :: 3",
             "Operating System :: Linux :: Linux",
             "Operating System :: Microsoft :: Windows",
-        ]
+        ],
+        include_package_data=True,
+        package_data={'': ['data/*.xlsx']}
 )
