@@ -12,5 +12,5 @@ thining = 1
 
 hyp = (0.09, 4.3, 1, 2.7, 4.3)
 
-model =  multifrequency_var(["Q","M", "W"], H, nsim, nburn, nlags ,thining)
-model.fit(io_data, io_conditionals, io_trans, hyp = hyp)
+model =  MUFBVAR.multifrequency_var(["Q","M", "W"], H, nsim, nburn, nlags ,thining)
+model.fit(io_data, io_cond, io_trans, hyp = hyp)

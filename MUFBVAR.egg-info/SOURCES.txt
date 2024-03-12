@@ -9,3 +9,4 @@ examples/cond.xlsx
 examples/hist.xlsx
 examples/python_example.py
 examples/trans.xlsx
+src/__init__.py
