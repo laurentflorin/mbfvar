@@ -1,0 +1,12 @@
+numpy
+math
+collections
+scipy
+pandas
+datetime
+itertools
+matplotlib
+tqdm
+plotly
+fanchart
+pickle
