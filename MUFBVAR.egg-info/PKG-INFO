@@ -15,7 +15,6 @@ Requires-Dist: numpy
 Requires-Dist: scipy
 Requires-Dist: pandas
 Requires-Dist: datetime
-Requires-Dist: itertools
 Requires-Dist: matplotlib
 Requires-Dist: tqdm
 Requires-Dist: plotly
