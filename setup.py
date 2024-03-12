@@ -15,7 +15,7 @@ setup(
         long_description=LONG_DESCRIPTION,
         packages=find_packages(),
         install_requires=["numpy", "scipy", "pandas", "datetime", "matplotlib", "tqdm", "plotly", "fanchart"], # add any additional packages that 
-        # needs to be installed along with your package. Eg: 'caer'
+        
         
         keywords=['python', 'first package'],
         classifiers= [
@@ -25,5 +25,6 @@ setup(
             "Programming Language :: Python :: 3",
             "Operating System :: Linux :: Linux",
             "Operating System :: Microsoft :: Windows",
-        ]
+        ],
+        data_files=[('examples', ['examples/python_example.py', 'examples/hist.xlsx','examples/cond.xlsx', 'examples/trans.xlsx'])]
 )

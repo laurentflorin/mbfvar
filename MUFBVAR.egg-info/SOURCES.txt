@@ -5,3 +5,7 @@ MUFBVAR.egg-info/SOURCES.txt
 MUFBVAR.egg-info/dependency_links.txt
 MUFBVAR.egg-info/requires.txt
 MUFBVAR.egg-info/top_level.txt
+examples/cond.xlsx
+examples/hist.xlsx
+examples/python_example.py
+examples/trans.xlsx
