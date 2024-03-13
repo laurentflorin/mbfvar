@@ -1,42 +1,30 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "MUFBVAR"
 version = "0.0.1"
+dependencies = [
+"numpy",
+"scipy",
+"pandas",
+"datetime",
+"matplotlib",
+"tqdm",
+"plotly",
+"fanchart",
+]
+requires-python = ">= 3.8"
+authors = [
+  {name = "Laurent Florin", email = "laurent.florin@efv.admin.ch"}]
 description = "Multifrequency Bayesian VAR Model"
 readme = "README.md"
-authors = [
-    {name = "Laurent Florin", email = "laurent.florin@efv.admin.ch"},
-]
-keywords = ["python", "first package"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Education",
-    "Programming Language :: Python :: 2",
-    "Programming Language :: Python :: 3",
-    "Operating System :: Linux :: Linux",
-    "Operating System :: Microsoft :: Windows",
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python",
 ]
-
 [project.urls]
-homepage = "https://gitea.efv.admin.ch/efv_fs/MUFBVAR.git"
-
+Repository = "https://gitea.efv.admin.ch/efv_fs/MUFBVAR.git"
 [project.scripts]
-# Add your scripts here
-
-[[project.dependencies]]
-numpy = "*"
-scipy = "*"
-pandas = "*"
-datetime = "*"
-matplotlib = "*"
-tqdm = "*"
-plotly = "*"
-fanchart = "*"
-
-[[project.optional-dependencies]]
-# Add your optional dependencies here
-
-[project.extras]
-# Add your extras here
+python_example = "examples::python_example"
