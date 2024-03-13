@@ -10,9 +10,6 @@ Created on Thu Nov 25 13:51:47 2021
 import os
 import sys
 
-
-os.chdir(os.path.dirname(os.path.realpath('__file__')))
-
 import numpy as np
 import math
 
