@@ -26,5 +26,4 @@ classifiers = [
 ]
 [project.urls]
 Repository = "https://gitea.efv.admin.ch/efv_fs/MUFBVAR.git"
-[project.scripts]
-python_example = "examples::python_example"
+
