@@ -20,4 +20,4 @@ model.forecast()
 
 model.mean_plot(1, variables = "all", save = False, show = True)
 
-model.fanchart(variables = "all", save = False, show = True, agg = False, nhist = 150)
+model.fanchart(variables = "all", save = False, show = False, agg = False, nhist = 150)
