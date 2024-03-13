@@ -1,7 +1,7 @@
 from MUFBVAR.mufbvar import *
 
 io_data = "hist.xlsx"
-io_cond = "cond.xlsx"
+io_conditionals = "cond.xlsx"
 io_trans = "trans.xlsx"
 
 H = 96  #66      # forecast horizon
@@ -14,7 +14,7 @@ hyp = (0.09, 4.3, 1, 2.7, 4.3)
 
 model =  multifrequency_var(["Q","M", "W"], H, nsim, nburn, nlags ,thining)
 
-model.fit(io_data, io_cond, io_trans, hyp = hyp)
+model.fit(io_data, io_conditionals, io_trans, hyp = hyp)
 
 model.forecast()
 

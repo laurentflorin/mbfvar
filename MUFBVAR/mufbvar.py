@@ -1488,7 +1488,7 @@ class multifrequency_var:
         -------
         None.
         """
-        
+        plt.ioff()
         
         if self.forecast_draws_list is None :
                 sys.exit("Error: To generate traceplots, generate forecasts first")
@@ -1527,6 +1527,7 @@ class multifrequency_var:
         if save == True:
             pdf.close()   
         
+        plt.close(fig)
 
     def fanchart(self, variables = "all", save = True, name = "Fancharts", show = True, agg = True, nhist = 5):
         """
@@ -1548,6 +1549,7 @@ class multifrequency_var:
         None.
         """
         
+        plt.ioff()
         
         if self.forecast_draws_list is None :
                 sys.exit("Error: To generate traceplots, generate forecasts first")
@@ -1602,9 +1604,9 @@ class multifrequency_var:
                     plt.title(title)
                     plt.xlabel('Time')
                     plt.ylabel('Value')
-                    if save:
+                    if save == True:
                         pdf.savefig( fig )
-                    if show:
+                    if show == True:
                         plt.show()
                 else:
                     forecast_start = nhist #self.YY_mean[-1].shape[0] - int(self.H/ratio)
@@ -1623,9 +1625,9 @@ class multifrequency_var:
                     plt.title(title)
                     plt.xlabel('Time')
                     plt.ylabel('Value')
-                    if save:
+                    if save == True:
                         pdf.savefig( fig )
-                    if show:
+                    if show == True:
                         plt.show()
             if save == True:        
                 pdf.close()   
@@ -1654,5 +1656,6 @@ class multifrequency_var:
                     plt.show()
             if save == True:
                 pdf.close()   
+        plt.close(fig)
 
 # %%
