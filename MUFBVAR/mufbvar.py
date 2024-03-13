@@ -1524,9 +1524,9 @@ class multifrequency_var:
                 pdf.savefig( fig )
             if show == True:
                 plt.show()
-            plt.close(fig)
         if save == True:
-            pdf.close()   
+            pdf.close() 
+        plt.close("all")  
         
         
 
@@ -1609,7 +1609,6 @@ class multifrequency_var:
                         pdf.savefig( fig )
                     if show == True:
                         plt.show()
-                    plt.close(fig)
                 else:
                     forecast_start = nhist #self.YY_mean[-1].shape[0] - int(self.H/ratio)
                     YY_mean = np.array(pd.DataFrame(self.YY_mean[-1][-(self.H/ratio+nhist*ratio):,idx]).groupby(pd.DataFrame(self.YY_mean[-1][-(self.H/ratio+nhist*ratio):,idx]).index // ratio).mean())
@@ -1631,7 +1630,6 @@ class multifrequency_var:
                         pdf.savefig( fig )
                     if show == True:
                         plt.show()
-                    plt.close(fig)
             if save == True:        
                 pdf.close()   
 
@@ -1657,8 +1655,8 @@ class multifrequency_var:
                     pdf.savefig( fig )
                 if show == True:
                     plt.show()
-                plt.close(fig)
             if save == True:
-                pdf.close()   
+                pdf.close()
+        plt.close("all")   
 
 # %%
