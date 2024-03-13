@@ -25,7 +25,7 @@ from datetime import datetime
 
 import itertools
 
-from mfbvar_funcs import mdd_
+from funcs.mfbvar_funcs import mdd_
 
 
 #plotting
