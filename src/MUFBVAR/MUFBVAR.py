@@ -25,7 +25,7 @@ from datetime import datetime
 
 import itertools
 
-from mfbvar_funcs import mdd_
+from .mfbvar_funcs import mdd_
 
 
 #plotting
@@ -54,8 +54,8 @@ import pickle
 
 
 #from MUFBVAR.pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
-from cholcov.cholcov_module import cholcovOrEigendecomp
-from inverse.matrix_inversion import invert_matrix
+from .cholcov.cholcov_module import cholcovOrEigendecomp
+from .inverse.matrix_inversion import invert_matrix
 
 #%%
 

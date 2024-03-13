@@ -1,8 +1,5 @@
 README.md
 setup.py
-MUFBVAR/MUFBVAR.py
-MUFBVAR/__init__.py
-MUFBVAR/mfbvar_funcs.py
 MUFBVAR.egg-info/PKG-INFO
 MUFBVAR.egg-info/SOURCES.txt
 MUFBVAR.egg-info/dependency_links.txt

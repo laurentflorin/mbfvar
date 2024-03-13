@@ -21,7 +21,7 @@ from scipy.linalg import inv
 from scipy.linalg.lapack import dpotri
 from scipy.linalg import eig
 
-from pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
+from .pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
 
 
 def varprior(nv,nlags, nex, hyp, premom):
