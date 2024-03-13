@@ -1,4 +1,4 @@
-import MUFBVAR
+from MUFBVAR.mufbvar import *
 
 io_data = "hist.xlsx"
 io_cond = "cond.xlsx"
@@ -13,4 +13,11 @@ thining = 1
 hyp = (0.09, 4.3, 1, 2.7, 4.3)
 
 model =  multifrequency_var(["Q","M", "W"], H, nsim, nburn, nlags ,thining)
+
 model.fit(io_data, io_cond, io_trans, hyp = hyp)
+
+model.forecast()
+
+model.mean_plot(1, variables = "all", save = False, show = True)
+
+model.fanchart(variables = "all", save = False, show = True, agg = False, nhist = 150)

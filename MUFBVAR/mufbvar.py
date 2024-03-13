@@ -1504,7 +1504,7 @@ class multifrequency_var:
         if check and not variables == "all":
             sys.exit(print(check, " not in " , self.varlist_list[frequency]))
         
-        if save:
+        if save == True:
             pdf = matplotlib.backends.backend_pdf.PdfPages(name + ".pdf")
             
         for variable in variables:
@@ -1520,11 +1520,11 @@ class multifrequency_var:
             plt.title(title)
             plt.xlabel('Draws')
             plt.ylabel('Value')
-            if save:
+            if save == True:
                 pdf.savefig( fig )
-            if show:
+            if show == True:
                 plt.show()
-        if save:
+        if save == True:
             pdf.close()   
         
 
@@ -1563,7 +1563,7 @@ class multifrequency_var:
         if check and not variables == "all":
             sys.exit(print(check, " not in " , self.varlist_list[-1]))
         
-        if agg:
+        if agg == True:
             if self.frequencies.index(self.agg_freq) == 0:
                 history = np.array(self.input_data_Q)
             else:
@@ -1584,7 +1584,7 @@ class multifrequency_var:
             history.columns = list(self.varlist_list[-1])
             history = np.array(history[list(variables)])
             '''    
-            if save:
+            if save == True:
                 pdf = matplotlib.backends.backend_pdf.PdfPages(name + ".pdf")
                 
             for variable in variables:
@@ -1627,12 +1627,12 @@ class multifrequency_var:
                         pdf.savefig( fig )
                     if show:
                         plt.show()
-            if save:        
+            if save == True:        
                 pdf.close()   
 
         else:
             forecast_start = nhist #self.YY_mean[-1].shape[0] - self.H
-            if save:
+            if save == True:
                 pdf = matplotlib.backends.backend_pdf.PdfPages(name + ".pdf")
                 
             for variable in variables:
@@ -1648,11 +1648,11 @@ class multifrequency_var:
                 plt.title(title)
                 plt.xlabel('Time')
                 plt.ylabel('Value')
-                if save:
+                if save == True:
                     pdf.savefig( fig )
-                if show:
+                if show == True:
                     plt.show()
-            if save:
+            if save == True:
                 pdf.close()   
 
 # %%
