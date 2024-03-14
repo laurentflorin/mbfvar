@@ -66,6 +66,13 @@ Generates a fan chart for the specified variables.
 
 ## Use in Python
 
+Install package via terminal:
+
+```console
+[u80856195@workbench ~]$ pip install git+https://gitea.efv.admin.ch/efv_fs/MUFBVAR.git
+```
+
+
 ``` python
 from MUFBVAR.mufbvar import *
 
@@ -73,7 +80,7 @@ io_data = "hist.xlsx"
 io_conditionals = "cond.xlsx"
 io_trans = "trans.xlsx"
 
-H = 96  #66      # forecast horizon
+H = 96       # forecast horizon
 nsim     = 100  # number of draws from Posterior Density
 nburn    = 0.5  # number of draws to discard
 nlags = [6,4]
@@ -93,3 +100,8 @@ model.fanchart(variables = "all", save = False, show = True, agg = False, nhist 
 
 ```
 ## Use in R
+
+For the use in R use RStudio and perform the following settings:
+
+![alt text](readme_images/global_options.png)
+

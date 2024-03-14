@@ -4,7 +4,7 @@ io_data = "hist.xlsx"
 io_conditionals = "cond.xlsx"
 io_trans = "trans.xlsx"
 
-H = 96  #66      # forecast horizon
+H = 96        # forecast horizon
 nsim     = 100  # number of draws from Posterior Density
 nburn    = 0.5  # number of draws to discard
 nlags = [6,4]
