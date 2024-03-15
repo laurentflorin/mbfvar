@@ -1342,8 +1342,26 @@ class multifrequency_var:
             if YMna.size:
                 YY_005_list.append(np.vstack((np.vstack((np.hstack((YMna[YMh_len_correction:,:], lstate_005[:-self.freq_ratio_list[m],:])), np.hstack((YYnow_005, lstate_005[-self.freq_ratio_list[m]:,:])))), YYftr_005)))
             else:
-                YY_005_list.append(np.vstack((lstate_005,YYftr_005))) 
+                YY_005_list.append(np.vstack((lstate_005,YYftr_005)))
+                
+        YY_mean_pd = pd.DataFrame(YY_m_list[-1], columns = self.varlist_list[-1])
+        YY_mean_pd.index = self.index_list[-1]
         
+        YY_median_pd = pd.DataFrame(YY_med_list[-1], columns = self.varlist_list[-1])
+        YY_median_pd.index = self.index_list[-1]
+        
+        YY_095_pd = pd.DataFrame(YY_095_list[-1], columns = self.varlist_list[-1])
+        YY_095_pd.index = self.index_list[-1]
+        
+        YY_005_pd = pd.DataFrame(YY_005_list[-1], columns = self.varlist_list[-1])
+        YY_005_pd.index = self.index_list[-1]
+        
+        YY_084_pd = pd.DataFrame(YY_084_list[-1], columns = self.varlist_list[-1])
+        YY_084_pd.index = self.index_list[-1]
+        
+        YY_016_pd = pd.DataFrame(YY_016_list[-1], columns = self.varlist_list[-1])
+        YY_016_pd.index = self.index_list[-1]
+    
         self.YY_095 = YY_095_list
         self.YY_084 = YY_084_list
         self.YY_016 = YY_016_list
@@ -1351,6 +1369,13 @@ class multifrequency_var:
         self.YY_mean = YY_m_list
         self.YY_median = YY_med_list
         self.forecast_draws_list = forecast_draws_list
+        
+        self.YY_mean_pd = YY_mean_pd
+        self.YY_median_pd = YY_median_pd
+        self.YY_095_pd = YY_095_pd
+        self.YY_005_pd = YY_005_pd
+        self.YY_084_pd = YY_084_pd
+        self.YY_016_pd = YY_016_pd
         
     def aggregate(self, frequency):
         """
@@ -1443,31 +1468,15 @@ class multifrequency_var:
             sys.exit("Aggregate first")
         
         if agg == False:
-            YY_mean_pd = pd.DataFrame(self.YY_mean[-1], columns = self.varlist_list[-1])
-            YY_mean_pd.index = self.index_list[-1]
-            
-            YY_median_pd = pd.DataFrame(self.YY_median[-1], columns = self.varlist_list[-1])
-            YY_median_pd.index = self.index_list[-1]
-            
-            YY_095_pd = pd.DataFrame(self.YY_095[-1], columns = self.varlist_list[-1])
-            YY_095_pd.index = self.index_list[-1]
-            
-            YY_005_pd = pd.DataFrame(self.YY_005[-1], columns = self.varlist_list[-1])
-            YY_005_pd.index = self.index_list[-1]
-            
-            YY_084_pd = pd.DataFrame(self.YY_084[-1], columns = self.varlist_list[-1])
-            YY_084_pd.index = self.index_list[-1]
-            YY_016_pd = pd.DataFrame(self.YY_016[-1], columns = self.varlist_list[-1])
-            YY_016_pd.index = self.index_list[-1]
             
             with pd.ExcelWriter(filename, engine = "xlsxwriter", datetime_format='yyyy-mm-dd') as writer:
             #writer = pd.ExcelWriter("sim_data.xlsx", engine="xlsxwriter")
-                YY_mean_pd.to_excel(writer, sheet_name = "mean")
-                YY_median_pd.to_excel(writer, sheet_name = "median")
-                YY_095_pd.to_excel(writer, sheet_name = "95_quantile")
-                YY_005_pd.to_excel(writer, sheet_name = "5_quantile")
-                YY_084_pd.to_excel(writer, sheet_name = "84_quantile")
-                YY_016_pd.to_excel(writer, sheet_name = "16_quantile")
+                self.YY_mean_pd.to_excel(writer, sheet_name = "mean")
+                self.YY_median_pd.to_excel(writer, sheet_name = "median")
+                self.YY_095_pd.to_excel(writer, sheet_name = "95_quantile")
+                self.YY_005_pd.to_excel(writer, sheet_name = "5_quantile")
+                self.YY_084_pd.to_excel(writer, sheet_name = "84_quantile")
+                self.YY_016_pd.to_excel(writer, sheet_name = "16_quantile")
             #writer.close()
         else:
             YY_mean_pd = pd.DataFrame(self.YY_mean_agg, columns = self.varlist_list[-1])
@@ -1636,7 +1645,7 @@ class multifrequency_var:
                     
                     fig, ax = plt.subplots()
                     ax.fill_between(range(len(np.squeeze(YY_mean[-1][:,idx]))), np.squeeze(YY_095[-1][:,idx]), np.squeeze(YY_005[-1][:,idx]), alpha = 0.5, color = "blue")
-                    ax.fill_between(range(len(np.squeeze(YY_mean[-1][:,idx]))), np.squeeze(YY_084[-1][:,idx]), np.squeeze(YY_016[-1][:,idx]), alpha = 0.7, color = "blue")          
+                    ax.fill_between(range(len(np.squeeze(YY_mean[-1][:,idx]))), np.squeeze(YY_084[-1][:,idx]), np.squeeze(YY_016[-1][:,idx]), alpha = 0.7, color = "blue")         
                     ax.plot(range(len(np.squeeze(YY_mean[-1][:,idx]))),np.squeeze(YY_mean[-1][:,idx]), color = "red", linewidth = 0.5)
                     plt.axvline(x=forecast_start,  color='black', ls='--', lw=0.5)
                     title = "Mean and 90% and 68% CI of: " + variable
@@ -1651,7 +1660,7 @@ class multifrequency_var:
                 pdf.close()   
 
         else:
-            forecast_start = nhist #self.YY_mean[-1].shape[0] - self.H
+            forecast_start = self.YY_mean_pd.iloc[-self.H,idx].name
             if save == True:
                 pdf = matplotlib.backends.backend_pdf.PdfPages(name + ".pdf")
                 
@@ -1659,14 +1668,15 @@ class multifrequency_var:
                 
                 idx, = np.where(self.varlist_list[-1] == variable)
                 
+                self.YY_095_pd
                 fig, ax = plt.subplots()
-                ax.fill_between(range(len(np.squeeze(self.YY_mean[-1][-(self.H+nhist):,idx]))), np.squeeze(self.YY_095[-1][-(self.H+nhist):,idx]), np.squeeze(self.YY_005[-1][-(self.H+nhist):,idx]), alpha = 0.5, color = "blue")
-                ax.fill_between(range(len(np.squeeze(self.YY_mean[-1][-(self.H+nhist):,idx]))), np.squeeze(self.YY_084[-1][-(self.H+nhist):,idx]), np.squeeze(self.YY_016[-1][-(self.H+nhist):,idx]), alpha = 0.7, color = "blue")          
-                ax.plot(range(len(np.squeeze(self.YY_mean[-1][-(self.H+nhist):,idx]))),np.squeeze(self.YY_mean[-1][-(self.H+nhist):,idx]), color = "red", linewidth = 0.5)
+                ax.fill_between(self.YY_095_pd.iloc[-(self.H+nhist):,idx].index, np.squeeze(np.array(self.YY_095_pd.iloc[-(self.H+nhist):,idx])), np.squeeze(np.array(self.YY_005_pd.iloc[-(self.H+nhist):,idx])), alpha = 0.5, color = "blue")
+                ax.fill_between(self.YY_095_pd.iloc[-(self.H+nhist):,idx].index, np.squeeze(np.array(self.YY_084_pd.iloc[-(self.H+nhist):,idx])), np.squeeze(np.array(self.YY_016_pd.iloc[-(self.H+nhist):,idx])), alpha = 0.7, color = "blue")          
+                ax.plot(self.YY_mean_pd.iloc[-(self.H+nhist):,idx].index, np.squeeze(np.array(self.YY_mean_pd.iloc[-(self.H+nhist):,idx])), color = "red", linewidth = 0.5)
                 plt.axvline(x=forecast_start,  color='black', ls='--', lw=0.5)
                 title = "Mean and 90% and 68% CI of: " + variable
                 plt.title(title)
-                plt.xlabel('Time')
+                plt.xlabel('Date')
                 plt.ylabel('Value')
                 if save == True:
                     pdf.savefig( fig )
