@@ -139,7 +139,7 @@ class multifrequency_var:
             YMX_list.append(YMX_temp)
             YMC_temp = pd.read_excel(io_conditionals, sheet_name = freq, index_col = 0)
             YMC_list.append(YMC_temp.to_numpy())
-            exc_list.append(YMC_list[-1] < np.exp(99))
+            exc_list.append(~np.isnan(YMC_list[-1]))
             YM0_list.append(YMX_temp.to_numpy())
             select_m_list.append(pd.read_excel(io_trans, sheet_name = freq).to_numpy())
             vars_m_list.append(YMX_temp.columns[:])
