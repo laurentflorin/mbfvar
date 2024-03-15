@@ -1379,7 +1379,8 @@ class multifrequency_var:
         
     def aggregate(self, frequency):
         """
-        Aggregates the Mean, Median and quantililes in the highest frequency to the desired frequency
+        Aggregates the Mean, Median and quantililes in the highest frequency to the desired frequency.
+        The Function ensures, that we start at the beginning of a Year or Quarter depending on the chosen frequency
         
         Parameters
         
@@ -1392,8 +1393,16 @@ class multifrequency_var:
 
         """
         
+        def find_first_position(arr, numbers, count):
+            for i in range(len(arr) - count + 1):
+                if arr[i] in numbers and all(arr[i] == arr[j] for j in range(i+1, i+count)):
+                    return i
+        
         if self.forecast_draws_list is None :
                 sys.exit("Error: To gaggregate generate forecasts first")
+                
+        if frequency not in ["Y","Q"] :
+                sys.exit("Error: Aggregation currently only implemented for aggregation to yearly and quarterly frequency")
                 
         
         # Set the frequency ratio        
@@ -1415,16 +1424,50 @@ class multifrequency_var:
             freq_ratio = 4
         elif freq_hf == "D" and freq_lf == "W":
             freq_ratio = 5
+        elif freq_hf == "D" and freq_lf == "M":
+            freq_ratio = 20
                 
-                
-        diff = self.YMX.shape[0]-(self.YY_005[-1].shape[0]- self.H)
-        start = freq_ratio * math.ceil(diff/freq_ratio) - diff
-        self.YY_095_agg = np.array(pd.DataFrame(self.YY_095[-1][start:]).groupby(pd.DataFrame(self.YY_095[-1][start:]).index // freq_ratio).mean())
-        self.YY_084_agg = np.array(pd.DataFrame(self.YY_084[-1][start:]).groupby(pd.DataFrame(self.YY_084[-1][start:]).index // freq_ratio).mean())
-        self.YY_016_agg = np.array(pd.DataFrame(self.YY_016[-1][start:]).groupby(pd.DataFrame(self.YY_016[-1][start:]).index // freq_ratio).mean())
-        self.YY_005_agg = np.array(pd.DataFrame(self.YY_005[-1][start:]).groupby(pd.DataFrame(self.YY_005[-1][start:]).index // freq_ratio).mean())
-        self.YY_mean_agg = np.array(pd.DataFrame(self.YY_mean[-1][start:]).groupby(pd.DataFrame(self.YY_mean[-1][start:]).index // freq_ratio).mean())
-        self.YY_median_agg = np.array(pd.DataFrame(self.YY_median[-1])[start:].groupby(pd.DataFrame(self.YY_median[-1][start:]).index // freq_ratio).mean())
+        if frequency == 'Q':
+            if freq_hf == 'W':
+                start = find_first_position(self.YY_mean_pd.index.month, [1, 4, 7, 10], 4 )
+            elif freq_hf == 'M':
+                start = find_first_position(self.YY_mean_pd.index.month, [1, 4, 7, 10], 1)
+            elif freq_hf == 'D':
+                start = find_first_position(self.YY_mean_pd.index.month, [1, 4, 7, 10], 20)
+        elif frequency == 'Y':
+            if freq_hf == 'Q':
+                start = find_first_position(self.YY_mean_pd.index.month, [1,3], 1 )
+            elif freq_hf == 'M':
+                start = find_first_position(self.YY_mean_pd.index.month, [1], 1)
+            elif freq_hf == 'W':
+                start = find_first_position(self.YY_mean_pd.index.month, [1], 4)
+            elif freq_hf == 'D':
+                start = find_first_position(self.YY_mean_pd.index.month, [1], 20)
+        
+        self.YY_mean_agg = self.YY_mean_pd.iloc[start:,].groupby(self.YY_mean_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
+        self.YY_mean_agg = self.YY_mean_agg.groupby(self.YY_mean_agg.reset_index().index // freq_ratio).mean()
+        self.YY_mean_agg.index =self.YY_mean_pd.iloc[start:,].index[::freq_ratio][:self.YY_mean_agg.shape[0]]
+        
+        self.YY_median_agg = self.YY_median_pd.iloc[start:,].groupby(self.YY_median_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
+        self.YY_median_agg = self.YY_median_agg.groupby(self.YY_median_agg.reset_index().index // freq_ratio).mean()
+        self.YY_median_agg.index =self.YY_median_pd.iloc[start:,].index[::freq_ratio][:self.YY_median_agg.shape[0]]
+        
+        self.YY_095_agg = self.YY_095_pd.iloc[start:,].groupby(self.YY_095_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
+        self.YY_095_agg = self.YY_095_agg.groupby(self.YY_095_agg.reset_index().index // freq_ratio).mean()
+        self.YY_095_agg.index =self.YY_095_pd.iloc[start:,].index[::freq_ratio][:self.YY_095_agg.shape[0]]
+        
+        self.YY_005_agg = self.YY_005_pd.iloc[start:,].groupby(self.YY_005_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
+        self.YY_005_agg = self.YY_005_agg.groupby(self.YY_005_agg.reset_index().index // freq_ratio).mean()
+        self.YY_005_agg.index =self.YY_005_pd.iloc[start:,].index[::freq_ratio][:self.YY_005_agg.shape[0]]
+        
+        self.YY_084_agg = self.YY_084_pd.iloc[start:,].groupby(self.YY_084_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
+        self.YY_084_agg = self.YY_084_agg.groupby(self.YY_084_agg.reset_index().index // freq_ratio).mean()
+        self.YY_084_agg.index =self.YY_084_pd.iloc[start:,].index[::freq_ratio][:self.YY_084_agg.shape[0]]
+        
+        self.YY_016_agg = self.YY_016_pd.iloc[start:,].groupby(self.YY_016_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
+        self.YY_016_agg = self.YY_016_agg.groupby(self.YY_016_agg.reset_index().index // freq_ratio).mean()
+        self.YY_016_agg.index =self.YY_016_pd.iloc[start:,].index[::freq_ratio][:self.YY_016_agg.shape[0]]
+        
         self.agg_freq = frequency
     
     def save(self, filename = "mufbvar_model.pkl"):
@@ -1450,7 +1493,7 @@ class multifrequency_var:
         Parameters
         ----------
         agg : Boolean
-            Should the aggregated series be shown
+            Should the aggregated series be saved
         filname : TYPE
             DESCRIPTION.
         
@@ -1479,23 +1522,14 @@ class multifrequency_var:
                 self.YY_016_pd.to_excel(writer, sheet_name = "16_quantile")
             #writer.close()
         else:
-            YY_mean_pd = pd.DataFrame(self.YY_mean_agg, columns = self.varlist_list[-1])
-            YY_median_pd = pd.DataFrame(self.YY_median_agg, columns = self.varlist_list[-1])
-            
-            YY_095_pd = pd.DataFrame(self.YY_095_agg, columns = self.varlist_list[-1])
-            YY_005_pd = pd.DataFrame(self.YY_005_agg,  columns = self.varlist_list[-1])
-            
-            YY_084_pd = pd.DataFrame(self.YY_084_agg, columns = self.varlist_list[-1])
-            YY_016_pd = pd.DataFrame(self.YY_016_agg,  columns = self.varlist_list[-1])
-            
             with pd.ExcelWriter(filename) as writer:
             #writer = pd.ExcelWriter("sim_data.xlsx", engine="xlsxwriter")
-                YY_mean_pd.to_excel(writer, sheet_name = "mean")
-                YY_median_pd.to_excel(writer, sheet_name = "median")
-                YY_095_pd.to_excel(writer, sheet_name = "95_quantile")
-                YY_005_pd.to_excel(writer, sheet_name = "5_quantile")
-                YY_084_pd.to_excel(writer, sheet_name = "84_quantile")
-                YY_016_pd.to_excel(writer, sheet_name = "16_quantile")
+                self.YY_mean_agg.to_excel(writer, sheet_name = "mean")
+                self.YY_median_agg.to_excel(writer, sheet_name = "median")
+                self.YY_095_agg.to_excel(writer, sheet_name = "95_quantile")
+                self.YY_005_agg.to_excel(writer, sheet_name = "5_quantile")
+                self.YY_084_agg.to_excel(writer, sheet_name = "84_quantile")
+                self.YY_016_agg.to_excel(writer, sheet_name = "16_quantile")
         
     def mean_plot(self,frequency, variables = "all", save = True, name = "Output", show = True):
         
@@ -1556,7 +1590,7 @@ class multifrequency_var:
         
         
 
-    def fanchart(self, variables = "all", save = True, name = "Fancharts", show = True, agg = True, nhist = 5):
+    def fanchart(self, variables = "all", save = True, name = "Fancharts", show = True, agg = False, nhist = 5):
         """
         Parameters
         ----------
@@ -1568,6 +1602,8 @@ class multifrequency_var:
             If the plots should be saved, path/name not including filetype. The default is None.
         show : boolean
             Whether the plots should be shown. Default is True.
+        agg : boolean
+            Whether the aggregated values should be shown
         nhist : int
             number of historical periods that should be shown on the plot
             Default is 5
@@ -1586,6 +1622,9 @@ class multifrequency_var:
                 variables = self.varlist_list[-1]
             else:
                 sys.exit("variables must be either a list of variables or all")
+        
+        if agg == True and not hasattr(self, 'YY_095_agg'):
+            sys.exit("Aggregate first")
             
             
         check = set(variables)-set(self.varlist_list[-1])        
@@ -1593,71 +1632,54 @@ class multifrequency_var:
             sys.exit(print(check, " not in " , self.varlist_list[-1]))
         
         if agg == True:
-            if self.frequencies.index(self.agg_freq) == 0:
-                history = np.array(self.input_data_Q)
-            else:
-                history = self.input_data[self.frequencies.index(self.agg_freq)-1] 
-            for i in range(self.frequencies.index(self.agg_freq), len(self.freq_ratio_list)):
-                if self.input_data[i].size:
-                    ratio = int(np.prod(list(itertools.islice(self.freq_ratio_list,self.frequencies.index(self.agg_freq) , i+1))))
-                    end = self.input_data[i].shape[0] - self.input_data[i].shape[0]%ratio -1
-                    history = np.hstack((np.array(self.input_data[i].iloc[:end,:].groupby(self.input_data[i].iloc[:end,:].index // ratio).mean()), history))
             
-            if self.frequencies.index(self.agg_freq) == 0:    
-                YY_mean_agg = np.vstack((history, self.YY_mean_agg[history.shape[0]-self.nlags[self.frequencies.index(self.agg_freq)]:,:]))
-            else:
-                YY_mean_agg = np.vstack((history, self.YY_mean_agg[history.shape[0]-self.nlags[self.frequencies.index(self.agg_freq)]:,:history.shape[1]]))
+            # Set the frequency ratio        
+            freq_lf = self.agg_freq
+            freq_hf = self.frequencies[-1]
+            if freq_hf == "Q" and freq_lf == "Y":
+                freq_ratio = 4
+            elif freq_hf == "M" and freq_lf == "Y":
+                freq_ratio = 12
+            elif freq_hf == "W" and freq_lf == "Y":
+                freq_ratio = 48
+            elif freq_hf == "D" and freq_lf == "Y":
+                freq_ratio = 260
+            elif freq_hf == "M" and freq_lf == "Q":
+                freq_ratio = 3
+            elif freq_hf == "W" and freq_lf == "Q":
+                freq_ratio = 12
+            elif freq_hf == "W" and freq_lf == "M":
+                freq_ratio = 4
+            elif freq_hf == "D" and freq_lf == "W":
+                freq_ratio = 5
+            elif freq_hf == "D" and freq_lf == "M":
+                freq_ratio = 20
             
-            '''
-            history = pd.DataFrame(history)
-            history.columns = list(self.varlist_list[-1])
-            history = np.array(history[list(variables)])
-            '''    
+            forecast_start = self.YY_mean_agg.iloc[-int(self.H/freq_ratio),:].name
+                
             if save == True:
                 pdf = matplotlib.backends.backend_pdf.PdfPages(name + ".pdf")
                 
             for variable in variables:
+                
                 idx, = np.where(self.varlist_list[-1] == variable)
                 
-                if idx < YY_mean_agg.shape[1]:
-                
-                    fig, ax = plt.subplots()
-                    ax.fill_between(range(len(YY_mean_agg[-(int(self.H/ratio+nhist)):,idx])-len(self.YY_095_agg[history.shape[0]-self.nlags[0]:,idx]) ,len(YY_mean_agg[-(int(self.H/ratio+nhist)):,idx])), np.squeeze(self.YY_095_agg[history.shape[0]-self.nlags[0]:,idx]), np.squeeze(self.YY_005_agg[history.shape[0]-self.nlags[0]:,idx]), alpha = 0.5, color = "blue")          
-                    ax.fill_between(range(len(YY_mean_agg[-(int(self.H/ratio+nhist)):,idx])-len(self.YY_084_agg[history.shape[0]-self.nlags[0]:,idx]) ,len(YY_mean_agg[-(int(self.H/ratio+nhist)):,idx])), np.squeeze(self.YY_084_agg[history.shape[0]-self.nlags[0]:,idx]), np.squeeze(self.YY_016_agg[history.shape[0]-self.nlags[0]:,idx]), alpha = 0.7, color = "blue")  
-                    ax.plot(range(len(YY_mean_agg[-(int(self.H/ratio+nhist)):,idx])), np.squeeze(YY_mean_agg[-(int(self.H/ratio+nhist)):,idx]), color = "black", linewidth = 0.5)
-                    ax.plot(range(len(YY_mean_agg[-(int(self.H/ratio+nhist)):,idx])-len(self.YY_095_agg[history.shape[0]-self.nlags[0]:,idx]) ,len(YY_mean_agg[-(int(self.H/ratio+nhist)):,idx])), self.YY_mean_agg[history.shape[0]-self.nlags[0]:,idx], color = "red", linewidth = 0.5)
-                    #plt.axvline(x=forecast_start,  color='black', ls='--', lw=0.5)
-                    title = "Mean and 90% and 68% CI of Forecasts of: " + variable
-                    plt.title(title)
-                    plt.xlabel('Time')
-                    plt.ylabel('Value')
-                    if save == True:
-                        pdf.savefig( fig )
-                    if show == True:
-                        plt.show()
-                else:
-                    forecast_start = nhist #self.YY_mean[-1].shape[0] - int(self.H/ratio)
-                    YY_mean = np.array(pd.DataFrame(self.YY_mean[-1][-(self.H/ratio+nhist*ratio):,idx]).groupby(pd.DataFrame(self.YY_mean[-1][-(self.H/ratio+nhist*ratio):,idx]).index // ratio).mean())
-                    YY_095 = np.array(pd.DataFrame(self.YY_095[-1][-(self.H/ratio+nhist*ratio),idx]).groupby(pd.DataFrame(self.YY_095[-1][-(self.H/ratio+nhist*ratio):,idx]).index // ratio).mean())
-                    YY_005 = np.array(pd.DataFrame(self.YY_005[-1][-(self.H/ratio+nhist*ratio):,idx]).groupby(pd.DataFrame(self.YY_005[-1][-(self.H/ratio+nhist*ratio):,idx]).index // ratio).mean())
-                    YY_084 = np.array(pd.DataFrame(self.YY_084[-1][-(self.H/ratio+nhist*ratio):,idx]).groupby(pd.DataFrame(self.YY_084[-1][-(self.H/ratio+nhist*ratio):,idx]).index // ratio).mean())
-                    YY_016 = np.array(pd.DataFrame(self.YY_016[-1][-(self.H/ratio+nhist*ratio):,idx]).groupby(pd.DataFrame(self.YY_016[-1][-(self.H/ratio+nhist*ratio):,idx]).index // ratio).mean())
-                    
-                    fig, ax = plt.subplots()
-                    ax.fill_between(range(len(np.squeeze(YY_mean[-1][:,idx]))), np.squeeze(YY_095[-1][:,idx]), np.squeeze(YY_005[-1][:,idx]), alpha = 0.5, color = "blue")
-                    ax.fill_between(range(len(np.squeeze(YY_mean[-1][:,idx]))), np.squeeze(YY_084[-1][:,idx]), np.squeeze(YY_016[-1][:,idx]), alpha = 0.7, color = "blue")         
-                    ax.plot(range(len(np.squeeze(YY_mean[-1][:,idx]))),np.squeeze(YY_mean[-1][:,idx]), color = "red", linewidth = 0.5)
-                    plt.axvline(x=forecast_start,  color='black', ls='--', lw=0.5)
-                    title = "Mean and 90% and 68% CI of: " + variable
-                    plt.title(title)
-                    plt.xlabel('Time')
-                    plt.ylabel('Value')
-                    if save == True:
-                        pdf.savefig( fig )
-                    if show == True:
-                        plt.show()
-            if save == True:        
-                pdf.close()   
+                self.YY_095_agg
+                fig, ax = plt.subplots()
+                ax.fill_between(self.YY_095_agg.iloc[-(self.H+nhist):,idx].index, np.squeeze(np.array(self.YY_095_agg.iloc[-(self.H+nhist):,idx])), np.squeeze(np.array(self.YY_005_agg.iloc[-(self.H+nhist):,idx])), alpha = 0.5, color = "blue")
+                ax.fill_between(self.YY_095_agg.iloc[-(self.H+nhist):,idx].index, np.squeeze(np.array(self.YY_084_agg.iloc[-(self.H+nhist):,idx])), np.squeeze(np.array(self.YY_016_agg.iloc[-(self.H+nhist):,idx])), alpha = 0.7, color = "blue")          
+                ax.plot(self.YY_mean_agg.iloc[-(self.H+nhist):,idx].index, np.squeeze(np.array(self.YY_mean_agg.iloc[-(self.H+nhist):,idx])), color = "red", linewidth = 0.5)
+                plt.axvline(x= forecast_start,  color='black', ls='--', lw=0.5)
+                title = "Mean and 90% and 68% CI of: " + variable
+                plt.title(title)
+                plt.xlabel('Date')
+                plt.ylabel('Value')
+                if save == True:
+                    pdf.savefig( fig )
+                if show == True:
+                    plt.show()
+            if save == True:
+                pdf.close() 
 
         else:
             forecast_start = self.YY_mean_pd.iloc[-self.H,:].name
