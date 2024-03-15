@@ -139,7 +139,7 @@ class multifrequency_var:
             YMX_list.append(YMX_temp)
             YMC_temp = pd.read_excel(io_conditionals, sheet_name = freq, index_col = 0)
             YMC_list.append(YMC_temp.to_numpy())
-            exc_list.append(np.isnan(YMC_list[-1]))
+            exc_list.append(~np.isnan(YMC_list[-1]))
             YM0_list.append(YMX_temp.to_numpy())
             select_m_list.append(pd.read_excel(io_trans, sheet_name = freq).to_numpy())
             vars_m_list.append(YMX_temp.columns[:])
@@ -1158,7 +1158,7 @@ class multifrequency_var:
                     XXpred[h, :self.nv_list[m]] = YYpred[h-1, :]
                     #YYpred[h,:] = (XXpred[h,:] @ post_phi + error_pred[h,:])
                     # TODO add conditional forecasts
-                    YYpred[h,:] = (1-self.exc_list[m][h-1,:]) * (XXpred[h,:] @ post_phi + error_pred[h,:]) + self.exc_list[m][h-1,:] * self.YYcond_list[m][h-1,:]
+                    YYpred[h,:] = (1-self.exc_list[m][h-1,:]) * (XXpred[h,:] @ post_phi + error_pred[h,:]) + self.exc_list[m][h-1,:] * np.nan_to_num(self.YYcond_list[m][h-1,:])
                 
                 YYpred1 = YYpred
                 YYpred = YYpred[1:,:]
