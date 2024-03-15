@@ -1660,7 +1660,7 @@ class multifrequency_var:
                 pdf.close()   
 
         else:
-            forecast_start = self.YY_mean_pd.iloc[-self.H,idx].name
+            forecast_start = self.YY_mean_pd.iloc[-self.H,:].name
             if save == True:
                 pdf = matplotlib.backends.backend_pdf.PdfPages(name + ".pdf")
                 
