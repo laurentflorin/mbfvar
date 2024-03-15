@@ -1,6 +1,3 @@
-
-system("pip install git+https://gitea.efv.admin.ch/efv_fs/MUFBVAR.git")
-
 library(reticulate)
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
