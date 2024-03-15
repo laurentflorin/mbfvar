@@ -1095,7 +1095,7 @@ class multifrequency_var:
                 H_= int(self.H)
                 
             #Prepare index for output
-            self.index_list[m] = self.index_list[m][self.index_list[m].shape[0]-(self.lstate_list[m].shape[2]+H):]
+            self.index_list[m] = self.index_list[m][self.index_list[m].shape[0]-(self.lstate_list[m].shape[2]+H_):]
         
             #for writing to a forecast w/ history file
             #self.YMh_list[m] = self.YMh_list[m][self.T0_list[m]:-self.freq_ratio_list[m],:]
