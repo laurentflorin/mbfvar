@@ -130,20 +130,23 @@ class multifrequency_var:
         vars_m_list = deque()
         YMh_list = deque()
         exc_list = deque()
+        index_list = deque()
         
         
         for freq in range(1,len(self.frequencies)):
             freq = self.frequencies[freq]
             YMX_temp = pd.read_excel(io_data, sheet_name = freq, index_col = 0)
             YMX_list.append(YMX_temp)
-            YMC_list.append(pd.read_excel(io_conditionals, sheet_name = freq, index_col = 0).to_numpy())
+            YMC_temp = pd.read_excel(io_conditionals, sheet_name = freq, index_col = 0)
+            YMC_list.append(YMC_temp.to_numpy())
             exc_list.append(YMC_list[-1] < np.exp(99))
             YM0_list.append(YMX_temp.to_numpy())
             select_m_list.append(pd.read_excel(io_trans, sheet_name = freq).to_numpy())
             vars_m_list.append(YMX_temp.columns[:])
             YMh_list.append(YMX_temp.to_numpy())
-            
-        del YMX_temp 
+            index_list.append(YMX_temp.index.append(YMC_temp.index))
+        del YMX_temp
+        del YMC_temp 
         
         input_data = YMX_list.copy()
         self.input_data = input_data
@@ -1008,7 +1011,7 @@ class multifrequency_var:
                         
                         
                 #TODO
-                    
+            
                 
             self.YYactsim = YYactsim_list[-1]
             self.XXactsim = XXactsim_list[-1]
@@ -1041,7 +1044,8 @@ class multifrequency_var:
             self.Yq = Yq_list[-1]
             self.T0 = T0_list[-1]
             self.Tnew = Tnew_list[-1]
-            
+        
+        
         #save lists to self
         self.YMh_list = YMh_list
         self.T0_list = T0_list
@@ -1066,6 +1070,8 @@ class multifrequency_var:
         self.nlags_list = nlags_list
         self.varlist_list = varlist_list
         self.YMX_list =YMX_list
+        self.index_list = index_list
+        
         
         
         
@@ -1087,6 +1093,9 @@ class multifrequency_var:
                 H_ = int(self.H/int(np.product(list(itertools.islice(self.freq_ratio_list, m+1, len(self.freq_ratio_list))))))
             else:
                 H_= int(self.H)
+                
+            #Prepare index for output
+            self.index_list[m] = self.index_list[m][self.index_list[m].shape[0]-(self.lstate_list[m].shape[2]+H):]
         
             #for writing to a forecast w/ history file
             #self.YMh_list[m] = self.YMh_list[m][self.T0_list[m]:-self.freq_ratio_list[m],:]
@@ -1435,15 +1444,23 @@ class multifrequency_var:
         
         if agg == False:
             YY_mean_pd = pd.DataFrame(self.YY_mean[-1], columns = self.varlist_list[-1])
+            YY_mean_pd.index = self.index_list[-1]
+            
             YY_median_pd = pd.DataFrame(self.YY_median[-1], columns = self.varlist_list[-1])
+            YY_median_pd.index = self.index_list[-1]
             
             YY_095_pd = pd.DataFrame(self.YY_095[-1], columns = self.varlist_list[-1])
+            YY_095_pd.index = self.index_list[-1]
+            
             YY_005_pd = pd.DataFrame(self.YY_005[-1], columns = self.varlist_list[-1])
+            YY_005_pd.index = self.index_list[-1]
             
             YY_084_pd = pd.DataFrame(self.YY_084[-1], columns = self.varlist_list[-1])
+            YY_084_pd.index = self.index_list[-1]
             YY_016_pd = pd.DataFrame(self.YY_016[-1], columns = self.varlist_list[-1])
+            YY_016_pd.index = self.index_list[-1]
             
-            with pd.ExcelWriter(filename) as writer:
+            with pd.ExcelWriter(filename, engine = "xlsxwriter", datetime_format='yyyy-mm-dd') as writer:
             #writer = pd.ExcelWriter("sim_data.xlsx", engine="xlsxwriter")
                 YY_mean_pd.to_excel(writer, sheet_name = "mean")
                 YY_median_pd.to_excel(writer, sheet_name = "median")
