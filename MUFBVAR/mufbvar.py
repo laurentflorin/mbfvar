@@ -47,6 +47,7 @@ import fanchart
 
 #to save objects
 import pickle
+import copy
 
 
 
@@ -1377,7 +1378,7 @@ class multifrequency_var:
         self.YY_084_pd = YY_084_pd
         self.YY_016_pd = YY_016_pd
         
-    def aggregate(self, frequency):
+    def aggregate(self, frequency, reset_index = True):
         """
         Aggregates the Mean, Median and quantililes in the highest frequency to the desired frequency.
         The Function ensures, that we start at the beginning of a Year or Quarter depending on the chosen frequency
@@ -1386,6 +1387,9 @@ class multifrequency_var:
         
         frequency : str
             The frequency to which the data should be aggregated to
+            
+        reset_index : boolean
+            Schould index be changed to period Index
         ----------
         Returns
         -------
@@ -1403,70 +1407,120 @@ class multifrequency_var:
                 
         if frequency not in ["Y","Q"] :
                 sys.exit("Error: Aggregation currently only implemented for aggregation to yearly and quarterly frequency")
-                
-        
-        # Set the frequency ratio        
         freq_lf = frequency
         freq_hf = self.frequencies[-1]
-        if freq_hf == "Q" and freq_lf == "Y":
-            freq_ratio = 4
-        elif freq_hf == "M" and freq_lf == "Y":
-            freq_ratio = 12
-        elif freq_hf == "W" and freq_lf == "Y":
-            freq_ratio = 48
-        elif freq_hf == "D" and freq_lf == "Y":
-            freq_ratio = 260
-        elif freq_hf == "M" and freq_lf == "Q":
-            freq_ratio = 3
-        elif freq_hf == "W" and freq_lf == "Q":
-            freq_ratio = 12
-        elif freq_hf == "W" and freq_lf == "M":
-            freq_ratio = 4
-        elif freq_hf == "D" and freq_lf == "W":
-            freq_ratio = 5
-        elif freq_hf == "D" and freq_lf == "M":
-            freq_ratio = 20
                 
-        if frequency == 'Q':
-            if freq_hf == 'W':
-                start = find_first_position(self.YY_mean_pd.index.month, [1, 4, 7, 10], 4 )
-            elif freq_hf == 'M':
-                start = find_first_position(self.YY_mean_pd.index.month, [1, 4, 7, 10], 1)
-            elif freq_hf == 'D':
-                start = find_first_position(self.YY_mean_pd.index.month, [1, 4, 7, 10], 20)
-        elif frequency == 'Y':
-            if freq_hf == 'Q':
-                start = find_first_position(self.YY_mean_pd.index.month, [1,3], 1 )
-            elif freq_hf == 'M':
-                start = find_first_position(self.YY_mean_pd.index.month, [1], 1)
-            elif freq_hf == 'W':
-                start = find_first_position(self.YY_mean_pd.index.month, [1], 4)
-            elif freq_hf == 'D':
-                start = find_first_position(self.YY_mean_pd.index.month, [1], 20)
+        def agg_helper(freq_lf, freq_hf, df):
+            # Set the frequency ratio        
+            if freq_hf == "Q" and freq_lf == "Y":
+                freq_ratio = 4
+            elif freq_hf == "M" and freq_lf == "Y":
+                freq_ratio = 12
+            elif freq_hf == "W" and freq_lf == "Y":
+                freq_ratio = 48
+            elif freq_hf == "D" and freq_lf == "Y":
+                freq_ratio = 260
+            elif freq_hf == "M" and freq_lf == "Q":
+                freq_ratio = 3
+            elif freq_hf == "W" and freq_lf == "Q":
+                freq_ratio = 12
+            elif freq_hf == "W" and freq_lf == "M":
+                freq_ratio = 4
+            elif freq_hf == "D" and freq_lf == "W":
+                freq_ratio = 5
+            elif freq_hf == "D" and freq_lf == "M":
+                freq_ratio = 20
+                    
+            if frequency == 'Q':
+                if freq_hf == 'W':
+                    start = find_first_position(df.index.month, [1, 4, 7, 10], 4 )
+                elif freq_hf == 'M':
+                    start = find_first_position(df.index.month, [1, 4, 7, 10], 1)
+                elif freq_hf == 'D':
+                    start = find_first_position(df.index.month, [1, 4, 7, 10], 20)
+            elif frequency == 'Y':
+                if freq_hf == 'Q':
+                    start = find_first_position(df.index.month, [1,3], 1 )
+                elif freq_hf == 'M':
+                    start = find_first_position(df.index.month, [1], 1)
+                elif freq_hf == 'W':
+                    start = find_first_position(df.index.month, [1], 4)
+                elif freq_hf == 'D':
+                    start = find_first_position(df.index.month, [1], 20)
+            return freq_ratio, start
         
+        freq_ratio, start = agg_helper(freq_lf, freq_hf, self.YY_mean_pd)
+                
         self.YY_mean_agg = self.YY_mean_pd.iloc[start:,].groupby(self.YY_mean_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
         self.YY_mean_agg = self.YY_mean_agg.groupby(self.YY_mean_agg.reset_index().index // freq_ratio).mean()
         self.YY_mean_agg.index =self.YY_mean_pd.iloc[start:,].index[::freq_ratio][:self.YY_mean_agg.shape[0]]
+        self.YY_mean_agg.index = self.YY_mean_agg.index.map(lambda x: x.replace(day=1))
         
         self.YY_median_agg = self.YY_median_pd.iloc[start:,].groupby(self.YY_median_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
         self.YY_median_agg = self.YY_median_agg.groupby(self.YY_median_agg.reset_index().index // freq_ratio).mean()
         self.YY_median_agg.index =self.YY_median_pd.iloc[start:,].index[::freq_ratio][:self.YY_median_agg.shape[0]]
+        self.YY_median_agg.index = self.YY_median_agg.index.map(lambda x: x.replace(day=1))
         
         self.YY_095_agg = self.YY_095_pd.iloc[start:,].groupby(self.YY_095_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
         self.YY_095_agg = self.YY_095_agg.groupby(self.YY_095_agg.reset_index().index // freq_ratio).mean()
         self.YY_095_agg.index =self.YY_095_pd.iloc[start:,].index[::freq_ratio][:self.YY_095_agg.shape[0]]
+        self.YY_095_agg.index = self.YY_095_agg.index.map(lambda x: x.replace(day=1))
         
         self.YY_005_agg = self.YY_005_pd.iloc[start:,].groupby(self.YY_005_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
         self.YY_005_agg = self.YY_005_agg.groupby(self.YY_005_agg.reset_index().index // freq_ratio).mean()
         self.YY_005_agg.index =self.YY_005_pd.iloc[start:,].index[::freq_ratio][:self.YY_005_agg.shape[0]]
+        self.YY_005_agg.index = self.YY_005_agg.index.map(lambda x: x.replace(day=1))
         
         self.YY_084_agg = self.YY_084_pd.iloc[start:,].groupby(self.YY_084_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
         self.YY_084_agg = self.YY_084_agg.groupby(self.YY_084_agg.reset_index().index // freq_ratio).mean()
         self.YY_084_agg.index =self.YY_084_pd.iloc[start:,].index[::freq_ratio][:self.YY_084_agg.shape[0]]
+        self.YY_084_agg.index = self.YY_084_agg.index.map(lambda x: x.replace(day=1))
         
         self.YY_016_agg = self.YY_016_pd.iloc[start:,].groupby(self.YY_016_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
         self.YY_016_agg = self.YY_016_agg.groupby(self.YY_016_agg.reset_index().index // freq_ratio).mean()
         self.YY_016_agg.index =self.YY_016_pd.iloc[start:,].index[::freq_ratio][:self.YY_016_agg.shape[0]]
+        self.YY_016_agg.index = self.YY_016_agg.index.map(lambda x: x.replace(day=1))
+        
+        hist = copy.copy(self.YMX_list)
+        hist.appendleft(self.YQX)
+        i = 0
+        for m in self.frequencies:
+            if self.frequencies.index(m) == self.frequencies.index(frequency):
+                # history ersetzen durch originaldaten 
+                # interval durch NA
+                idx = self.YY_mean_agg.index.intersection(hist[i].index, sort=False)
+                self.YY_mean_agg.loc[idx, hist[i].columns] = hist[i].loc[idx, hist[i].columns]
+                self.YY_median_agg.loc[idx, hist[i].columns] = hist[i].loc[idx, hist[i].columns]
+                self.YY_095_agg.loc[idx, hist[i].columns] = np.nan
+                self.YY_005_agg.loc[idx, hist[i].columns] = np.nan
+                self.YY_084_agg.loc[idx, hist[i].columns] = np.nan
+                self.YY_016_agg.loc[idx, hist[i].columns] = np.nan
+                
+            if self.frequencies.index(m) > self.frequencies.index(frequency) & self.frequencies.index(m) < len(self.frequencies)-1:
+                freq_ratio_temp, start_temp = agg_helper(frequency, m, hist[i])
+                hist_agg = hist[i].iloc[start_temp:,].groupby(hist[i].iloc[start_temp:,].reset_index().index // freq_ratio_temp).filter(lambda x: len(x) == freq_ratio_temp)
+                hist_agg = hist_agg.groupby(hist_agg.reset_index().index // freq_ratio_temp).mean()
+                hist_agg.index = hist[i].iloc[start_temp:,].index[::freq_ratio_temp][:hist_agg.shape[0]]
+                hist_agg.index = hist_agg.index.map(lambda x: x.replace(day=1))
+                
+                idx = hist_agg.index.intersection(self.YY_mean_agg.index, sort=False)
+                self.YY_mean_agg.loc[idx, hist[i].columns] = hist_agg.loc[idx, hist[i].columns]
+                self.YY_median_agg.loc[idx, hist[i].columns] = hist_agg.loc[idx, hist[i].columns]
+                self.YY_095_agg.loc[idx, hist[i].columns] = np.nan
+                self.YY_005_agg.loc[idx, hist[i].columns] = np.nan
+                self.YY_084_agg.loc[idx, hist[i].columns] = np.nan
+                self.YY_016_agg.loc[idx, hist[i].columns] = np.nan
+            
+            i = i+1
+        
+        if reset_index == True:
+            index_new = pd.PeriodIndex(self.YY_mean_agg.index, freq= frequency)
+            self.YY_mean_agg.index = index_new
+            self.YY_median_agg.index = index_new
+            self.YY_095_agg.index = index_new
+            self.YY_005_agg.index = index_new
+            self.YY_084_agg.index = index_new
+            self.YY_016_agg.index = index_new
         
         self.agg_freq = frequency
     
@@ -1522,14 +1576,33 @@ class multifrequency_var:
                 self.YY_016_pd.to_excel(writer, sheet_name = "16_quantile")
             #writer.close()
         else:
-            with pd.ExcelWriter(filename) as writer:
-            #writer = pd.ExcelWriter("sim_data.xlsx", engine="xlsxwriter")
-                self.YY_mean_agg.to_excel(writer, sheet_name = "mean")
-                self.YY_median_agg.to_excel(writer, sheet_name = "median")
-                self.YY_095_agg.to_excel(writer, sheet_name = "95_quantile")
-                self.YY_005_agg.to_excel(writer, sheet_name = "5_quantile")
-                self.YY_084_agg.to_excel(writer, sheet_name = "84_quantile")
-                self.YY_016_agg.to_excel(writer, sheet_name = "16_quantile")
+            if type(self.YY_mean_agg.index) == pd.DatetimeIndex:
+                with pd.ExcelWriter(filename, engine = "xlsxwriter", datetime_format='yyyy-mm-dd') as writer:
+                #writer = pd.ExcelWriter("sim_data.xlsx", engine="xlsxwriter")
+                    self.YY_mean_agg.to_excel(writer, sheet_name = "mean")
+                    self.YY_median_agg.to_excel(writer, sheet_name = "median")
+                    self.YY_095_agg.to_excel(writer, sheet_name = "95_quantile")
+                    self.YY_005_agg.to_excel(writer, sheet_name = "5_quantile")
+                    self.YY_084_agg.to_excel(writer, sheet_name = "84_quantile")
+                    self.YY_016_agg.to_excel(writer, sheet_name = "16_quantile")
+            else:
+                if self.agg_freq == "Q":
+                    with pd.ExcelWriter(filename, engine = "xlsxwriter") as writer:
+                        self.YY_mean_agg.assign(Index= self.YY_mean_agg.index.strftime('%YQ%q')).set_index('Index').to_excel(writer,  sheet_name = "mean")
+                        self.YY_median_agg.assign(Index= self.YY_median_agg.index.strftime('%YQ%q')).set_index('Index').to_excel(writer,  sheet_name = "median")
+                        self.YY_095_agg.assign(Index= self.YY_095_agg.index.strftime('%YQ%q')).set_index('Index').to_excel(writer,  sheet_name = "95_quantile")
+                        self.YY_005_agg.assign(Index= self.YY_005_agg.index.strftime('%YQ%q')).set_index('Index').to_excel(writer,  sheet_name = "5_quantile")
+                        self.YY_084_agg.assign(Index= self.YY_084_agg.index.strftime('%YQ%q')).set_index('Index').to_excel(writer,  sheet_name = "84_quantile")
+                        self.YY_016_agg.assign(Index= self.YY_016_agg.index.strftime('%YQ%q')).set_index('Index').to_excel(writer,  sheet_name = "16_quantile")
+                if self.agg_freq == "Y":
+                    with pd.ExcelWriter(filename, engine = "xlsxwriter") as writer:
+                        self.YY_mean_agg.assign(Index= self.YY_mean_agg.index.strftime('%Y')).set_index('Index').to_excel(writer,  sheet_name = "mean")
+                        self.YY_median_agg.assign(Index= self.YY_median_agg.index.strftime('%Y')).set_index('Index').to_excel(writer,  sheet_name = "median")
+                        self.YY_095_agg.assign(Index= self.YY_095_agg.index.strftime('%Y')).set_index('Index').to_excel(writer,  sheet_name = "95_quantile")
+                        self.YY_005_agg.assign(Index= self.YY_005_agg.index.strftime('%Y')).set_index('Index').to_excel(writer,  sheet_name = "5_quantile")
+                        self.YY_084_agg.assign(Index= self.YY_084_agg.index.strftime('%Y')).set_index('Index').to_excel(writer,  sheet_name = "84_quantile")
+                        self.YY_016_agg.assign(Index= self.YY_016_agg.index.strftime('%Y')).set_index('Index').to_excel(writer,  sheet_name = "16_quantile")
+                        
         
     def mean_plot(self,frequency, variables = "all", save = True, name = "Output", show = True):
         
