@@ -1482,7 +1482,7 @@ class multifrequency_var:
         self.YY_016_agg.index = self.YY_016_agg.index.map(lambda x: x.replace(day=1))
         
         hist = copy.copy(self.YMX_list)
-        hist.appendleft(self.YQX)
+        hist.appendleft(self.input_data_Q)
         i = 0
         for m in self.frequencies:
             if self.frequencies.index(m) == self.frequencies.index(frequency):
@@ -1663,7 +1663,7 @@ class multifrequency_var:
         
         
 
-    def fanchart(self, variables = "all", save = True, name = "Fancharts", show = True, agg = False, nhist = 5):
+    def fanchart(self, variables = "all", save = True, name = "Fancharts", show = True, agg = False, nhist = 10):
         """
         Parameters
         ----------
@@ -1729,6 +1729,7 @@ class multifrequency_var:
                 freq_ratio = 20
             
             forecast_start = self.YY_mean_agg.iloc[-int(self.H/freq_ratio),:].name
+            
                 
             if save == True:
                 pdf = matplotlib.backends.backend_pdf.PdfPages(name + ".pdf")
@@ -1737,12 +1738,17 @@ class multifrequency_var:
                 
                 idx, = np.where(self.varlist_list[-1] == variable)
                 
-                self.YY_095_agg
                 fig, ax = plt.subplots()
-                ax.fill_between(self.YY_095_agg.iloc[-(self.H+nhist):,idx].index, np.squeeze(np.array(self.YY_095_agg.iloc[-(self.H+nhist):,idx])), np.squeeze(np.array(self.YY_005_agg.iloc[-(self.H+nhist):,idx])), alpha = 0.5, color = "blue")
-                ax.fill_between(self.YY_095_agg.iloc[-(self.H+nhist):,idx].index, np.squeeze(np.array(self.YY_084_agg.iloc[-(self.H+nhist):,idx])), np.squeeze(np.array(self.YY_016_agg.iloc[-(self.H+nhist):,idx])), alpha = 0.7, color = "blue")          
-                ax.plot(self.YY_mean_agg.iloc[-(self.H+nhist):,idx].index, np.squeeze(np.array(self.YY_mean_agg.iloc[-(self.H+nhist):,idx])), color = "red", linewidth = 0.5)
-                plt.axvline(x= forecast_start,  color='black', ls='--', lw=0.5)
+                x = self.YY_095_agg.iloc[-int(self.H/freq_ratio+nhist):,idx].index.to_timestamp()
+                ax.fill_between(x, np.squeeze(np.array(self.YY_095_agg.iloc[-int(self.H/freq_ratio+nhist):,idx])), np.squeeze(np.array(self.YY_005_agg.iloc[-int(self.H/freq_ratio+nhist):,idx])), alpha = 0.5, color = "blue")
+                ax.fill_between(x, np.squeeze(np.array(self.YY_084_agg.iloc[-int(self.H/freq_ratio+nhist):,idx])), np.squeeze(np.array(self.YY_016_agg.iloc[-int(self.H/freq_ratio+nhist):,idx])), alpha = 0.7, color = "blue")          
+                ax.plot(x, np.squeeze(np.array(self.YY_mean_agg.iloc[-int(self.H/freq_ratio+nhist):,idx])), color = "red", linewidth = 0.5)
+                
+                ax.set_xticks(x)
+                ax.set_xticklabels(self.YY_095_agg.iloc[-int(self.H/freq_ratio+nhist):,idx].index)
+                plt.setp(ax.get_xticklabels(), rotation=40, horizontalalignment='right')
+
+                #plt.axvline(x= forecast_start,  color='black', ls='--', lw=0.5)
                 title = "Mean and 90% and 68% CI of: " + variable
                 plt.title(title)
                 plt.xlabel('Date')
