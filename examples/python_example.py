@@ -5,7 +5,7 @@ io_conditionals = "cond.xlsx"
 io_trans = "trans.xlsx"
 
 H = 96        # forecast horizon
-nsim     = 50  # number of draws from Posterior Density
+nsim     = 100  # number of draws from Posterior Density
 nburn    = 0.5  # number of draws to discard
 nlags = [6,4]
 thining = 1
@@ -18,8 +18,10 @@ model.fit(io_data, io_conditionals, io_trans, hyp = hyp)
 
 model.forecast()
 
-#model.to_excel('out_test.xlsx')
+model.aggregate(frequency = "Q")
+
+#model.to_excel('out_test.xlsx', agg = True)
 
 model.mean_plot(1, variables = "all", save = False, show = True)
 
-model.fanchart(variables = "all", save = False, show = True, agg = False, nhist = 150)
+model.fanchart(variables = "all", save = False, show = True, agg = True, nhist = 10)

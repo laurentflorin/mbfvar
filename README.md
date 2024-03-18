@@ -64,6 +64,40 @@ Generates a fan chart for the specified variables.
 
 ## Input Data
 
+### Frequencies
+
+The model is implemented for the following frequencies:
+
+- Yearly (Y)
+- Quarterly (Q)
+- Monthly (M)
+- Weekly (W)
+- Daily (D)
+
+The frequency ratios are fixed e.g. 
+
+- Y-Q -> frequency ratio = 4
+- Q-M -> frequency ratio = 3
+- M-W -> frequency ratio = 4
+- W-D -> frequency ratio = 5
+
+Hence, Y-W -> frequency ratio = 4*3*4 = 48
+
+If other frequencies than Y,Q,M,W,D are used you will be prompted to enter the frequency ratio yourself.
+
+
+### Data Files
+
+The model takes three excel files as input:
+
+1. History
+   - Containing the historical data 
+2. Conditional Forecasts
+   - Containing the conditional forecasts. Set to exp() 
+3. Transformation
+
+
+
 ## Use in Python
 
 ### Installation
