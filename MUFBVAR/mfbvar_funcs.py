@@ -317,6 +317,57 @@ def mdd_(hyp, YY, spec):
     return mdd, YYact, YYdum, XXact, XXdum
             
 
+def calc_yyact(hyp, YY, spec):
+    """
+
+    Parameters
+    ----------
+    hyp : TYPE
+        DESCRIPTION.
+    YY : TYPE
+        DESCRIPTION.
+    spec : TYPE
+        DESCRIPTION.
+    efficient : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    # Data Specification and setting
+            
+    nlags_  = int(spec[0])      # number of lags   
+    T0      = int(spec[1])      # size of pre-sample 
+    nex_    = int(spec[2])      # number of exogenous vars 1 means intercept only 
+    nv      = int(spec[3])     # number of variables 
+    nobs    = int(spec[4])      # number of observations
+            
+    # Dummy observations
+    
+    #Obtain mean and standard deviation from expanded pre-sample data
+    
+    YY0 = YY[:int(T0+16),:]
+    ybar    =   np.mean(YY0, axis = 0)[:,np.newaxis]
+    sbar    =   np.std(YY0, axis = 0, ddof = 1)[:,np.newaxis] 
+    premom = np.hstack((ybar, sbar))
+    
+    
+    # Create Matrices with dummy observations
+    
+    YYdum, XXdum = varprior(nv, nlags_, nex_, hyp, premom)
+    
+    # Actual observations
+    YYact = YY[T0:T0+nobs, :]
+    XXact = np.zeros((nobs, nv*nlags_))
+    
+    for i in range(nlags_):
+        XXact[:, i*nv:(i+1)*nv] = YY[T0-1-i:T0+nobs-(i+1)]
+        
+    XXact = np.hstack((XXact, np.ones((nobs, 1))))
+    
+    return YYact, YYdum, XXact, XXdum
 
             
             

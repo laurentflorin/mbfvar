@@ -22,7 +22,7 @@ from datetime import datetime
 
 import itertools
 
-from .mfbvar_funcs import mdd_
+from .mfbvar_funcs import calc_yyact
 
 
 #plotting
@@ -768,7 +768,8 @@ class multifrequency_var:
             
             
                 # dummy observations and actual observations
-                mdd, YYact, YYdum, XXact, XXdum = mdd_(self.hyp, YY, spec)
+                #mdd, YYact, YYdum, XXact, XXdum = mdd_(self.hyp, YY, spec)
+                YYact, YYdum, XXact, XXdum = calc_yyact(self.hyp, YY, spec)
                 
                 if (j%self.thining == 0):
                     YYactsim_list[m][int(int((j)/self.thining)),:,:] = YYact[-(freq_ratio_list[m]+1):,:] #TODO
