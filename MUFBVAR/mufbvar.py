@@ -1423,7 +1423,7 @@ class multifrequency_var:
                 YYnow_temp = YYnow[i][1:(self.freq_ratio_list[-1]+1),:self.Nm_list[-1]]
                 YYnow_temp[:, (self.select_m_list[-1] == 1)[0]] = 100 * YYnow_temp[:, (self.select_m_list[-1] == 1)[0]]
                 YYnow_temp[:, (self.select_m_list[-1] == 0)[0]] = np.exp(YYnow_temp[:, (self.select_m_list[-1] == 0)[0]])
-                forecast_draws_temp = copy.copy(forecast_draws_list[-1][i,:,:])
+                forecast_draws_temp = copy.copy(self.forecast_draws_list[-1][i,:,:])
                 forecast_draws_temp[:, (self.select_list[-1] == 1)[0]] = 100 * forecast_draws_temp[:, (self.select_list[-1] == 1)[0]]
                 forecast_draws_temp[:, (self.select_list[-1] == 0)[0]] = np.exp(forecast_draws_temp[:, (self.select_list[-1] == 0)[0]])
 
@@ -1433,7 +1433,7 @@ class multifrequency_var:
                 YY_full_list.append(temp)
         else:
             for i in range(self.nsim):
-                temp = np.vstack((lstate[i,:,:],forecast_draws_list[i,:,:]))
+                temp = np.vstack((lstate[i,:,:],self.forecast_draws_list[i,:,:]))
                 temp = pd.DataFrame(temp, columns = self.varlist_list[-1])
                 temp.index = self.index_list[-1]
                 YY_full_list.append(temp)
