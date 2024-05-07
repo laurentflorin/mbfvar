@@ -149,7 +149,7 @@ class multifrequency_var:
         del YMX_temp
         del YMC_temp 
         
-        input_data = YMX_list.copy()
+        input_data = copy.deepcopy(YMX_list)
         self.input_data = input_data
         
         # Data in the highest frequency: Data we want to temporally disaggregate and/or
@@ -165,7 +165,7 @@ class multifrequency_var:
         select_q.append(pd.read_excel(io_trans, sheet_name = self.frequencies[0]).to_numpy())
         vars_q = YQX_list[0].columns[:]
         
-        input_data_Q =  YQX_list[0].copy()
+        input_data_Q =  copy.deepcopy(YQX_list[0])
         self.input_data_Q = input_data_Q
         
         varlist_list = deque()
@@ -190,7 +190,7 @@ class multifrequency_var:
         for i in range(len(YMX_list)):
             if i > 0:
                 new_list = [item for item in list(itertools.islice(select_m_list, 0, i+1)) if len(item) > 0]
-                select_list.append(np.hstack((np.hstack(new_list), select_q[0])))
+                select_list.append(np.hstack((np.hstack(list(reversed(new_list))), select_q[0])))
                 rev_vars_m = list(itertools.islice(vars_m_list, 0, i+1))
                 rev_vars_m.reverse()
                 varlist_list.append(np.squeeze(np.hstack((np.hstack(rev_vars_m), vars_q)))) 
@@ -884,7 +884,7 @@ class multifrequency_var:
                     if j == 0:
                         #Yq_list.append((np.kron(lstate, np.ones((1,freq_ratio_list[m+1])))).T)
                         YQ0_list.append(YYact)#YQ0_list.append(YYact[:,-Nq_list[m+1]:])
-                        YQ_list.append(np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))[np.product(np.array(nlags_list_[:(m+2)])):,:])
+                        YQ_list.append(np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1))))#[np.product(np.array(nlags_list_[:(m+2)])):,:])
                         #Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
                         T_list.append(YQ_list[m+1].shape[0])
                         
@@ -994,7 +994,7 @@ class multifrequency_var:
                     else:
                         #Yq_list[m+1] = (np.kron(lstate, np.ones((1,freq_ratio_list[m+1])))).T
                         YQ0_list[m+1] = YYact
-                        YQ_list[m+1] = np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))[np.product(np.array(nlags_list_[:(m+2)])):,:]
+                        YQ_list[m+1] = np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.product(np.array(nlags_list_[:(m+2)])):,:]
                         Yq_list[m+1] = YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
                         T_list[m+1] = YQ_list[m+1].shape[0]
                         Tnew_list[m+1] = Tstar_list[m+1]-T_list[m+1]
@@ -1077,6 +1077,7 @@ class multifrequency_var:
         
         
         
+        
     def forecast(self):
         
         
@@ -1102,7 +1103,7 @@ class multifrequency_var:
             #for writing to a forecast w/ history file
             #self.YMh_list[m] = self.YMh_list[m][self.T0_list[m]:-self.freq_ratio_list[m],:]
             #self.varstxt_list = np.hstack((self.YMX.columns, self.YQX.columns))
-            #self.smpltxt =self.YMX.index[self.T0:]
+            #self.smpltxt =self.index[self.T0:]
             
             ###############  
             # Forecasting #
@@ -1159,10 +1160,9 @@ class multifrequency_var:
                     XXpred[h,self.nv_list[m]:-1] = XXpred[h-1, :-self.nv_list[m]-1]
                     XXpred[h, :self.nv_list[m]] = YYpred[h-1, :]
                     #YYpred[h,:] = (XXpred[h,:] @ post_phi + error_pred[h,:])
-                    # TODO add conditional forecasts
                     YYpred[h,:] = (1-self.exc_list[m][h-1,:]) * (XXpred[h,:] @ post_phi + error_pred[h,:]) + self.exc_list[m][h-1,:] * np.nan_to_num(self.YYcond_list[m][h-1,:])
                 
-                YYpred1 = YYpred
+                YYpred1 = copy.deepcopy(YYpred)
                 YYpred = YYpred[1:,:]
                 
 
@@ -1379,6 +1379,7 @@ class multifrequency_var:
         self.YY_084_pd = YY_084_pd
         self.YY_016_pd = YY_016_pd
         
+        
     def aggregate(self, frequency, reset_index = True):
         """
         Aggregates the Mean, Median and quantililes in the highest frequency to the desired frequency.
@@ -1397,12 +1398,6 @@ class multifrequency_var:
         None.
 
         """
-        
-        def find_first_position(arr, numbers, count):
-            for i in range(len(arr) - count + 1):
-                if arr[i] in numbers and all(arr[i] == arr[j] for j in range(i+1, i+count)):
-                    return i
-        
         if self.forecast_draws_list is None :
                 sys.exit("Error: To gaggregate generate forecasts first")
                 
@@ -1410,6 +1405,46 @@ class multifrequency_var:
                 sys.exit("Error: Aggregation currently only implemented for aggregation to yearly and quarterly frequency")
         freq_lf = frequency
         freq_hf = self.frequencies[-1]
+        
+        YY_full_list = deque()
+        YY_full_list_agg = deque()
+        
+        YYnow = copy.copy(self.YYactsim_list[-1])# actual/nowcast
+        lstate = copy.copy(self.lstate_list[-1]) # hf obs for lf vars
+        
+        
+        YMh_len_correction = int(self.YMh_list[-1].shape[0] - lstate[0][:,:-(self.freq_ratio_list[-1])].shape[1])
+        
+        if self.YMh_list[-1].size:
+            for i in range(self.nsim):
+                lstate_temp = lstate[i].T
+                lstate_temp[:, (self.select_q[-1] == 1)[0]] = 100 * lstate_temp[:, (self.select_q[-1] == 1)[0]]
+                lstate_temp[:, (self.select_q[-1] == 0)[0]] = np.exp(lstate_temp[:, (self.select_q[-1]== 0)[0]])
+                YYnow_temp = YYnow[i][1:(self.freq_ratio_list[-1]+1),:self.Nm_list[-1]]
+                YYnow_temp[:, (self.select_m_list[-1] == 1)[0]] = 100 * YYnow_temp[:, (self.select_m_list[-1] == 1)[0]]
+                YYnow_temp[:, (self.select_m_list[-1] == 0)[0]] = np.exp(YYnow_temp[:, (self.select_m_list[-1] == 0)[0]])
+                forecast_draws_temp = copy.copy(forecast_draws_list[-1][i,:,:])
+                forecast_draws_temp[:, (self.select_list[-1] == 1)[0]] = 100 * forecast_draws_temp[:, (self.select_list[-1] == 1)[0]]
+                forecast_draws_temp[:, (self.select_list[-1] == 0)[0]] = np.exp(forecast_draws_temp[:, (self.select_list[-1] == 0)[0]])
+
+                temp = np.vstack((np.vstack((np.hstack((self.YMh_list[-1][YMh_len_correction:,:], lstate_temp[:-(self.freq_ratio_list[-1]), :])), np.hstack((YYnow_temp, lstate_temp[-self.freq_ratio_list[-1]:,:])))), forecast_draws_temp))
+                temp = pd.DataFrame(temp, columns = self.varlist_list[-1])
+                temp.index = self.index_list[-1]
+                YY_full_list.append(temp)
+        else:
+            for i in range(self.nsim):
+                temp = np.vstack((lstate[i,:,:],forecast_draws_list[i,:,:]))
+                temp = pd.DataFrame(temp, columns = self.varlist_list[-1])
+                temp.index = self.index_list[-1]
+                YY_full_list.append(temp)
+        
+        
+        def find_first_position(arr, numbers, count):
+            for i in range(len(arr) - count + 1):
+                if arr[i] in numbers and all(arr[i] == arr[j] for j in range(i+1, i+count)):
+                    return i
+        
+        
                 
         def agg_helper(freq_lf, freq_hf, df):
             # Set the frequency ratio        
@@ -1450,39 +1485,24 @@ class multifrequency_var:
                     start = find_first_position(df.index.month, [1], 20)
             return freq_ratio, start
         
-        freq_ratio, start = agg_helper(freq_lf, freq_hf, self.YY_mean_pd)
-                
-        self.YY_mean_agg = self.YY_mean_pd.iloc[start:,].groupby(self.YY_mean_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
-        self.YY_mean_agg = self.YY_mean_agg.groupby(self.YY_mean_agg.reset_index().index // freq_ratio).mean()
-        self.YY_mean_agg.index =self.YY_mean_pd.iloc[start:,].index[::freq_ratio][:self.YY_mean_agg.shape[0]]
-        self.YY_mean_agg.index = self.YY_mean_agg.index.map(lambda x: x.replace(day=1))
         
-        self.YY_median_agg = self.YY_median_pd.iloc[start:,].groupby(self.YY_median_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
-        self.YY_median_agg = self.YY_median_agg.groupby(self.YY_median_agg.reset_index().index // freq_ratio).mean()
-        self.YY_median_agg.index =self.YY_median_pd.iloc[start:,].index[::freq_ratio][:self.YY_median_agg.shape[0]]
-        self.YY_median_agg.index = self.YY_median_agg.index.map(lambda x: x.replace(day=1))
+        freq_ratio, start = agg_helper(freq_lf, freq_hf, YY_full_list[0])
+        print("Aggregating for each draw")
+        for i in tqdm(range(self.nburn, self.nsim)):
+            temp = YY_full_list[i].iloc[start:,].groupby(YY_full_list[i].iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
+            temp = temp.groupby(temp.reset_index().index // freq_ratio).mean()
+            temp.index = YY_full_list[i].iloc[start:,].index[::freq_ratio][:temp.shape[0]]
+            temp.index = temp.index.map(lambda x: x.replace(day=1))
+            YY_full_list_agg.append(temp)
+            
+        self.YY_mean_agg = pd.concat(YY_full_list_agg).groupby(pd.concat(YY_full_list_agg).index).mean()
+        self.YY_median_agg = pd.concat(YY_full_list_agg).groupby(pd.concat(YY_full_list_agg).index).median()
+        self.YY_095_agg = pd.concat(YY_full_list_agg).groupby(pd.concat(YY_full_list_agg).index).quantile(0.95)
+        self.YY_005_agg = pd.concat(YY_full_list_agg).groupby(pd.concat(YY_full_list_agg).index).quantile(0.05)
+        self.YY_084_agg = pd.concat(YY_full_list_agg).groupby(pd.concat(YY_full_list_agg).index).quantile(0.84)
+        self.YY_016_agg = pd.concat(YY_full_list_agg).groupby(pd.concat(YY_full_list_agg).index).quantile(0.16)
         
-        self.YY_095_agg = self.YY_095_pd.iloc[start:,].groupby(self.YY_095_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
-        self.YY_095_agg = self.YY_095_agg.groupby(self.YY_095_agg.reset_index().index // freq_ratio).mean()
-        self.YY_095_agg.index =self.YY_095_pd.iloc[start:,].index[::freq_ratio][:self.YY_095_agg.shape[0]]
-        self.YY_095_agg.index = self.YY_095_agg.index.map(lambda x: x.replace(day=1))
-        
-        self.YY_005_agg = self.YY_005_pd.iloc[start:,].groupby(self.YY_005_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
-        self.YY_005_agg = self.YY_005_agg.groupby(self.YY_005_agg.reset_index().index // freq_ratio).mean()
-        self.YY_005_agg.index =self.YY_005_pd.iloc[start:,].index[::freq_ratio][:self.YY_005_agg.shape[0]]
-        self.YY_005_agg.index = self.YY_005_agg.index.map(lambda x: x.replace(day=1))
-        
-        self.YY_084_agg = self.YY_084_pd.iloc[start:,].groupby(self.YY_084_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
-        self.YY_084_agg = self.YY_084_agg.groupby(self.YY_084_agg.reset_index().index // freq_ratio).mean()
-        self.YY_084_agg.index =self.YY_084_pd.iloc[start:,].index[::freq_ratio][:self.YY_084_agg.shape[0]]
-        self.YY_084_agg.index = self.YY_084_agg.index.map(lambda x: x.replace(day=1))
-        
-        self.YY_016_agg = self.YY_016_pd.iloc[start:,].groupby(self.YY_016_pd.iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
-        self.YY_016_agg = self.YY_016_agg.groupby(self.YY_016_agg.reset_index().index // freq_ratio).mean()
-        self.YY_016_agg.index =self.YY_016_pd.iloc[start:,].index[::freq_ratio][:self.YY_016_agg.shape[0]]
-        self.YY_016_agg.index = self.YY_016_agg.index.map(lambda x: x.replace(day=1))
-        
-        hist = copy.copy(self.YMX_list)
+        hist = copy.copy(self.input_data)
         hist.appendleft(self.input_data_Q)
         i = 0
         for m in self.frequencies:
@@ -1623,6 +1643,8 @@ class multifrequency_var:
         None.
         """
         plt.ioff()
+        
+        frequency = self.frequencies.index(frequency)
         
         if self.forecast_draws_list is None :
                 sys.exit("Error: To generate traceplots, generate forecasts first")

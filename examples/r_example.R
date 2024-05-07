@@ -4,12 +4,12 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 mufbvar <- import("MUFBVAR.mufbvar")
 
-io_data <- "hist.xlsx"
-io_conditionals <- "cond.xlsx"
+io_data <- "hist_fctest.xlsx"
+io_conditionals <- "cond_fctest.xlsx"
 io_trans <- "trans.xlsx"
 
 H <- 96L        # forecast horizon
-nsim <- 100L  # number of draws from Posterior Density
+nsim <- 20000L  # number of draws from Posterior Density
 nburn <- 0.5  # number of draws to discard
 nlags <- list(6L,4L)
 thining = 1

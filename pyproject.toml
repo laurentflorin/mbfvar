@@ -14,7 +14,8 @@ dependencies = [
 "tqdm",
 "plotly",
 "fanchart",
-"openpyxl"
+"openpyxl",
+"xlsxwriter"
 ]
 requires-python = ">= 3.8"
 authors = [
