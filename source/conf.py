@@ -9,7 +9,7 @@
 project = 'MUFBVAR'
 copyright = '2024, Laurent Florin'
 author = 'Laurent Florin'
-release = '15.05.2024'
+release = '0.0.2'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

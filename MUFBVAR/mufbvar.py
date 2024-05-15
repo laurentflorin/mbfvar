@@ -63,8 +63,7 @@ class multifrequency_var:
         '''
         
 
-        Parameters
-        ----------
+        Parameters:
         frequencies : List of the frequencies of the data, in order lowest to highest 
             "Y", "Q", "M", "W", "D"
         H : Numeric
@@ -80,8 +79,7 @@ class multifrequency_var:
         thining : Numeric
             To save only every nth draw
 
-        Returns
-        -------
+        Returns:
         None.
 
         '''
@@ -1397,8 +1395,7 @@ class multifrequency_var:
         reset_index : boolean
             Schould index be changed to period Index
         ----------
-        Returns
-        -------
+        Returns:
         None.
 
         """
@@ -1552,11 +1549,9 @@ class multifrequency_var:
     def save(self, filename = "mufbvar_model.pkl"):
         """
         
-        Parameters
-        ----------
+        Parameters:
         filename : Path where to save the object. End must be .pkl
-        Returns
-        -------
+        Returns:
         None.
         Saves the MFBVAR Object
         """
@@ -1569,16 +1564,14 @@ class multifrequency_var:
         """
         
 
-        Parameters
-        ----------
+        Parameters:
         agg : Boolean
             Should the aggregated series be saved
-        filname : TYPE
-            DESCRIPTION.
+        filname : Sting
+            file path.
         
 
-        Returns
-        -------
+        Returns:
         None.
 
         """
@@ -1632,8 +1625,7 @@ class multifrequency_var:
     def mean_plot(self,frequency, variables = "all", save = True, name = "Output", show = True):
         
         """
-        Parameters
-        ----------
+        Parameters:
         variable : list of strings
             variables for which the plot should be generated, all if it should be generated for all
         save : boolean
@@ -1642,8 +1634,7 @@ class multifrequency_var:
             If the plots should be saved, path/name not including filetype. The default is None.
         show : boolean
             Whether the plots should be shown. Default is True.
-        Returns
-        -------
+        Returns:
         None.
         """
         plt.ioff()
@@ -1692,8 +1683,7 @@ class multifrequency_var:
 
     def fanchart(self, variables = "all", save = True, name = "Fancharts", show = True, agg = False, nhist = 10):
         """
-        Parameters
-        ----------
+        Parameters:
         variable : list of strings
             variables for which the plot should be generated, all if it should be generated for all
         save : boolean
@@ -1707,8 +1697,7 @@ class multifrequency_var:
         nhist : int
             number of historical periods that should be shown on the plot
             Default is 5
-        Returns
-        -------
+        Returns:
         None.
         """
         
