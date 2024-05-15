@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
+'''
 Created on Thu Nov 25 13:51:47 2021
 
 @author: florinl
-"""
+'''
 
 # Wichtig: äussere schleife muss ziehungsschleife sien. innere schleife muss frequency schleife sein
 #%%
@@ -55,6 +55,9 @@ import copy
 from .cholcov.cholcov_module import cholcovOrEigendecomp
 from .inverse.matrix_inversion import invert_matrix
 
+#documentation
+import pydoc
+
 #%%
 
 class multifrequency_var:
@@ -63,7 +66,8 @@ class multifrequency_var:
         '''
         
 
-        Parameters:
+        Parameters
+        ----------
         frequencies : List of the frequencies of the data, in order lowest to highest 
             "Y", "Q", "M", "W", "D"
         H : Numeric
@@ -79,7 +83,8 @@ class multifrequency_var:
         thining : Numeric
             To save only every nth draw
 
-        Returns:
+        Returns
+        ----------
         None.
 
         '''
@@ -1383,22 +1388,22 @@ class multifrequency_var:
         
         
     def aggregate(self, frequency, reset_index = True):
-        """
+        '''
         Aggregates the Mean, Median and quantililes in the highest frequency to the desired frequency.
         The Function ensures, that we start at the beginning of a Year or Quarter depending on the chosen frequency
         
         Parameters
-        
+        ----------
         frequency : str
             The frequency to which the data should be aggregated to
-            
         reset_index : boolean
             Schould index be changed to period Index
+        
+        Returns
         ----------
-        Returns:
         None.
 
-        """
+        '''
         if self.forecast_draws_list is None :
                 sys.exit("Error: To gaggregate generate forecasts first")
                 
@@ -1547,34 +1552,40 @@ class multifrequency_var:
         self.agg_freq = frequency
     
     def save(self, filename = "mufbvar_model.pkl"):
-        """
-        
-        Parameters:
-        filename : Path where to save the object. End must be .pkl
-        Returns:
-        None.
+        '''
         Saves the MFBVAR Object
-        """
+        
+        Parameters
+        ----------
+        filename : str
+            Path where to save the object. End must be .pkl
+        
+        Returns
+        ----------
+        None.
+        
+        '''
         with open(filename, 'wb') as outp:  # Overwrites any existing file.
             pickle.dump(self, outp, pickle.HIGHEST_PROTOCOL)
             
             
     
     def to_excel(self, filename, agg = False):
-        """
+        '''
+        Writes the results to an excel
         
-
-        Parameters:
+        Parameters
+        ----------
         agg : Boolean
             Should the aggregated series be saved
         filname : Sting
             file path.
         
-
-        Returns:
+        Returns
+        ----------
         None.
 
-        """
+        '''
         
         if self.forecast_draws_list is None :
                 sys.exit("Error: To generate traceplots, generate forecasts first")
@@ -1624,8 +1635,9 @@ class multifrequency_var:
         
     def mean_plot(self,frequency, variables = "all", save = True, name = "Output", show = True):
         
-        """
-        Parameters:
+        '''
+        Parameters
+        ----------
         variable : list of strings
             variables for which the plot should be generated, all if it should be generated for all
         save : boolean
@@ -1634,9 +1646,12 @@ class multifrequency_var:
             If the plots should be saved, path/name not including filetype. The default is None.
         show : boolean
             Whether the plots should be shown. Default is True.
-        Returns:
+            
+        Returns
+        ----------
         None.
-        """
+        
+        '''
         plt.ioff()
         
         frequency = self.frequencies.index(frequency)
@@ -1682,8 +1697,9 @@ class multifrequency_var:
         
 
     def fanchart(self, variables = "all", save = True, name = "Fancharts", show = True, agg = False, nhist = 10):
-        """
-        Parameters:
+        '''
+        Parameters
+        ----------
         variable : list of strings
             variables for which the plot should be generated, all if it should be generated for all
         save : boolean
@@ -1697,9 +1713,12 @@ class multifrequency_var:
         nhist : int
             number of historical periods that should be shown on the plot
             Default is 5
-        Returns:
+            
+        Returns
+        ----------
         None.
-        """
+        
+        '''
         
         plt.ioff()
         
@@ -1803,4 +1822,4 @@ class multifrequency_var:
                 pdf.close()
         plt.close("all")   
 
-# %%
+pydoc.writedoc('test')
