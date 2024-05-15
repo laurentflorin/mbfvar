@@ -29,3 +29,6 @@ classifiers = [
 [project.urls]
 Repository = "https://gitea.efv.admin.ch/efv_fs/MUFBVAR.git"
 
+[project.scripts]
+generate-docs = "MUFBVAR.generate_docs:generate_docs"
+

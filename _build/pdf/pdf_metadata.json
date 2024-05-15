@@ -1,0 +1,47 @@
+{
+    "GLOBAL_OPTIONS": {
+        "verbose": false,
+        "site_url": "http://127.0.0.1:8000",
+        "debug": false,
+        "debug_target": null,
+        "author": "Laurent Florin",
+        "author_logo": null,
+        "copyright": "2024, Laurent Florin",
+        "disclaimer": null,
+        "cover": true,
+        "cover_title": "MUFBVAR",
+        "cover_subtitle": null,
+        "custom_template_path": "_templates",
+        "theme_handler_path": null,
+        "plugin_handler_path": null,
+        "custom_css_path": null,
+        "toc": true,
+        "toc_numbering": true,
+        "toc_title": "Table of Contents",
+        "toc_level": 4,
+        "cover_images": null,
+        "theme_name": "press",
+        "templates_path": [
+            "_templates"
+        ]
+    },
+    "LOCAL_OPTIONS": {
+        "MUFBVAR": {},
+        "MUFBVAR.cholcov": {},
+        "MUFBVAR.inverse": {},
+        "MUFBVAR.pseudo_inverse": {},
+        "MUFBVAR.solve": {},
+        "index": {},
+        "modules": {},
+        "genindex": {
+            "pdf-build": "False"
+        },
+        "py-modindex": null,
+        "_modules/MUFBVAR/mfbvar_funcs": null,
+        "_modules/MUFBVAR/mufbvar": null,
+        "_modules/index": null,
+        "search": {
+            "pdf-build": "False"
+        }
+    }
+}
