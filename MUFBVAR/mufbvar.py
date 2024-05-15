@@ -55,8 +55,7 @@ import copy
 from .cholcov.cholcov_module import cholcovOrEigendecomp
 from .inverse.matrix_inversion import invert_matrix
 
-#documentation
-import pydoc
+
 
 #%%
 
@@ -1825,4 +1824,3 @@ class multifrequency_var:
                 pdf.close()
         plt.close("all")   
 
-pydoc.writedoc('test')
