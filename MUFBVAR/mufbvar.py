@@ -63,9 +63,10 @@ import pydoc
 class multifrequency_var:
     
     def __init__(self, frequencies, H, nsim, nburn_perc, nlags, thining):
-        '''
         
-
+        '''
+        Used to initiate the model.
+        
         Parameters
         ----------
         frequencies : List of the frequencies of the data, in order lowest to highest 
@@ -83,9 +84,6 @@ class multifrequency_var:
         thining : Numeric
             To save only every nth draw
 
-        Returns
-        ----------
-        None.
 
         '''
         self.frequencies = frequencies
@@ -100,13 +98,24 @@ class multifrequency_var:
     
     
     def fit(self, io_data, io_conditionals, io_trans, hyp):
+        
         '''
-        Save data in excel with a sheet for data in each frequency. Name sheets
-        after frequency: Y,Q,M,W,D
-        Save conditionals for the forecasts for each frequency in one excel. Name sheets
-        after frequency: Y,Q,M,W,D
-        Save transformation in excel with a sheet for each frequency. Name sheets
-        after frequency: Y,Q,M,W,D
+        Estimates the model using the model parameter specified in the initialization. \n
+        Save data in excel with a sheet for data in each frequency. Name sheets after frequency: Y,Q,M,W,D \n
+        Save conditionals for the forecasts for each frequency in one excel. Name sheets after frequency: Y,Q,M,W,D \n
+        Save transformation in excel with a sheet for each frequency. Name sheets after frequency: Y,Q,M,W,D \n
+        
+        Parameters
+        ----------
+        io_data : str 
+            path to excel containing the data
+        io_conditionals : str
+            path to excel containing the conditional forecasts
+        io_trans : str
+            path to excel containing the transformations
+        hyp : list
+            list containing the hyperparameters
+
         '''
         
         self.nex = 1
@@ -1087,6 +1096,11 @@ class multifrequency_var:
         
     def forecast(self):
         
+        '''
+        Method to generate the forecasts in the highest frequency.\n
+        
+        '''
+        
         
         YY_m_list = deque()
         YY_med_list = deque()
@@ -1388,9 +1402,10 @@ class multifrequency_var:
         
         
     def aggregate(self, frequency, reset_index = True):
+        
         '''
-        Aggregates the Mean, Median and quantililes in the highest frequency to the desired frequency.
-        The Function ensures, that we start at the beginning of a Year or Quarter depending on the chosen frequency
+        Aggregates the Mean, Median and quantililes in the highest frequency to the desired frequency. \n
+        The Function ensures, that we start at the beginning of a Year or Quarter depending on the chosen frequency \n
         
         Parameters
         ----------
@@ -1398,10 +1413,6 @@ class multifrequency_var:
             The frequency to which the data should be aggregated to
         reset_index : boolean
             Schould index be changed to period Index
-        
-        Returns
-        ----------
-        None.
 
         '''
         if self.forecast_draws_list is None :
@@ -1552,6 +1563,7 @@ class multifrequency_var:
         self.agg_freq = frequency
     
     def save(self, filename = "mufbvar_model.pkl"):
+        
         '''
         Saves the MFBVAR Object
         
@@ -1560,10 +1572,6 @@ class multifrequency_var:
         filename : str
             Path where to save the object. End must be .pkl
         
-        Returns
-        ----------
-        None.
-        
         '''
         with open(filename, 'wb') as outp:  # Overwrites any existing file.
             pickle.dump(self, outp, pickle.HIGHEST_PROTOCOL)
@@ -1571,6 +1579,7 @@ class multifrequency_var:
             
     
     def to_excel(self, filename, agg = False):
+        
         '''
         Writes the results to an excel
         
@@ -1580,10 +1589,6 @@ class multifrequency_var:
             Should the aggregated series be saved
         filname : Sting
             file path.
-        
-        Returns
-        ----------
-        None.
 
         '''
         
@@ -1636,6 +1641,8 @@ class multifrequency_var:
     def mean_plot(self,frequency, variables = "all", save = True, name = "Output", show = True):
         
         '''
+        Creates cumulative mean plots of the forecasts. If the model has converged the cumulative mean should be stable after burnin.
+        
         Parameters
         ----------
         variable : list of strings
@@ -1647,10 +1654,6 @@ class multifrequency_var:
         show : boolean
             Whether the plots should be shown. Default is True.
             
-        Returns
-        ----------
-        None.
-        
         '''
         plt.ioff()
         
@@ -1697,7 +1700,11 @@ class multifrequency_var:
         
 
     def fanchart(self, variables = "all", save = True, name = "Fancharts", show = True, agg = False, nhist = 10):
+        
         '''
+        Creates fan plots of the desired variables.
+        
+        
         Parameters
         ----------
         variable : list of strings
@@ -1713,11 +1720,7 @@ class multifrequency_var:
         nhist : int
             number of historical periods that should be shown on the plot
             Default is 5
-            
-        Returns
-        ----------
-        None.
-        
+
         '''
         
         plt.ioff()
