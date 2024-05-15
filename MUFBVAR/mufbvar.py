@@ -499,7 +499,7 @@ class multifrequency_var:
         print("Total Number of Draws: ",self.nsim)
         
         #Here we start the sample loop, j is the current sample
-        #inside the sample loop we need a loop for the MFBVARS
+        #inside the sample loop we need a loop for the MFBVARS: m
         for j in tqdm(range(self.nsim)):
             for m in range(len(YMh_list)):
                 
@@ -863,7 +863,7 @@ class multifrequency_var:
                 GAMMAu_list[m] = np.vstack((np.eye(Nq_list[m]), np.zeros((p*Nq_list[m],Nq_list[m]))))
                 
                 # Define Measurment equation Matrices
-                LAMBDAs_list[m] = np.vstack((np.hstack((np.zeros((Nm_list[m],Nq_list[m])), np.transpose(phi_mq))),1/freq_ratio*np.hstack((np.tile(np.eye(Nq_list[m]), freq_ratio), np.zeros((Nq_list[m],Nq_list[m]*(p-(freq_ratio-1))))))))
+                LAMBDAs_list[m] = np.vstack((np.hstack((np.zeros((Nm_list[m],Nq_list[m])), np.transpose(phi_mq))),1/freq_ratio_list[m]*np.hstack((np.tile(np.eye(Nq_list[m]), freq_ratio_list[m]), np.zeros((Nq_list[m],Nq_list[m]*(p-(freq_ratio_list[m]-1))))))))
                 
             
                 LAMBDAz_list[m] = np.vstack((np.transpose(phi_mm), np.zeros((Nq_list[m], p*Nm_list[m]))))
@@ -886,15 +886,17 @@ class multifrequency_var:
                         YQ0_list.append(YYact)#YQ0_list.append(YYact[:,-Nq_list[m+1]:])
                         YQ_list.append(np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1))))#[np.product(np.array(nlags_list_[:(m+2)])):,:])
                         #Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
+                        YM_list[m+1] = YM_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)])):,:]
+                        
                         T_list.append(YQ_list[m+1].shape[0])
                         
-                        Tstar_list.append(YM_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)])):].shape[0])
+                        Tstar_list.append(YM_list[m+1].shape[0])
 
                         Tnew_list.append(Tstar_list[m+1]-T_list[m+1])
 
                         
                         YDATA_list.append(np.full((Tstar_list[m+1],nv_list[m+1]), np.nan))
-                        YDATA_list[m+1][:,:Nm_list[m+1]] = YM_list[m+1][-Tstar_list[m+1]:,:]
+                        YDATA_list[m+1][:,:Nm_list[m+1]] = YM_list[m+1]#[-Tstar_list[m+1]:,:]
                         
                         T0_list.append(int(nlags_list_[m+1]))
                         p_list.append(int(nlags_list_[m+1]))
@@ -978,24 +980,26 @@ class multifrequency_var:
                         for kk in range(5):
                             Pt_list[m+1] = GAMMAs_list[m+1] @ Pt_list[m+1] @ GAMMAs_list[m+1].T + GAMMAu_list[m+1] @ sig_qq_list[m+1] @ GAMMAu_list[m+1].T
                         
-                        YM_short = YM_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)])):,:]
+                        #YM_short = YM_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)])):,:]
                         
                         # Lagged HF observations
                         Zm_list.append(np.zeros((nobs_list[m+1], Nm_list[m+1]*p_list[m+1])))
                         for k in range(p_list[m+1]):
-                            Zm_list[m+1][:, k * Nm_list[m+1]:(k+1)*Nm_list[m+1]] = YM_short[T0_list[m+1]-(k+1):T0_list[m+1]+nobs_list[m+1]-(k+1),:]
-                        
+                            Zm_list[m+1][:, k * Nm_list[m+1]:(k+1)*Nm_list[m+1]] = YM_list[m+1][T0_list[m+1]-(k+1):T0_list[m+1]+nobs_list[m+1]-(k+1),:]
                         # Observations in Monthly Freq
                         
-                        #Ym_list.append(YM_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
-                        Ym_list.append(YM_short[T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])    
+                        Ym_list.append(YM_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
+                        #Ym_list.append(YM_list[m+1][:nobs_list[m+1]+T0_list[m+1],:])    
+                        #Yq_list.append(YQ_list[m+1])#
                         Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
+                        
+                        
                         
                     else:
                         #Yq_list[m+1] = (np.kron(lstate, np.ones((1,freq_ratio_list[m+1])))).T
                         YQ0_list[m+1] = YYact
                         YQ_list[m+1] = np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.product(np.array(nlags_list_[:(m+2)])):,:]
-                        Yq_list[m+1] = YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
+                        Yq_list[m+1] = YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]#YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
                         T_list[m+1] = YQ_list[m+1].shape[0]
                         Tnew_list[m+1] = Tstar_list[m+1]-T_list[m+1]
                         
