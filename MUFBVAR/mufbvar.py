@@ -19,6 +19,7 @@ from scipy.stats import invwishart
 import pandas as pd
 from scipy.stats import multivariate_normal
 from datetime import datetime
+from pandas.tseries.offsets import Week , MonthBegin, QuarterBegin, Day
 
 import itertools
 
@@ -43,8 +44,6 @@ import plotly.io as pio
 pio.renderers.default='browser'
 import plotly.express as px
 
-import fanchart
-
 #to save objects
 import pickle
 import copy
@@ -61,32 +60,24 @@ from .inverse.matrix_inversion import invert_matrix
 
 class multifrequency_var:
     
-    def __init__(self, frequencies, H, nsim, nburn_perc, nlags, thining):
+    def __init__(self, nsim, nburn_perc, nlags, thining):
         
         '''
         Used to initiate the model.
         
         Parameters
         ----------
-        frequencies : List of the frequencies of the data, in order lowest to highest 
-            "Y", "Q", "M", "W", "D"
-        H : Numeric
-            Forecast Horizon in the highest frequency
         nsim : Numeric
             Number of simulations
         nburn_perc : numeric
             Between 0 and 1, proportion of simulations to throw away as burn in.
         nlags : numeric
             Number of lags in the highest frequency
-        forecast_frequencies : 
-            "all" or "highest"
         thining : Numeric
             To save only every nth draw
 
 
         '''
-        self.frequencies = frequencies
-        self.H = H
         self.nsim = nsim
         self.nburn_perc = nburn_perc
         self.nlags = nlags
@@ -96,223 +87,68 @@ class multifrequency_var:
         
     
     
-    def fit(self, io_data, io_conditionals, io_trans, hyp):
+    def fit(self, mufbvar_data, hyp):
         
         '''
         Estimates the model using the model parameter specified in the initialization. \n
-        Save data in excel with a sheet for data in each frequency. Name sheets after frequency: Y,Q,M,W,D \n
-        Save conditionals for the forecasts for each frequency in one excel. Name sheets after frequency: Y,Q,M,W,D \n
-        Save transformation in excel with a sheet for each frequency. Name sheets after frequency: Y,Q,M,W,D \n
+        And the data provided. 
         
         Parameters
         ----------
-        io_data : str 
-            path to excel containing the data
-        io_conditionals : str
-            path to excel containing the conditional forecasts
-        io_trans : str
-            path to excel containing the transformations
+        mufbvar_data : mufbvar_data class object 
+            data in the form of a mufbvar_data class object
         hyp : list
-            list containing the hyperparameters
+            list containing the hyperparameters\n
+            1. overall tightness\n
+            2. scaling down the variance for the coefficients of a distant lag\n
+            3. number of observations used for obtaining the prior for the covariance matrix of error terms\n
+            4. tuning parameter for coefficients for constant\n
+            5. tuning parameter for the covariance between coefficients\n
 
         '''
         
         self.nex = 1
         self.hyp = hyp
         
-        # We start by initializing all the matrices for all the frequencies
-        # Then we performe one draw per MFBVAR (at each frequency), inclusive
-        # the nowcast
+        # data from mufbvar_data
+        
+        YMX_list = mufbvar_data.YMX_list
+        YM0_list = mufbvar_data.YM0_list
+        select_m_list = mufbvar_data.select_m_list
+        vars_m_list = mufbvar_data.vars_m_list
+        YMh_list = mufbvar_data.YMh_list
+        exc_list = mufbvar_data.exc_list
+        index_list = mufbvar_data.index_list
+        frequencies = mufbvar_data.frequencies
+        self.frequencies = frequencies
+        YQX_list = mufbvar_data.YQX_list
+        YQ0_list = mufbvar_data.YQ0_list
+        select_q = mufbvar_data.select_q
+        input_data_Q =  mufbvar_data.input_data_Q
+        self.input_data_Q = input_data_Q
+        varlist_list = mufbvar_data.varlist_list
+        select_list = mufbvar_data.select_list
+        select_c_list = mufbvar_data.select_c_list
+        Nm_list = mufbvar_data.Nm_list
+        nv_list = mufbvar_data.nv_list
+        Nq_list = mufbvar_data.Nq_list
+        select_list_sep = mufbvar_data.select_list_sep
+        freq_ratio_list = mufbvar_data.freq_ratio_list
+        YQ_list = mufbvar_data.YQ_list
+        Tstar_list = mufbvar_data.Tstar_list
+        T_list = mufbvar_data.T_list
+        YDATA_list = mufbvar_data.YDATA_list
+        YM_list = mufbvar_data.YM_list
+        input_data = mufbvar_data.input_data
+        self.input_data = input_data
         
         nburn = round((self.nburn_perc)*self.nsim)
         self.nburn = nburn
-        
-        
-    
-            
-        
-        # Load Data
-        # create a list with the higher frequency data (frequency 2 to K)
-        # these are the higher frequency data used in each MFBVAR
-        
-        YMX_list = deque()
-        YM0_list = deque()
-        YMC_list = deque()
-        select_m_list = deque()
-        vars_m_list = deque()
-        YMh_list = deque()
-        exc_list = deque()
-        index_list = deque()
-        
-        
-        for freq in range(1,len(self.frequencies)):
-            freq = self.frequencies[freq]
-            YMX_temp = pd.read_excel(io_data, sheet_name = freq, index_col = 0)
-            YMX_list.append(YMX_temp)
-            YMC_temp = pd.read_excel(io_conditionals, sheet_name = freq, index_col = 0)
-            YMC_list.append(YMC_temp.to_numpy())
-            exc_list.append(~np.isnan(YMC_list[-1]))
-            YM0_list.append(YMX_temp.to_numpy())
-            select_m_list.append(pd.read_excel(io_trans, sheet_name = freq).to_numpy())
-            vars_m_list.append(YMX_temp.columns[:])
-            YMh_list.append(YMX_temp.to_numpy())
-            index_list.append(YMX_temp.index.append(YMC_temp.index))
-        del YMX_temp
-        del YMC_temp 
-        
-        input_data = copy.deepcopy(YMX_list)
-        self.input_data = input_data
-        
-        # Data in the highest frequency: Data we want to temporally disaggregate and/or
-        # forecast at the higher frequencies
-        # We create a list but only one entry is generated here, the rest are generated later
-        
-        YQX_list = deque()
-        YQ0_list = deque()
-        select_q = deque()
-        
-        YQX_list.append(pd.read_excel(io_data, sheet_name = self.frequencies[0], index_col = 0))
-        YQ0_list.append(YQX_list[-1].to_numpy())
-        select_q.append(pd.read_excel(io_trans, sheet_name = self.frequencies[0]).to_numpy())
-        vars_q = YQX_list[0].columns[:]
-        
-        input_data_Q =  copy.deepcopy(YQX_list[0])
-        self.input_data_Q = input_data_Q
-        
-        varlist_list = deque()
-        select_list = deque()
-        select_c_list =deque()
-        
-        Nm_list = deque()
-        nv_list = deque()
-        Nq_list = deque()
-        Nq_list.append(YQX_list[0].shape[1])
-        for i in range(len(YMX_list)-1):
-            Nq_list.append(YQX_list[0].shape[1] + YMX_list[i].shape[1]) 
-            #Nq_list.append(np.shape(YMX_list[i])[1])
-            if len(select_m_list[i]) == 0:
-                select_q.append( select_q[0])
-            else:
-                select_q.append(np.hstack((select_m_list[i], select_q[0])))
-        
-        
-
-        
-        for i in range(len(YMX_list)):
-            if i > 0:
-                new_list = [item for item in list(itertools.islice(select_m_list, 0, i+1)) if len(item) > 0]
-                select_list.append(np.hstack((np.hstack(list(reversed(new_list))), select_q[0])))
-                rev_vars_m = list(itertools.islice(vars_m_list, 0, i+1))
-                rev_vars_m.reverse()
-                varlist_list.append(np.squeeze(np.hstack((np.hstack(rev_vars_m), vars_q)))) 
-            else:
-                if select_m_list[i].size:
-                    select_list.append(np.hstack((select_m_list[i], select_q[0])))
-                    varlist_list.append(np.hstack((vars_m_list[i], vars_q)))
-                else:
-                    select_list.append(select_q[0])
-                    varlist_list.append(np.squeeze(vars_q))
-            select_c_list.append(-1*(select_list[i]-np.ones(np.shape(select_list[i])[1])))
-            Nm_list.append(int(np.shape(YM0_list[i])[1]))
-            nv_list.append(int(Nm_list[i] + Nq_list[i]))
-        
-        select_list_sep = list(select_q)
-        select_list_sep.extend(select_m_list)
-        
-        freq_ratio_list = deque()
-        
-        for freq in range(1,len(self.frequencies)):
-            freq_lf = self.frequencies[freq-1]
-            freq_hf = self.frequencies[freq]
-            if freq_hf == "Q" and freq_lf == "Y":
-                freq_ratio = 4
-            elif freq_hf == "M" and freq_lf == "Y":
-                freq_ratio = 12
-            elif freq_hf == "W" and freq_lf == "Y":
-                freq_ratio = 48
-            elif freq_hf == "D" and freq_lf == "Y":
-                freq_ratio = 260
-            elif freq_hf == "M" and freq_lf == "Q":
-                freq_ratio = 3
-            elif freq_hf == "W" and freq_lf == "Q":
-                freq_ratio = 12
-            elif freq_hf == "W" and freq_lf == "M":
-                freq_ratio = 4
-            elif freq_hf == "D" and freq_lf == "W":
-                freq_ratio = 5
-                
-            else:
-                print("Higher frequency: ", freq_hf, " Lower Frequency: ", freq_lf, end ='\n')
-                freq_ratio = input("Please enter frequency ratio")
-            
-            freq_ratio_list.append(freq_ratio)
         
         #test if nlags for each step is at least frequency ratio
         for i in range(len(freq_ratio_list)):
             if deque(self.nlags)[i] < freq_ratio_list[i]:
                 sys.exit("The number of lags at each step must be at least as long as the corresponding frequency ratio")
-        
-        # Data Transformations
-        
-        # TODO
-        #YQ0_list[0] = YQ0_list[0]/freq_ratio_list[0] 
-        # Divide by frequnecy ratio so the estimatet latent states
-        # of the lower frequency data in the higher frequency approximately add up to the 
-        # value in the lower frequency (this is a approximation because we work with geometric means)
-        
-        # perform data transformations
-        for i in range(len(YM0_list)):
-            if select_m_list[i].size:
-                YM0_list[i][:,(select_m_list[i] == 1)[0]] = YM0_list[i][:,(select_m_list[i] == 1)[0]]/100
-                YM0_list[i][:,(select_m_list[i] == 0)[0]] = np.log(YM0_list[i][:,(select_m_list[i] == 0)[0]])
-        
-        YQ0_list[0][:,(select_q[0] == 1)[0]] = YQ0_list[0][:,(select_q[0] == 1)[0]]/100
-        YQ0_list[0][:,(select_q[0] == 0)[0]] = np.log(YQ0_list[0][:,(select_q[0] == 0)[0]])
-        
-        for i in range(len(YMC_list)):
-            if select_list[i].size:
-                YMC_list[i][:,(select_list[i] == 1)[0]] = YMC_list[i][:,(select_list[i] == 1)[0]]/100
-                YMC_list[i][:,(select_list[i] == 0)[0]] = np.log(YMC_list[i][:,(select_list[i] == 0)[0]])
-        
-        YM_list = YM0_list
-        YYcond_list = YMC_list
-        
-        YQ_list = deque()
-        YQ_list.append(np.kron(YQ0_list[0], np.ones((freq_ratio_list[0],1))))
-        
-        #YQ = np.kron(YQ0, np.ones((freq_ratio,1))) #4 statt freq_ratio?
-        Tstar_list = deque()
-        T_list = deque()
-        YDATA_list = deque()
-        # TODO Take into account that YDATA gets shorter with each frequency
-        
-        if YM_list[0].size:
-            Tstar_list.append(YM_list[0].shape[0])
-            YDATA_list.append(np.full((Tstar_list[0],nv_list[0]), np.nan))
-            YDATA_list[0][:,:Nm_list[0]] = YM_list[0]
-        else:
-            Tstar_list.append(YQ_list[0].shape[0])
-            YDATA_list.append(np.full((0,nv_list[0]), np.nan))
-        
-    
-        
-        #for i in range(1,len(YM_list)):
-        #    Tstar_list.append(YM_list[i][int(2*freq_ratio_list[i-1]*freq_ratio_list[i]):,:].shape[0])
-        #    YDATA_list.append(np.full((Tstar_list[i],nv_list[i]), np.nan))
-        #    YDATA_list[i][:,:Nm_list[i]] = YM_list[i][int(2*freq_ratio_list[i-1]*freq_ratio_list[i]):,:]
-        
-        T_list.append(YQ_list[0].shape[0])
-        #for freq in range(1,len(self.frequencies)-1):
-        #    T_list.append(np.kron(YMX_list[freq-1], np.ones((freq_ratio_list[freq],1))).shape[0])
-        
-        
-        if YDATA_list[0].size:     
-            YDATA_list[0][:T_list[0],Nm_list[0]:] = YQ_list[0]   
-        else:
-            YDATA_list[0] = YQ_list[0] 
-        
-        # The other entries of YDATA change with every draw and have to be filled 
-        # at every iteration
         
         # fit the model
         ###############
@@ -1034,20 +870,14 @@ class multifrequency_var:
             self.XXactsim = XXactsim_list[-1]
             self.Phip = Phip_list[-1]
             self.Sigmap = Sigmap_list[-1]
-            #self.lstate = lstate
-            #self.latent_draws = lstate_list[-1]
-            
             self.YDATA = YDATA_list[-1]
             self.select_q = select_q
             self.select_m = select_m_list[-1]
             self.select = select_list[-1]
             self.varlist = varlist_list[-1]
             self.Nm = Nm_list[-1]
-            #self.Nq_list[-1] = Nq_list[-1]
             self.nv = nv_list[-1]
-            self.YYcond = YYcond_list[-1]
             self.freq_ratio = freq_ratio_list[-1]
-            self.YMC = YMC_list[-1]
             self.T = T_list[-1]
             self.Tstar = Tstar_list[-1]
             self.YQX = YQX_list[-1]
@@ -1055,8 +885,6 @@ class multifrequency_var:
             self.YQ = YQ_list[-1]
             self.YM = YM_list[-1]
             self.YMh = YMh_list[-1]
-            self.exc = exc_list[-1]
-            
             self.Ym = Ym_list[-1]
             self.Yq = Yq_list[-1]
             self.T0 = T0_list[-1]
@@ -1075,8 +903,6 @@ class multifrequency_var:
         self.XXactsim_list = XXactsim_list
         self.Phip_list = Phip_list
         self.Sigmap_list = Sigmap_list
-        self.exc_list = exc_list
-        self.YYcond_list = YYcond_list
         self.select_list = select_list
         self.Tnew_list = Tnew_list
         self.Ym_list = Ym_list
@@ -1093,14 +919,83 @@ class multifrequency_var:
         
         
         
-    def forecast(self):
+    def forecast(self, H, conditionals = None):
         
         '''
         Method to generate the forecasts in the highest frequency.\n
         
+        Parameters
+        ----------
+        H : int
+            Forecast horizon in highest frequnecy
+        conditionals : pandas DataFrame or None
+            Conditional forecasts\n
+            column names must be the variable names\n
+            no index needed\n
+            either values or np.nan
+        
         '''
+
+        # First we need to extend the index
+        # depending on the highest frequencies the approach differs
         
+        if self.frequencies[-1] == "D":
+            
+            self.index_list[-1] = self.index_list[-1].append(pd.date_range(start=self.index_list[-1][-1] + Day(), periods=H, freq='D'))
+
+            # Function to check if a month has more than 20 days
+            def has_more_than_20_days(month, dti):
+                return sum(dti.to_period('M') == month) > 20
+
+            # Function to remove the last day of a month
+            def remove_last_day_of_month(month, dti):
+                return dti[~((dti.to_period('M') == month) & (dti.day > 20))]
+
+            # Check each month in extended_dti
+            for month in self.index_list[-1].to_period('M').unique():
+                # If a month has more than 20 days
+                while has_more_than_20_days(month, self.index_list[-1]):
+                    # Remove the last day of that month
+                    self.index_list[-1] = remove_last_day_of_month(month, self.index_list[-1])
+                    # Add an additional day at the end
+                    self.index_list[-1] = self.index_list[-1].append(pd.DatetimeIndex([self.index_list[-1][-1] + Day()]))
         
+        if self.frequencies[-1] == 'W':
+            self.index_list[-1] = self.index_list[-1].append(pd.date_range(start=self.index_list[-1][-1] + Week(), periods=H, freq='W-MON'))
+
+            # Function to check if a month has more than 4 weeks
+            def has_more_than_4_weeks(month, dti):
+                return sum(dti.to_period('M') == month) > 4
+
+            # Function to remove the last week of a month
+            def remove_last_week_of_month(month, dti):
+                return dti[~((dti.to_period('M') == month) & (dti.day > 28))]
+
+            # Check each month in extended_dti
+            for month in self.index_list[-1].to_period('M').unique():
+                # If a month has more than 4 weeks
+                while has_more_than_4_weeks(month, self.index_list[-1]):
+                    # Remove the last week of that month
+                    self.index_list[-1] = remove_last_week_of_month(month, self.index_list[-1])
+                    # Add an additional week at the end
+                    self.index_list[-1] = self.index_list[-1].append(pd.DatetimeIndex([self.index_list[-1][-1] + Week()]))
+                    
+        if self.frequencies[-1] == 'M':
+            self.index_list[-1] = self.index_list[-1].append(pd.date_range(start=self.index_list[-1][-1] + MonthBegin(), periods=12, freq='MS'))
+        
+        if self.frequencies[-1] == 'Q':
+            self.index_list[-1] = self.index_list[-1].append(pd.date_range(start=self.index_list[-1][-1] + QuarterBegin(), periods=H, freq='QS'))
+            
+        
+        # Now we need to look at the conditional forecasts:
+        
+        self.YYcond = pd.DataFrame(np.nan, index =  self.index_list[-1][-H:], columns= self.varlist_list[-1])
+        
+        if conditionals is not None:
+            conditionals.index = self.YYcond.index[:len(conditionals.index)]
+            
+            self.YYcond.update(conditionals) 
+            
         YY_m_list = deque()
         YY_med_list = deque()
         YY_095_list = deque()
@@ -1824,3 +1719,5 @@ class multifrequency_var:
                 pdf.close()
         plt.close("all")   
 
+
+# %%
