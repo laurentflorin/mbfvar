@@ -23,7 +23,8 @@ release = '0.0.2'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'sphinx_markdown_builder'
 ]
 
 templates_path = ['_templates']
@@ -36,3 +37,4 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 html_theme = 'press'
 html_static_path = ['_static']
+
