@@ -21,9 +21,6 @@ for freq in range(len(frequencies)):
             data.append(data_temp)
             
             
-conditionals = pd.DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.05],
-                            'm_2' : [ np.nan, 0.002, 0.01 , 0.01, np.nan, np.nan]})            
-            
             
 data_in = mufbvar_data(data, trans, frequencies)
 
@@ -33,7 +30,10 @@ model =  multifrequency_var(nsim, nburn, nlags ,thining)
 
 model.fit(data_in, hyp = hyp)
 
-model.forecast()
+conditionals = pd.DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.05],
+                            'm_2' : [ np.nan, 0.002, 0.01 , 0.01, np.nan, np.nan]})   
+
+model.forecast(H, conditionals)
 
 model.aggregate(frequency = "Q")
 
