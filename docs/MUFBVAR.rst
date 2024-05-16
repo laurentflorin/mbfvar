@@ -31,6 +31,14 @@ MUFBVAR.mufbvar module
    :undoc-members:
    :show-inheritance:
 
+MUFBVAR.mufbvar\_data module
+----------------------------
+
+.. automodule:: MUFBVAR.mufbvar_data
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 
