@@ -15,14 +15,6 @@ Subpackages
 Submodules
 ----------
 
-MUFBVAR.mfbvar\_funcs module
-----------------------------
-
-.. automodule:: MUFBVAR.mfbvar_funcs
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 MUFBVAR.mufbvar module
 ----------------------
 
@@ -35,6 +27,14 @@ MUFBVAR.mufbvar\_data module
 ----------------------------
 
 .. automodule:: MUFBVAR.mufbvar_data
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+MUFBVAR.mfbvar\_funcs module
+----------------------------
+
+.. automodule:: MUFBVAR.mfbvar_funcs
    :members:
    :undoc-members:
    :show-inheritance:

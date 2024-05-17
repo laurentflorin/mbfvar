@@ -12,7 +12,7 @@ class mufbvar_data:
     
     def __init__(self, data, trans, frequencies):
         
-        '''
+        """
         Class to prepare the data that will be used in the MUFBVAR
         ...
 
@@ -26,7 +26,7 @@ class mufbvar_data:
             1: divided by 100
         frequencies : List of the frequencies of the data, in order lowest to highest 
             "Y", "Q", "M", "W", "D" 
-        '''
+        """
         
         # Creating lists of highfrequency data
         

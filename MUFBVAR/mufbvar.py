@@ -1489,7 +1489,7 @@ class multifrequency_var:
                         self.YY_016_agg.assign(Index= self.YY_016_agg.index.strftime('%Y')).set_index('Index').to_excel(writer,  sheet_name = "16_quantile")
                         
         
-    def mean_plot(self,frequency, variables = "all", save = True, name = "Output", show = True):
+    def mean_plot(self, variables = "all", save = True, name = "Output", show = True):
         
         '''
         Creates cumulative mean plots of the forecasts. If the model has converged the cumulative mean should be stable after burnin.
@@ -1508,29 +1508,28 @@ class multifrequency_var:
         '''
         plt.ioff()
         
-        frequency = self.frequencies.index(frequency)
         
         if self.forecast_draws_list is None :
                 sys.exit("Error: To generate traceplots, generate forecasts first")
         
         if isinstance(variables, str):
             if variables == "all":
-                variables = self.varlist_list[frequency]
+                variables = self.varlist_list[-1]
             else:
                 sys.exit("variables must be either a list of variables or all")
             
             
-        check = set(variables)-set(self.varlist_list[frequency])        
+        check = set(variables)-set(self.varlist_list[-1])        
         if check and not variables == "all":
-            sys.exit(print(check, " not in " , self.varlist_list[frequency]))
+            sys.exit(print(check, " not in " , self.varlist_list[-1]))
         
         if save == True:
             pdf = matplotlib.backends.backend_pdf.PdfPages(name + ".pdf")
             
         for variable in variables:
             
-            idx, = np.where(self.varlist_list[frequency] == variable)
-            lst = list(self.forecast_draws_list[frequency].T)
+            idx, = np.where(self.varlist_list[-1] == variableS)
+            lst = list(self.forecast_draws_list[-1].T)
 
             fig = plt.figure()           
             df = pd.DataFrame(lst[idx[0]].T).expanding().mean()
