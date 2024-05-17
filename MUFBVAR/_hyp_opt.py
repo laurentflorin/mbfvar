@@ -892,10 +892,10 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
     for i in sublists:
         i.insert(2,1)
         hyp.append(i)
-    self.hyp = hyp
-    
     
     
     if save == True:
         with open(name, 'w') as f:
             print(hyp, file=f)
+            
+    return hyp
