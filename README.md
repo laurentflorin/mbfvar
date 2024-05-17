@@ -77,6 +77,15 @@ model.mean_plot(variables = "all", save = False, show = True)
 
 model.fanchart(variables = "all", save = False, show = True, agg = True, nhist = 10)
 
+# Optimizing Hyperparameters
+
+pbounds = {'lambda1_1': (0.001, 20), 'lambda2_1': (0.01, 10), 'lambda4_1': (0.01, 10), 'lambda5_1': (0.01, 10), 'lambda1_2': (0.001, 20), 'lambda2_2': (0.01, 10), 'lambda4_2': (0.01, 10), 'lambda5_2': (0.01, 10)}
+init_points = 3
+n_iter = 8
+nsim = 100
+
+model.update_hyperparameters(data_in, pbounds, init_points, n_iter, nsim, save = False, name = "hyp.txt")
+
 ```
 
 The module can also be used in r, using the reticulate package:
