@@ -75,6 +75,6 @@ class multifrequency_var:
         self.thining = thining
         
     # Imported methods
-    from ._estimation import *
-    from ._plots import *
-    from ._save import *
+    import ._estimation 
+    import ._plots 
+    import ._save 
