@@ -15,7 +15,8 @@ dependencies = [
 "plotly",
 "fanchart",
 "openpyxl",
-"xlsxwriter"
+"xlsxwriter",
+"bayesian-optimization" 
 ]
 requires-python = ">= 3.8"
 authors = [

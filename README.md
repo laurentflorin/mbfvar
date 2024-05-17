@@ -19,8 +19,10 @@ foo@bar:~$ pip install git+https://gitea.efv.admin.ch/efv_fs/MUFBVAR.git
 The module can be used in python
 
 ```python
-from MUFBVAR.mufbvar_data import *
-from MUFBVAR.mufbvar import *
+import MUFBVAR
+import pandas as pd
+import numpy as np
+
 
 io_data = "hist.xlsx"
 
@@ -48,11 +50,11 @@ trans = [np.array((1)), np.array((1,1,1)), np.array((1,1,1,1))]
             
 
 #Initialize data class            
-data_in = mufbvar_data(data, trans, frequencies)
+data_in = MUFBVAR.mufbvar_data(data, trans, frequencies)
 
 
 #Initialize model class    
-model =  multifrequency_var(nsim, nburn, nlags ,thining)
+model =  MUFBVAR.multifrequency_var(nsim, nburn, nlags ,thining)
 
 #Estimate the model
 model.fit(data_in, hyp = hyp)
@@ -75,6 +77,15 @@ model.mean_plot(variables = "all", save = False, show = True)
 
 model.fanchart(variables = "all", save = False, show = True, agg = True, nhist = 10)
 
+# Optimizing Hyperparameters
+
+pbounds = {'lambda1_1': (0.001, 20), 'lambda2_1': (0.01, 10), 'lambda4_1': (0.01, 10), 'lambda5_1': (0.01, 10), 'lambda1_2': (0.001, 20), 'lambda2_2': (0.01, 10), 'lambda4_2': (0.01, 10), 'lambda5_2': (0.01, 10)}
+init_points = 3
+n_iter = 8
+nsim = 100
+
+model.update_hyperparameters(data_in, pbounds, init_points, n_iter, nsim, save = False, name = "hyp.txt")
+
 ```
 
 The module can also be used in r, using the reticulate package:
@@ -84,8 +95,7 @@ library(reticulate)
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
-mufbvar <- import("MUFBVAR.mufbvar")
-mufbvar_data <- import("MUFBVAR.mufbvar_data")
+mufbvar <- import("MUFBVAR")
 pd <- impoty("pandas")
 np <- import("numpy")
 
@@ -115,7 +125,7 @@ trans <- list(np$array((1)), np$array((1,1,1)), np$array((1,1,1,1)))
             
 
 #Initialize data class            
-data_in <- mufbvar_data$mufbvar_data(data, trans, frequencies)
+data_in <- mufbvar$mufbvar_data(data, trans, frequencies)
 
 
 #Initialize model class    
