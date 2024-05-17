@@ -75,6 +75,6 @@ class multifrequency_var:
         self.thining = thining
         
     # Imported methods
-    import _estimation 
-    import _plots 
-    import _save 
+    from ._estimation import fit, forecast, aggregate
+    from ._plots import fanchart, mean_plot
+    from ._save import to_excel, save 
