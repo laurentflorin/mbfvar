@@ -1,5 +1,7 @@
 from MUFBVAR.mufbvar_data import *
-from MUFBVAR import multifrequency_var
+import MUFBVAR
+
+
 io_data = "hist.xlsx"
 
 #Model Specification
