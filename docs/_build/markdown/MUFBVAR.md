@@ -33,57 +33,110 @@ This file contains functions used in mf_bvar_estim
 
 ### MUFBVAR.mfbvar_funcs.calc_yyact(hyp, YY, spec)
 
-* **Parameters:**
-  * **hyp** (*TYPE*) – DESCRIPTION.
-  * **YY** (*TYPE*) – DESCRIPTION.
-  * **spec** (*TYPE*) – DESCRIPTION.
-  * **efficient** (*TYPE*) – DESCRIPTION.
-* **Return type:**
-  None.
+### Parameters
+
+hyp
+: DESCRIPTION.
+
+YY
+: DESCRIPTION.
+
+spec
+: DESCRIPTION.
+
+efficient
+: DESCRIPTION.
+
+### Returns
+
+None.
 
 ### MUFBVAR.mfbvar_funcs.initialize(GAMMAs, GAMMAz, GAMMAc, GAMMAu, LAMBDAs, LAMBDAz, LAMBDAc, LAMBDAu, LAMBDAs_t, LAMBDAz_t, LAMBDAc_t, LAMBDAu_t, sig_qq, sig_mm, sig_qm, sig_mq, Zm, YDATA, init_mean, init_var, spec, Nm)
 
 ### MUFBVAR.mfbvar_funcs.mdd_(hyp, YY, spec)
 
-* **Parameters:**
-  * **hyp** (*TYPE*) – DESCRIPTION.
-  * **YY** (*TYPE*) – DESCRIPTION.
-  * **spec** (*TYPE*) – DESCRIPTION.
-  * **efficient** (*TYPE*) – DESCRIPTION.
-* **Return type:**
-  None.
+### Parameters
+
+hyp
+: DESCRIPTION.
+
+YY
+: DESCRIPTION.
+
+spec
+: DESCRIPTION.
+
+efficient
+: DESCRIPTION.
+
+### Returns
+
+None.
 
 ### MUFBVAR.mfbvar_funcs.prior_init(hyp, YY, spec)
 
-* **Parameters:**
-  * **hyp** (*TYPE*) – DESCRIPTION.
-  * **YY** (*TYPE*) – DESCRIPTION.
-  * **spec** (*TYPE*) – DESCRIPTION.
-* **Returns:**
-  * *Phi_tilde*
-  * *sigma*
+### Parameters
+
+hyp
+: DESCRIPTION.
+
+YY
+: DESCRIPTION.
+
+spec
+: DESCRIPTION.
+
+### Returns
+
+Phi_tilde
+
+sigma
 
 ### MUFBVAR.mfbvar_funcs.prior_pdf(hyp, YY, spec, PHI, SIG)
 
-* **Parameters:**
-  * **hyp** (*TYPE*) – DESCRIPTION.
-  * **YY** (*TYPE*) – DESCRIPTION.
-  * **spec** (*TYPE*) – DESCRIPTION.
-  * **PHI** (*TYPE*) – DESCRIPTION.
-  * **SIG** (*TYPE*) – DESCRIPTION.
-* **Return type:**
-  None.
+### Parameters
+
+hyp
+: DESCRIPTION.
+
+YY
+: DESCRIPTION.
+
+spec
+: DESCRIPTION.
+
+PHI
+: DESCRIPTION.
+
+SIG
+: DESCRIPTION.
+
+### Returns
+
+None.
 
 ### MUFBVAR.mfbvar_funcs.varprior(nv, nlags, nex, hyp, premom)
 
-* **Parameters:**
-  * **nv** (*TYPE*) – numer of variables.
-  * **nlags** (*TYPE*) – number of lags.
-  * **nex** (*TYPE*) – number of exogenous variables inculding intercept.
-  * **hyp** (*TYPE*) – vector of hyperparameters.
-  * **premom** (*TYPE*) – pre-sample moments.
-* **Return type:**
-  None.
+### Parameters
+
+nv
+: numer of variables.
+
+nlags
+: number of lags.
+
+nex
+: number of exogenous variables inculding intercept.
+
+hyp
+: vector of hyperparameters.
+
+premom
+: pre-sample moments.
+
+### Returns
+
+None.
 
 ## MUFBVAR.mufbvar module
 
@@ -101,22 +154,38 @@ Aggregates the Mean, Median and quantililes in the highest frequency to the desi
 
 The Function ensures, that we start at the beginning of a Year or Quarter depending on the chosen frequency
 
-* **Parameters:**
-  * **frequency** (*str*) – The frequency to which the data should be aggregated to
-  * **reset_index** (*boolean*) – Schould index be changed to period Index
+### Parameters
+
+frequency
+: The frequency to which the data should be aggregated to
+
+reset_index
+: Schould index be changed to period Index
 
 #### fanchart(variables='all', save=True, name='Fancharts', show=True, agg=False, nhist=10)
 
 Creates fan plots of the desired variables.
 
-* **Parameters:**
-  * **variable** (*list* *of* *strings*) – variables for which the plot should be generated, all if it should be generated for all
-  * **save** (*boolean*) – Whether the plots should be saved. The default is True.
-  * **name** (*string* *,* *optional*) – If the plots should be saved, path/name not including filetype. The default is None.
-  * **show** (*boolean*) – Whether the plots should be shown. Default is True.
-  * **agg** (*boolean*) – Whether the aggregated values should be shown
-  * **nhist** (*int*) – number of historical periods that should be shown on the plot
-    Default is 5
+### Parameters
+
+variable
+: variables for which the plot should be generated, all if it should be generated for all
+
+save
+: Whether the plots should be saved. The default is True.
+
+name
+: If the plots should be saved, path/name not including filetype. The default is None.
+
+show
+: Whether the plots should be shown. Default is True.
+
+agg
+: Whether the aggregated values should be shown
+
+nhist
+: number of historical periods that should be shown on the plot
+  Default is 5
 
 #### fit(mufbvar_data, hyp)
 
@@ -124,57 +193,76 @@ Estimates the model using the model parameter specified in the initialization.
 
 And the data provided.
 
-* **Parameters:**
-  * **mufbvar_data** (*mufbvar_data class object*) – data in the form of a mufbvar_data class object
-  * **hyp** (*list*) – 
+### Parameters
 
-    list containing the hyperparameters
-    1. overall tightness
-    2. scaling down the variance for the coefficients of a distant lag
-    3. number of observations used for obtaining the prior for the covariance matrix of error terms
-    4. tuning parameter for coefficients for constant
-    5. tuning parameter for the covariance between coefficients
+mufbvar_data
+: data in the form of a mufbvar_data class object
+
+hyp
+: list containing the hyperparameters
+  <br/>
+  1. overall tightness
+  2. scaling down the variance for the coefficients of a distant lag
+  3. number of observations used for obtaining the prior for the covariance matrix of error terms
+  4. tuning parameter for coefficients for constant
+  5. tuning parameter for the covariance between coefficients
 
 #### forecast(H, conditionals=None)
 
 Method to generate the forecasts in the highest frequency.
 
-* **Parameters:**
-  * **H** (*int*) – Forecast horizon in highest frequnecy
-  * **conditionals** (*pandas DataFrame* *or* *None*) – 
+### Parameters
 
-    Conditional forecasts
+H
+: Forecast horizon in highest frequnecy
 
-    column names must be the variable names
-
-    no index needed
-
-    either values or np.nan
+conditionals
+: Conditional forecasts
+  <br/>
+  column names must be the variable names
+  <br/>
+  no index needed
+  <br/>
+  either values or np.nan
 
 #### mean_plot(frequency, variables='all', save=True, name='Output', show=True)
 
 Creates cumulative mean plots of the forecasts. If the model has converged the cumulative mean should be stable after burnin.
 
-* **Parameters:**
-  * **variable** (*list* *of* *strings*) – variables for which the plot should be generated, all if it should be generated for all
-  * **save** (*boolean*) – Whether the plots should be saved. The default is True.
-  * **name** (*string* *,* *optional*) – If the plots should be saved, path/name not including filetype. The default is None.
-  * **show** (*boolean*) – Whether the plots should be shown. Default is True.
+### Parameters
+
+variable
+: variables for which the plot should be generated, all if it should be generated for all
+
+save
+: Whether the plots should be saved. The default is True.
+
+name
+: If the plots should be saved, path/name not including filetype. The default is None.
+
+show
+: Whether the plots should be shown. Default is True.
 
 #### save(filename='mufbvar_model.pkl')
 
 Saves the MFBVAR Object
 
-* **Parameters:**
-  **filename** (*str*) – Path where to save the object. End must be .pkl
+### Parameters
+
+filename
+: Path where to save the object. End must be .pkl
 
 #### to_excel(filename, agg=False)
 
 Writes the results to an excel
 
-* **Parameters:**
-  * **agg** (*Boolean*) – Should the aggregated series be saved
-  * **filname** (*Sting*) – file path.
+### Parameters
+
+agg
+: Should the aggregated series be saved
+
+filname
+: file path.
 
 ## MUFBVAR.mufbvar_data module
 
