@@ -1,5 +1,6 @@
-from MUFBVAR.mufbvar_data import *
 import MUFBVAR
+import pandas as pd
+import numpy as np
 
 
 io_data = "hist.xlsx"
@@ -28,7 +29,7 @@ trans = [np.array((1)), np.array((1,1,1)), np.array((1,1,1,1))]
             
 
 #Initialize data class            
-data_in = mufbvar_data(data, trans, frequencies)
+data_in = MUFBVAR.mufbvar_data(data, trans, frequencies)
 
 
 #Initialize model class    
