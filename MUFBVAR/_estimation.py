@@ -58,8 +58,8 @@ def fit(self, mufbvar_data, hyp):
     ----------
     mufbvar_data : mufbvar_data class object 
         data in the form of a mufbvar_data class object
-    hyp : list
-        list containing the hyperparameters\n
+    hyp : list of list
+        list containing list of the hyperparameters for each frequency step\n
         1. overall tightness\n
         2. scaling down the variance for the coefficients of a distant lag\n
         3. number of observations used for obtaining the prior for the covariance matrix of error terms\n
@@ -73,33 +73,33 @@ def fit(self, mufbvar_data, hyp):
     
     # data from mufbvar_data
     
-    YMX_list = mufbvar_data.YMX_list
-    YM0_list = mufbvar_data.YM0_list
-    select_m_list = mufbvar_data.select_m_list
-    vars_m_list = mufbvar_data.vars_m_list
-    YMh_list = mufbvar_data.YMh_list
-    index_list = mufbvar_data.index_list
-    frequencies = mufbvar_data.frequencies
+    YMX_list = copy.deepcopy(mufbvar_data.YMX_list)
+    YM0_list = copy.deepcopy(mufbvar_data.YM0_list)
+    select_m_list = copy.deepcopy(mufbvar_data.select_m_list)
+    vars_m_list = copy.deepcopy(mufbvar_data.vars_m_list)
+    YMh_list = copy.deepcopy(mufbvar_data.YMh_list)
+    index_list = copy.deepcopy(mufbvar_data.index_list)
+    frequencies = copy.deepcopy(mufbvar_data.frequencies)
     self.frequencies = frequencies
-    YQX_list = mufbvar_data.YQX_list
-    YQ0_list = mufbvar_data.YQ0_list
-    select_q = mufbvar_data.select_q
-    input_data_Q =  mufbvar_data.input_data_Q
+    YQX_list = copy.deepcopy(mufbvar_data.YQX_list)
+    YQ0_list = copy.deepcopy(mufbvar_data.YQ0_list)
+    select_q = copy.deepcopy(mufbvar_data.select_q)
+    input_data_Q =  copy.deepcopy(mufbvar_data.input_data_Q)
     self.input_data_Q = input_data_Q
-    varlist_list = mufbvar_data.varlist_list
-    select_list = mufbvar_data.select_list
-    select_c_list = mufbvar_data.select_c_list
-    Nm_list = mufbvar_data.Nm_list
-    nv_list = mufbvar_data.nv_list
-    Nq_list = mufbvar_data.Nq_list
-    select_list_sep = mufbvar_data.select_list_sep
-    freq_ratio_list = mufbvar_data.freq_ratio_list
-    YQ_list = mufbvar_data.YQ_list
-    Tstar_list = mufbvar_data.Tstar_list
-    T_list = mufbvar_data.T_list
-    YDATA_list = mufbvar_data.YDATA_list
-    YM_list = mufbvar_data.YM_list
-    input_data = mufbvar_data.input_data
+    varlist_list = copy.deepcopy(mufbvar_data.varlist_list)
+    select_list = copy.deepcopy(mufbvar_data.select_list)
+    select_c_list = copy.deepcopy(mufbvar_data.select_c_list)
+    Nm_list = copy.deepcopy(mufbvar_data.Nm_list)
+    nv_list = copy.deepcopy(mufbvar_data.nv_list)
+    Nq_list = copy.deepcopy(mufbvar_data.Nq_list)
+    select_list_sep = copy.deepcopy(mufbvar_data.select_list_sep)
+    freq_ratio_list = copy.deepcopy(mufbvar_data.freq_ratio_list)
+    YQ_list = copy.deepcopy(mufbvar_data.YQ_list)
+    Tstar_list = copy.deepcopy(mufbvar_data.Tstar_list)
+    T_list = copy.deepcopy(mufbvar_data.T_list)
+    YDATA_list = copy.deepcopy(mufbvar_data.YDATA_list)
+    YM_list = copy.deepcopy(mufbvar_data.YM_list)
+    input_data = copy.deepcopy(mufbvar_data.input_data)
     self.input_data = input_data
     
     nburn = round((self.nburn_perc)*self.nsim)
@@ -576,7 +576,7 @@ def fit(self, mufbvar_data, hyp):
         
             # dummy observations and actual observations
             #mdd, YYact, YYdum, XXact, XXdum = mdd_(self.hyp, YY, spec)
-            YYact, YYdum, XXact, XXdum = calc_yyact(self.hyp, YY, spec)
+            YYact, YYdum, XXact, XXdum = calc_yyact(self.hyp[m], YY, spec)
             
             if (j%self.thining == 0):
                 YYactsim_list[m][int(int((j)/self.thining)),:,:] = YYact[-(freq_ratio_list[m]+1):,:] #TODO

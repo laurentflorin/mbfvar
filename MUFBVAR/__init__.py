@@ -38,6 +38,7 @@ class multifrequency_var:
     from ._estimation import fit, forecast, aggregate
     from ._plots import fanchart, mean_plot
     from ._save import to_excel, save
+    from ._hyp_opt import update_hyperparameters
 
     
 class mufbvar_data:
