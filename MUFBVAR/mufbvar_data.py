@@ -10,23 +10,25 @@ import itertools
 
 class mufbvar_data:
     
+    """
+    Class to prepare the data that will be used in the MUFBVAR
+    ...
+
+    Parameters
+    ----------
+    data : list of pandas DataFrames
+        Data of each frequency stored in a pandas DataFrame, all stored in one list
+    trans : list of numpy arrays
+        A separate numpy array for each frequency all stored in a list. /n
+        0: log is taken 
+        1: divided by 100
+    frequencies : List of the frequencies of the data, in order lowest to highest 
+        "Y", "Q", "M", "W", "D" 
+        """
+    
     def __init__(self, data, trans, frequencies):
         
-        """
-        Class to prepare the data that will be used in the MUFBVAR
-        ...
-
-        Parameters
-        ----------
-        data : list of pandas DataFrames
-            Data of each frequency stored in a pandas DataFrame, all stored in one list
-        trans : list of numpy arrays
-            A separate numpy array for each frequency all stored in a list. /n
-            0: log is taken 
-            1: divided by 100
-        frequencies : List of the frequencies of the data, in order lowest to highest 
-            "Y", "Q", "M", "W", "D" 
-        """
+        
         
         # Creating lists of highfrequency data
         
