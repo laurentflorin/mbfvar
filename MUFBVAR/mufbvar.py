@@ -1528,7 +1528,7 @@ class multifrequency_var:
             
         for variable in variables:
             
-            idx, = np.where(self.varlist_list[-1] == variableS)
+            idx, = np.where(self.varlist_list[-1] == variables)
             lst = list(self.forecast_draws_list[-1].T)
 
             fig = plt.figure()           
