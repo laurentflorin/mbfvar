@@ -1,3 +1,52 @@
+import os
+import sys
+
+import numpy as np
+import math
+
+from collections import deque
+
+from scipy.stats import invwishart
+import pandas as pd
+from scipy.stats import multivariate_normal
+from datetime import datetime
+from pandas.tseries.offsets import Week , MonthBegin, QuarterBegin, Day
+
+import itertools
+
+from .mfbvar_funcs import calc_yyact
+#plotting
+import matplotlib.pyplot as plt
+
+#for progressbar
+from tqdm import tqdm
+from functools import partial
+tqdm = partial(tqdm, position = 0, leave=True) # this line does the magic
+
+# for plots
+
+import matplotlib.backends.backend_pdf
+
+import plotly.graph_objects as go
+
+import plotly.io as pio
+pio.renderers.default='browser'
+import plotly.express as px
+
+#to save objects
+import pickle
+import copy
+
+
+
+#from MUFBVAR.pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
+from .cholcov.cholcov_module import cholcovOrEigendecomp
+from .inverse.matrix_inversion import invert_matrix
+
+# for hyperparameter tuning
+from bayes_opt import BayesianOptimization
+
+
 
 def fit(self, mufbvar_data, hyp):
     
@@ -1324,30 +1373,3 @@ def aggregate(self, frequency, reset_index = True):
         self.YY_016_agg.index = index_new
     
     self.agg_freq = frequency
-
-    def update_hyperparameters(self, data, nit, nsim_hyp, save_hyp = False, folder_hyp = None, save_graphs= False, folder_graphs = None):
-        
-        '''
-        Creates fan plots of the desired variables.
-        
-        Parameters
-        ----------
-        variable : list of strings
-            variables for which the plot should be generated, all if it should be generated for all
-        save : boolean
-            Whether the plots should be saved. The default is True.
-        name : string, optional
-            If the plots should be saved, path/name not including filetype. The default is None.
-        show : boolean
-            Whether the plots should be shown. Default is True.
-        agg : boolean
-            Whether the aggregated values should be shown
-        nhist : int
-            number of historical periods that should be shown on the plot
-            Default is 5
-
-        '''
-        
-        def mdd_mufbvar(hyp):
-            self.fit(data, hyp)
-# %%

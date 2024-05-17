@@ -1,6 +1,5 @@
 from MUFBVAR.mufbvar_data import *
-from MUFBVAR.mufbvar import *
-
+from MUFBVAR import multifrequency_var
 io_data = "hist.xlsx"
 
 #Model Specification
@@ -31,7 +30,7 @@ data_in = mufbvar_data(data, trans, frequencies)
 
 
 #Initialize model class    
-model =  multifrequency_var(nsim, nburn, nlags ,thining)
+model =  MUFBVAR.multifrequency_var(nsim, nburn, nlags ,thining)
 
 #Estimate the model
 model.fit(data_in, hyp = hyp)
