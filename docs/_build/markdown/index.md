@@ -5,8 +5,7 @@ contain the root `toctree` directive. -->
 
 # Welcome to MUFBVAR’s documentation!
 
-# Indices and tables
+# Contents:
 
-* [Index](genindex.md)
-* [Module Index](py-modindex.md)
-* [Search Page](search.md)
+* [MUFBVAR](modules.md)
+  * [MUFBVAR package](MUFBVAR.md)

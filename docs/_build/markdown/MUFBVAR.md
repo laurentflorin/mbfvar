@@ -25,119 +25,6 @@
 
 ## Submodules
 
-## MUFBVAR.mfbvar_funcs module
-
-This file contains functions used in mf_bvar_estim
-
-@author: florinl
-
-### MUFBVAR.mfbvar_funcs.calc_yyact(hyp, YY, spec)
-
-### Parameters
-
-hyp
-: DESCRIPTION.
-
-YY
-: DESCRIPTION.
-
-spec
-: DESCRIPTION.
-
-efficient
-: DESCRIPTION.
-
-### Returns
-
-None.
-
-### MUFBVAR.mfbvar_funcs.initialize(GAMMAs, GAMMAz, GAMMAc, GAMMAu, LAMBDAs, LAMBDAz, LAMBDAc, LAMBDAu, LAMBDAs_t, LAMBDAz_t, LAMBDAc_t, LAMBDAu_t, sig_qq, sig_mm, sig_qm, sig_mq, Zm, YDATA, init_mean, init_var, spec, Nm)
-
-### MUFBVAR.mfbvar_funcs.mdd_(hyp, YY, spec)
-
-### Parameters
-
-hyp
-: DESCRIPTION.
-
-YY
-: DESCRIPTION.
-
-spec
-: DESCRIPTION.
-
-efficient
-: DESCRIPTION.
-
-### Returns
-
-None.
-
-### MUFBVAR.mfbvar_funcs.prior_init(hyp, YY, spec)
-
-### Parameters
-
-hyp
-: DESCRIPTION.
-
-YY
-: DESCRIPTION.
-
-spec
-: DESCRIPTION.
-
-### Returns
-
-Phi_tilde
-
-sigma
-
-### MUFBVAR.mfbvar_funcs.prior_pdf(hyp, YY, spec, PHI, SIG)
-
-### Parameters
-
-hyp
-: DESCRIPTION.
-
-YY
-: DESCRIPTION.
-
-spec
-: DESCRIPTION.
-
-PHI
-: DESCRIPTION.
-
-SIG
-: DESCRIPTION.
-
-### Returns
-
-None.
-
-### MUFBVAR.mfbvar_funcs.varprior(nv, nlags, nex, hyp, premom)
-
-### Parameters
-
-nv
-: numer of variables.
-
-nlags
-: number of lags.
-
-nex
-: number of exogenous variables inculding intercept.
-
-hyp
-: vector of hyperparameters.
-
-premom
-: pre-sample moments.
-
-### Returns
-
-None.
-
 ## MUFBVAR.mufbvar module
 
 Created on Thu Nov 25 13:51:47 2021
@@ -269,5 +156,118 @@ filname
 ### *class* MUFBVAR.mufbvar_data.mufbvar_data(data, trans, frequencies)
 
 Bases: `object`
+
+## MUFBVAR.mfbvar_funcs module
+
+This file contains functions used in mf_bvar_estim
+
+@author: florinl
+
+### MUFBVAR.mfbvar_funcs.calc_yyact(hyp, YY, spec)
+
+### Parameters
+
+hyp
+: DESCRIPTION.
+
+YY
+: DESCRIPTION.
+
+spec
+: DESCRIPTION.
+
+efficient
+: DESCRIPTION.
+
+### Returns
+
+None.
+
+### MUFBVAR.mfbvar_funcs.initialize(GAMMAs, GAMMAz, GAMMAc, GAMMAu, LAMBDAs, LAMBDAz, LAMBDAc, LAMBDAu, LAMBDAs_t, LAMBDAz_t, LAMBDAc_t, LAMBDAu_t, sig_qq, sig_mm, sig_qm, sig_mq, Zm, YDATA, init_mean, init_var, spec, Nm)
+
+### MUFBVAR.mfbvar_funcs.mdd_(hyp, YY, spec)
+
+### Parameters
+
+hyp
+: DESCRIPTION.
+
+YY
+: DESCRIPTION.
+
+spec
+: DESCRIPTION.
+
+efficient
+: DESCRIPTION.
+
+### Returns
+
+None.
+
+### MUFBVAR.mfbvar_funcs.prior_init(hyp, YY, spec)
+
+### Parameters
+
+hyp
+: DESCRIPTION.
+
+YY
+: DESCRIPTION.
+
+spec
+: DESCRIPTION.
+
+### Returns
+
+Phi_tilde
+
+sigma
+
+### MUFBVAR.mfbvar_funcs.prior_pdf(hyp, YY, spec, PHI, SIG)
+
+### Parameters
+
+hyp
+: DESCRIPTION.
+
+YY
+: DESCRIPTION.
+
+spec
+: DESCRIPTION.
+
+PHI
+: DESCRIPTION.
+
+SIG
+: DESCRIPTION.
+
+### Returns
+
+None.
+
+### MUFBVAR.mfbvar_funcs.varprior(nv, nlags, nex, hyp, premom)
+
+### Parameters
+
+nv
+: numer of variables.
+
+nlags
+: number of lags.
+
+nex
+: number of exogenous variables inculding intercept.
+
+hyp
+: vector of hyperparameters.
+
+premom
+: pre-sample moments.
+
+### Returns
+
+None.
 
 ## Module contents
