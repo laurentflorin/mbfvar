@@ -125,7 +125,7 @@ model <-  mufbvar$multifrequency_var(nsim, nburn, nlags ,thining)
 model$fit(data_in, hyp = hyp)
 
 #Conditional forecasts
-conditionals <- pd.DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.05],
+conditionals <- pd$DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.05],
                             'm_2' : [ np.nan, 0.002, 0.01 , 0.01, np.nan, np.nan]})   
 
 #Create forecasts in highest frequency
