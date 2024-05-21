@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html  lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>MUFBVAR</title>
+    
+          <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+          <link rel="stylesheet" href="../_static/theme.css " type="text/css" />
+      
+      <!-- sphinx script_files -->
+        <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+
+      
+      <!-- bundled in js (rollup iife) -->
+      <!-- <script src="../_static/theme-vendors.js"></script> -->
+      <script src="../_static/theme.js" defer></script>
+    
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" /> 
+  </head>
+
+  <body>
+    <div id="app">
+    <div class="theme-container" :class="pageClasses"><navbar @toggle-sidebar="toggleSidebar">
+  <router-link to="../index.html" class="home-link">
+    
+      <span class="site-name">MUFBVAR</span>
+    
+  </router-link>
+
+  <div class="links">
+    <navlinks class="can-hide">
+
+
+
+    </navlinks>
+  </div>
+</navbar>
+
+      
+      <div class="sidebar-mask" @click="toggleSidebar(false)">
+      </div>
+        <sidebar @toggle-sidebar="toggleSidebar">
+          
+          <navlinks>
+            
+
+
+
+            
+          </navlinks><div id="searchbox" class="searchbox" role="search">
+  <div class="caption"><span class="caption-text">Quick search</span>
+    <div class="searchformwrapper">
+      <form class="search" action="../search.html" method="get">
+        <input type="text" name="q" />
+        <input type="submit" value="Search" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div><div class="sidebar-links" role="navigation" aria-label="main navigation">
+  
+    <div class="sidebar-group">
+      <p class="caption">
+        <span class="caption-text"><a href="../index.html#welcome-to-mufbvar-s-documentation">Contents:</a></span>
+      </p>
+      <ul class="">
+        
+      </ul>
+    </div>
+  
+</div>
+        </sidebar>
+
+      <page>
+          <div class="body-header" role="navigation" aria-label="navigation">
+  
+  <ul class="breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+    
+      <li><a href="index.html">Module code</a> &raquo;</li>
+    
+    <li>MUFBVAR</li>
+  </ul>
+  
+
+  <ul class="page-nav">
+</ul>
+  
+</div>
+<hr>
+          <div class="content" role="main" v-pre>
+            
+  <h1>Source code for MUFBVAR</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<div class="viewcode-block" id="multifrequency_var">
+<a class="viewcode-back" href="../source/MUFBVAR.html#MUFBVAR.multifrequency_var">[docs]</a>
+<span class="k">class</span> <span class="nc">multifrequency_var</span><span class="p">:</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    MUFBVAR class</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nsim : int</span>
+<span class="sd">        Number of simulations</span>
+<span class="sd">    nburn_perc : numeric</span>
+<span class="sd">        Between 0 and 1, proportion of simulations to throw away as burn in.</span>
+<span class="sd">    nlags : int</span>
+<span class="sd">        Number of lags in the highest frequency</span>
+<span class="sd">    thining : int</span>
+<span class="sd">        To save only every nth draw</span>
+
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsim</span><span class="p">,</span> <span class="n">nburn_perc</span><span class="p">,</span> <span class="n">nlags</span><span class="p">,</span> <span class="n">thining</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsim</span> <span class="o">=</span> <span class="n">nsim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nburn_perc</span> <span class="o">=</span> <span class="n">nburn_perc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlags</span> <span class="o">=</span> <span class="n">nlags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thining</span> <span class="o">=</span> <span class="n">thining</span>
+        
+    <span class="c1"># Imported methods</span>
+    <span class="kn">from</span> <span class="nn">._estimation</span> <span class="kn">import</span> <span class="n">fit</span><span class="p">,</span> <span class="n">forecast</span><span class="p">,</span> <span class="n">aggregate</span>
+    <span class="kn">from</span> <span class="nn">._plots</span> <span class="kn">import</span> <span class="n">fanchart</span><span class="p">,</span> <span class="n">mean_plot</span>
+    <span class="kn">from</span> <span class="nn">._save</span> <span class="kn">import</span> <span class="n">to_excel</span><span class="p">,</span> <span class="n">save</span>
+    <span class="kn">from</span> <span class="nn">._hyp_opt</span> <span class="kn">import</span> <span class="n">update_hyperparameters</span></div>
+
+
+    
+<div class="viewcode-block" id="mufbvar_data">
+<a class="viewcode-back" href="../source/MUFBVAR.html#MUFBVAR.mufbvar_data">[docs]</a>
+<span class="k">class</span> <span class="nc">mufbvar_data</span><span class="p">:</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to prepare the data that will be used in the MUFBVAR</span>
+<span class="sd">    ...</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : list of pandas DataFrames</span>
+<span class="sd">        Data of each frequency stored in a pandas DataFrame, all stored in one list</span>
+<span class="sd">    trans : list of numpy arrays</span>
+<span class="sd">        A separate numpy array for each frequency all stored in a list. /n</span>
+<span class="sd">        0: log is taken </span>
+<span class="sd">        1: divided by 100</span>
+<span class="sd">    frequencies : List of the frequencies of the data, in order lowest to highest </span>
+<span class="sd">        &quot;Y&quot;, &quot;Q&quot;, &quot;M&quot;, &quot;W&quot;, &quot;D&quot; </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="n">frequencies</span><span class="p">):</span>
+        
+        
+        
+        <span class="c1"># Creating lists of highfrequency data</span>
+        
+        <span class="n">YMX_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">YM0_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">select_m_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">vars_m_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">YMh_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">exc_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">index_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">frequencies</span><span class="p">)):</span>
+            <span class="n">YMX_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">YM0_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+            <span class="n">select_m_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trans</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">vars_m_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">[:])</span>
+            <span class="n">YMh_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+            <span class="n">index_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        
+        <span class="n">input_data</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">YMX_list</span><span class="p">)</span>
+        
+        <span class="c1"># Creating list of low frequency data</span>
+        <span class="c1"># Here only the first entry with the lowest frequency data is generated</span>
+        <span class="c1"># The other entries are generated during the estimation</span>
+        
+        <span class="n">YQX_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">YQ0_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">select_q</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        
+        <span class="n">YQX_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">YQ0_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">YQX_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+        <span class="n">select_q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trans</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">vars_q</span> <span class="o">=</span> <span class="n">YQX_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">[:]</span>
+        
+        <span class="n">input_data_Q</span> <span class="o">=</span>  <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">YQX_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        
+        
+        <span class="n">varlist_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">select_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">select_c_list</span> <span class="o">=</span><span class="n">deque</span><span class="p">()</span>
+        
+        <span class="n">Nm_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">nv_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">Nq_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        
+        <span class="n">Nq_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">YQX_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">YMX_list</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">Nq_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">YQX_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">YMX_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> 
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">select_m_list</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">select_q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">select_q</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">select_q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">select_m_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">select_q</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+                
+                
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">YMX_list</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">new_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">islice</span><span class="p">(</span><span class="n">select_m_list</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="n">select_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">new_list</span><span class="p">))),</span> <span class="n">select_q</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+                <span class="n">rev_vars_m</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">islice</span><span class="p">(</span><span class="n">vars_m_list</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+                <span class="n">rev_vars_m</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+                <span class="n">varlist_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">rev_vars_m</span><span class="p">),</span> <span class="n">vars_q</span><span class="p">))))</span> 
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">select_m_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                    <span class="n">select_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">select_m_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">select_q</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+                    <span class="n">varlist_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">vars_m_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">vars_q</span><span class="p">)))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">select_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">select_q</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="n">varlist_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">vars_q</span><span class="p">))</span>
+            <span class="n">Nm_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">YM0_list</span><span class="p">[</span><span class="n">i</span><span class="p">])[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">nv_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">Nm_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">Nq_list</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        
+        <span class="n">select_list_sep</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">select_q</span><span class="p">)</span>
+        <span class="n">select_list_sep</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">select_m_list</span><span class="p">)</span>
+        
+        
+        <span class="c1"># Calculate the frequency ratios</span>
+        
+        <span class="n">freq_ratio_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">freq</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">frequencies</span><span class="p">)):</span>
+            <span class="n">freq_lf</span> <span class="o">=</span> <span class="n">frequencies</span><span class="p">[</span><span class="n">freq</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">freq_hf</span> <span class="o">=</span> <span class="n">frequencies</span><span class="p">[</span><span class="n">freq</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">freq_hf</span> <span class="o">==</span> <span class="s2">&quot;Q&quot;</span> <span class="ow">and</span> <span class="n">freq_lf</span> <span class="o">==</span> <span class="s2">&quot;Y&quot;</span><span class="p">:</span>
+                <span class="n">freq_ratio</span> <span class="o">=</span> <span class="mi">4</span>
+            <span class="k">elif</span> <span class="n">freq_hf</span> <span class="o">==</span> <span class="s2">&quot;M&quot;</span> <span class="ow">and</span> <span class="n">freq_lf</span> <span class="o">==</span> <span class="s2">&quot;Y&quot;</span><span class="p">:</span>
+                <span class="n">freq_ratio</span> <span class="o">=</span> <span class="mi">12</span>
+            <span class="k">elif</span> <span class="n">freq_hf</span> <span class="o">==</span> <span class="s2">&quot;W&quot;</span> <span class="ow">and</span> <span class="n">freq_lf</span> <span class="o">==</span> <span class="s2">&quot;Y&quot;</span><span class="p">:</span>
+                <span class="n">freq_ratio</span> <span class="o">=</span> <span class="mi">48</span>
+            <span class="k">elif</span> <span class="n">freq_hf</span> <span class="o">==</span> <span class="s2">&quot;D&quot;</span> <span class="ow">and</span> <span class="n">freq_lf</span> <span class="o">==</span> <span class="s2">&quot;Y&quot;</span><span class="p">:</span>
+                <span class="n">freq_ratio</span> <span class="o">=</span> <span class="mi">260</span>
+            <span class="k">elif</span> <span class="n">freq_hf</span> <span class="o">==</span> <span class="s2">&quot;M&quot;</span> <span class="ow">and</span> <span class="n">freq_lf</span> <span class="o">==</span> <span class="s2">&quot;Q&quot;</span><span class="p">:</span>
+                <span class="n">freq_ratio</span> <span class="o">=</span> <span class="mi">3</span>
+            <span class="k">elif</span> <span class="n">freq_hf</span> <span class="o">==</span> <span class="s2">&quot;W&quot;</span> <span class="ow">and</span> <span class="n">freq_lf</span> <span class="o">==</span> <span class="s2">&quot;Q&quot;</span><span class="p">:</span>
+                <span class="n">freq_ratio</span> <span class="o">=</span> <span class="mi">12</span>
+            <span class="k">elif</span> <span class="n">freq_hf</span> <span class="o">==</span> <span class="s2">&quot;W&quot;</span> <span class="ow">and</span> <span class="n">freq_lf</span> <span class="o">==</span> <span class="s2">&quot;M&quot;</span><span class="p">:</span>
+                <span class="n">freq_ratio</span> <span class="o">=</span> <span class="mi">4</span>
+            <span class="k">elif</span> <span class="n">freq_hf</span> <span class="o">==</span> <span class="s2">&quot;D&quot;</span> <span class="ow">and</span> <span class="n">freq_lf</span> <span class="o">==</span> <span class="s2">&quot;W&quot;</span><span class="p">:</span>
+                <span class="n">freq_ratio</span> <span class="o">=</span> <span class="mi">5</span>
+                
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Higher frequency: &quot;</span><span class="p">,</span> <span class="n">freq_hf</span><span class="p">,</span> <span class="s2">&quot; Lower Frequency: &quot;</span><span class="p">,</span> <span class="n">freq_lf</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">freq_ratio</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Please enter frequency ratio&quot;</span><span class="p">)</span>
+            
+            <span class="n">freq_ratio_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">freq_ratio</span><span class="p">)</span>
+        
+        
+        <span class="c1">#performe data transformations</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">YM0_list</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">select_m_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                <span class="n">YM0_list</span><span class="p">[</span><span class="n">i</span><span class="p">][:,(</span><span class="n">select_m_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">YM0_list</span><span class="p">[</span><span class="n">i</span><span class="p">][:,(</span><span class="n">select_m_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)]</span><span class="o">/</span><span class="mi">100</span>
+                <span class="n">YM0_list</span><span class="p">[</span><span class="n">i</span><span class="p">][:,(</span><span class="n">select_m_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">YM0_list</span><span class="p">[</span><span class="n">i</span><span class="p">][:,(</span><span class="n">select_m_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)])</span>
+        
+        <span class="n">YQ0_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,(</span><span class="n">select_q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">YQ0_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,(</span><span class="n">select_q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)]</span><span class="o">/</span><span class="mi">100</span>
+        <span class="n">YQ0_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,(</span><span class="n">select_q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">YQ0_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,(</span><span class="n">select_q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)])</span>
+        
+        
+        <span class="n">YM_list</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">YM0_list</span><span class="p">)</span>
+        
+        <span class="c1"># Low frequency data in higher frequency</span>
+        <span class="n">YQ_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">YQ_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">YQ0_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">freq_ratio_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">1</span><span class="p">))))</span>
+        
+        <span class="n">Tstar_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">T_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="n">YDATA_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">YM_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="n">Tstar_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">YM_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">YDATA_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">Tstar_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">nv_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">))</span>
+            <span class="n">YDATA_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,:</span><span class="n">Nm_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">YM_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Tstar_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">YQ_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">YDATA_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="n">nv_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">))</span>
+            
+        <span class="n">T_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">YQ_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="c1">#for freq in range(1,len(self.frequencies)-1):</span>
+        <span class="c1">#    T_list.append(np.kron(YMX_list[freq-1], np.ones((freq_ratio_list[freq],1))).shape[0])</span>
+        
+        
+        <span class="k">if</span> <span class="n">YDATA_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>     
+            <span class="n">YDATA_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="n">T_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">Nm_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]:]</span> <span class="o">=</span> <span class="n">YQ_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>   
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">YDATA_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">YQ_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> 
+            
+        
+        <span class="c1">#attach variables to instance</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">YMX_list</span> <span class="o">=</span> <span class="n">YMX_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">YM0_list</span> <span class="o">=</span> <span class="n">YM0_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">select_m_list</span> <span class="o">=</span> <span class="n">select_m_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vars_m_list</span> <span class="o">=</span> <span class="n">vars_m_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">YMh_list</span> <span class="o">=</span> <span class="n">YMh_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exc_list</span> <span class="o">=</span> <span class="n">exc_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index_list</span> <span class="o">=</span> <span class="n">index_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frequencies</span> <span class="o">=</span> <span class="n">frequencies</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">YQX_list</span> <span class="o">=</span> <span class="n">YQX_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">YQ0_list</span> <span class="o">=</span> <span class="n">YQ0_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">select_q</span> <span class="o">=</span> <span class="n">select_q</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_data_Q</span> <span class="o">=</span>  <span class="n">input_data_Q</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">varlist_list</span> <span class="o">=</span> <span class="n">varlist_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">select_list</span> <span class="o">=</span> <span class="n">select_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">select_c_list</span> <span class="o">=</span> <span class="n">select_c_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nm_list</span> <span class="o">=</span> <span class="n">Nm_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nv_list</span> <span class="o">=</span> <span class="n">nv_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nq_list</span> <span class="o">=</span> <span class="n">Nq_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">select_list_sep</span> <span class="o">=</span> <span class="n">select_list_sep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq_ratio_list</span> <span class="o">=</span> <span class="n">freq_ratio_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">YQ_list</span> <span class="o">=</span> <span class="n">YQ_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Tstar_list</span> <span class="o">=</span> <span class="n">Tstar_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T_list</span> <span class="o">=</span> <span class="n">T_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">YDATA_list</span> <span class="o">=</span> <span class="n">YDATA_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">YM_list</span> <span class="o">=</span> <span class="n">YM_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_data</span> <span class="o">=</span> <span class="n">input_data</span></div>
+
+</pre></div>
+
+          </div>
+          <div class="page-nav">
+            <div class="inner"><ul class="page-nav">
+</ul><div class="footer" role="contentinfo">
+      &#169; Copyright 2024, Laurent Florin.
+    <br>
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a> 0.9.1.
+</div>
+            </div>
+          </div>
+      </page>
+    </div></div>
+    
+    
+  </body>
+</html>
