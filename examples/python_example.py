@@ -63,4 +63,4 @@ init_points = 3
 n_iter = 8
 nsim = 100
 
-model.update_hyperparameters(data_in, pbounds, init_points, n_iter, nsim, save = False, name = "hyp.txt")
+hyp = model.update_hyperparameters(data_in, pbounds, init_points, n_iter, nsim, save = False, name = "hyp.txt")

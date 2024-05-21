@@ -29,5 +29,3 @@ classifiers = [
 ]
 [project.urls]
 Repository = "https://gitea.efv.admin.ch/efv_fs/MUFBVAR.git"
-
-

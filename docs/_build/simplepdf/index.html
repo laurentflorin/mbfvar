@@ -1,0 +1,2692 @@
+<!DOCTYPE html>
+<html data-content_root="./" lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   MUFBVAR 0.0.1 documentation
+  </title>
+  <link href="_static/pygments.css" rel="stylesheet" type="text/css"/>
+  <link href="_static/main.css?v=0eace31b" rel="stylesheet" type="text/css"/>
+  <script src="_static/documentation_options.js">
+  </script>
+  <script src="_static/doctools.js">
+  </script>
+  <script src="_static/sphinx_highlight.js">
+  </script>
+  <link href="genindex.html" rel="index" title="Index"/>
+  <link href="search.html" rel="search" title="Search"/>
+ </head>
+ <body>
+  <article class="dont-break" id="cover">
+   <div class="container">
+    <!-- Logo -->
+    <div class="logo">
+     <p>
+     </p>
+    </div>
+    <!-- Cover middle -->
+    <div class="cover-middle">
+     <div class="title">
+      <h1 class="title-cover">
+       MUFBVAR
+      </h1>
+      <p class="subtitle-cover">
+       Version
+      </p>
+      <span class="meta">
+      </span>
+     </div>
+     <!--
+      <div class="client-logo">
+        <img src="../data/logo_.png" alt="Logotipo">
+      </div>
+      -->
+    </div>
+    <!-- Footer -->
+    <div class="cover-footer">
+     <p>
+     </p>
+    </div>
+   </div>
+  </article>
+  <div aria-label="main navigation" class="sphinxsidebar" role="navigation">
+   <div class="sphinxsidebarwrapper">
+    <div>
+     <h3>
+      <a href="#">
+       Table of Contents
+      </a>
+     </h3>
+     <p class="caption" role="heading">
+      <span class="caption-text">
+       Contents:
+      </span>
+     </p>
+     <ul>
+      <li class="toctree-l1">
+       <a class="reference internal" href="#introduction">
+        Introduction
+       </a>
+       <ul>
+        <li class="toctree-l2">
+         <a class="reference internal" href="#installation">
+          Installation:
+         </a>
+        </li>
+       </ul>
+      </li>
+      <li class="toctree-l1">
+       <a class="reference internal" href="#mufbvar">
+        MUFBVAR
+       </a>
+       <ul>
+        <li class="toctree-l2">
+         <a class="reference internal" href="#mufbvar-package">
+          MUFBVAR package
+         </a>
+        </li>
+       </ul>
+      </li>
+      <li class="toctree-l1">
+       <a class="reference internal" href="#examples">
+        Examples
+       </a>
+       <ul>
+        <li class="toctree-l2">
+         <a class="reference internal" href="#example-in-python">
+          Example in python:
+         </a>
+        </li>
+        <li class="toctree-l2">
+         <a class="reference internal" href="#example-in-r">
+          Example in R:
+         </a>
+        </li>
+       </ul>
+      </li>
+     </ul>
+    </div>
+   </div>
+  </div>
+  <div class="document">
+   <div class="documentwrapper">
+    <div class="bodywrapper">
+     <div class="body" role="main">
+      <section id="welcome-to-mufbvar-s-documentation">
+       <h1>
+        Welcome to MUFBVAR&rsquo;s documentation!
+        <a class="headerlink" href="#welcome-to-mufbvar-s-documentation" title="Link to this heading">
+         &para;
+        </a>
+       </h1>
+       <div class="toctree-wrapper compound">
+        <span id="document-source/intro">
+        </span>
+        <section id="introduction">
+         <h2>
+          Introduction
+          <a class="headerlink" href="#introduction" title="Link to this heading">
+           &para;
+          </a>
+         </h2>
+         <p>
+          <code class="docutils literal notranslate">
+           <span class="pre">
+            MUFBVAR
+           </span>
+          </code>
+          is a module to handel, disaggregate and forecast Multiple frequency data using Bayesian VAR Models.
+         </p>
+         <section id="installation">
+          <h3>
+           Installation:
+           <a class="headerlink" href="#installation" title="Link to this heading">
+            &para;
+           </a>
+          </h3>
+          <p>
+           You can use pip to install the module form Gitea:
+.. code-block:: console
+          </p>
+          <blockquote>
+           <div>
+            <p>
+             <a class="reference external" href="mailto:foo%40bar">
+              foo
+              <span>
+               @
+              </span>
+              bar
+             </a>
+             :~$ pip install git+https://gitea.efv.admin.ch/efv_fs/MUFBVAR.git
+            </p>
+           </div>
+          </blockquote>
+         </section>
+        </section>
+        <span id="document-source/modules">
+        </span>
+        <section id="mufbvar">
+         <h2>
+          MUFBVAR
+          <a class="headerlink" href="#mufbvar" title="Link to this heading">
+           &para;
+          </a>
+         </h2>
+         <div class="toctree-wrapper compound">
+          <span id="document-source/MUFBVAR">
+          </span>
+          <section id="mufbvar-package">
+           <h3>
+            MUFBVAR package
+            <a class="headerlink" href="#mufbvar-package" title="Link to this heading">
+             &para;
+            </a>
+           </h3>
+           <section id="module-MUFBVAR">
+            <span id="module-contents">
+            </span>
+            <h4>
+             Module contents
+             <a class="headerlink" href="#module-MUFBVAR" title="Link to this heading">
+              &para;
+             </a>
+            </h4>
+            <dl class="py class">
+             <dt class="sig sig-object py" id="MUFBVAR.mufbvar_data">
+              <em class="property">
+               <span class="pre">
+                class
+               </span>
+               <span class="w">
+               </span>
+              </em>
+              <span class="sig-prename descclassname">
+               <span class="pre">
+                MUFBVAR.
+               </span>
+              </span>
+              <span class="sig-name descname">
+               <span class="pre">
+                mufbvar_data
+               </span>
+              </span>
+              <span class="sig-paren">
+               (
+              </span>
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 data
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 trans
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 frequencies
+                </span>
+               </span>
+              </em>
+              <span class="sig-paren">
+               )
+              </span>
+              <a class="reference internal" href="_modules/MUFBVAR.html#mufbvar_data">
+               <span class="viewcode-link">
+                <span class="pre">
+                 [source]
+                </span>
+               </span>
+              </a>
+              <a class="headerlink" href="#MUFBVAR.mufbvar_data" title="Link to this definition">
+               &para;
+              </a>
+             </dt>
+             <dd>
+              <p>
+               Bases:
+               <code class="xref py py-class docutils literal notranslate">
+                <span class="pre">
+                 object
+                </span>
+               </code>
+              </p>
+              <p>
+               Class to prepare the data that will be used in the MUFBVAR
+&hellip;
+              </p>
+              <dl class="field-list simple">
+               <dt class="field-odd">
+                Parameters
+                <span class="colon">
+                 :
+                </span>
+               </dt>
+               <dd class="field-odd">
+                <ul class="simple">
+                 <li>
+                  <p>
+                   <strong>
+                    data
+                   </strong>
+                   (
+                   <em>
+                    list
+                   </em>
+                   <em>
+                    of
+                   </em>
+                   <em>
+                    pandas DataFrames
+                   </em>
+                   ) &ndash; Data of each frequency stored in a pandas DataFrame, all stored in one list
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    trans
+                   </strong>
+                   (
+                   <em>
+                    list
+                   </em>
+                   <em>
+                    of
+                   </em>
+                   <em>
+                    numpy arrays
+                   </em>
+                   ) &ndash; A separate numpy array for each frequency all stored in a list. /n
+0: log is taken
+1: divided by 100
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    frequencies
+                   </strong>
+                   (
+                   <em>
+                    List
+                   </em>
+                   <em>
+                    of
+                   </em>
+                   <em>
+                    the frequencies
+                   </em>
+                   <em>
+                    of
+                   </em>
+                   <em>
+                    the data
+                   </em>
+                   <em>
+                    ,
+                   </em>
+                   <em>
+                    in order lowest to highest
+                   </em>
+                   ) &ndash; &ldquo;Y&rdquo;, &ldquo;Q&rdquo;, &ldquo;M&rdquo;, &ldquo;W&rdquo;, &ldquo;D&rdquo;
+                  </p>
+                 </li>
+                </ul>
+               </dd>
+              </dl>
+             </dd>
+            </dl>
+            <dl class="py class">
+             <dt class="sig sig-object py" id="MUFBVAR.multifrequency_var">
+              <em class="property">
+               <span class="pre">
+                class
+               </span>
+               <span class="w">
+               </span>
+              </em>
+              <span class="sig-prename descclassname">
+               <span class="pre">
+                MUFBVAR.
+               </span>
+              </span>
+              <span class="sig-name descname">
+               <span class="pre">
+                multifrequency_var
+               </span>
+              </span>
+              <span class="sig-paren">
+               (
+              </span>
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 nsim
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 nburn_perc
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 nlags
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 thining
+                </span>
+               </span>
+              </em>
+              <span class="sig-paren">
+               )
+              </span>
+              <a class="reference internal" href="_modules/MUFBVAR.html#multifrequency_var">
+               <span class="viewcode-link">
+                <span class="pre">
+                 [source]
+                </span>
+               </span>
+              </a>
+              <a class="headerlink" href="#MUFBVAR.multifrequency_var" title="Link to this definition">
+               &para;
+              </a>
+             </dt>
+             <dd>
+              <p>
+               Bases:
+               <code class="xref py py-class docutils literal notranslate">
+                <span class="pre">
+                 object
+                </span>
+               </code>
+              </p>
+              <p>
+               MUFBVAR class
+              </p>
+              <dl class="field-list simple">
+               <dt class="field-odd">
+                Parameters
+                <span class="colon">
+                 :
+                </span>
+               </dt>
+               <dd class="field-odd">
+                <ul class="simple">
+                 <li>
+                  <p>
+                   <strong>
+                    nsim
+                   </strong>
+                   (
+                   <em>
+                    int
+                   </em>
+                   ) &ndash; Number of simulations
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    nburn_perc
+                   </strong>
+                   (
+                   <em>
+                    numeric
+                   </em>
+                   ) &ndash; Between 0 and 1, proportion of simulations to throw away as burn in.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    nlags
+                   </strong>
+                   (
+                   <em>
+                    int
+                   </em>
+                   ) &ndash; Number of lags in the highest frequency
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    thining
+                   </strong>
+                   (
+                   <em>
+                    int
+                   </em>
+                   ) &ndash; To save only every nth draw
+                  </p>
+                 </li>
+                </ul>
+               </dd>
+              </dl>
+              <dl class="py method">
+               <dt class="sig sig-object py" id="MUFBVAR.multifrequency_var.aggregate">
+                <span class="sig-name descname">
+                 <span class="pre">
+                  aggregate
+                 </span>
+                </span>
+                <span class="sig-paren">
+                 (
+                </span>
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   frequency
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   reset_index
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   True
+                  </span>
+                 </span>
+                </em>
+                <span class="sig-paren">
+                 )
+                </span>
+                <a class="headerlink" href="#MUFBVAR.multifrequency_var.aggregate" title="Link to this definition">
+                 &para;
+                </a>
+               </dt>
+               <dd>
+                <p>
+                 Aggregates the Mean, Median and quantililes in the highest frequency to the desired frequency.
+                </p>
+                <p>
+                 The Function ensures, that we start at the beginning of a Year or Quarter depending on the chosen frequency
+                </p>
+                <dl class="field-list simple">
+                 <dt class="field-odd">
+                  Parameters
+                  <span class="colon">
+                   :
+                  </span>
+                 </dt>
+                 <dd class="field-odd">
+                  <ul class="simple">
+                   <li>
+                    <p>
+                     <strong>
+                      frequency
+                     </strong>
+                     (
+                     <em>
+                      str
+                     </em>
+                     ) &ndash; The frequency to which the data should be aggregated to
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      reset_index
+                     </strong>
+                     (
+                     <em>
+                      boolean
+                     </em>
+                     ) &ndash; Schould index be changed to period Index
+                    </p>
+                   </li>
+                  </ul>
+                 </dd>
+                </dl>
+               </dd>
+              </dl>
+              <dl class="py method">
+               <dt class="sig sig-object py" id="MUFBVAR.multifrequency_var.fanchart">
+                <span class="sig-name descname">
+                 <span class="pre">
+                  fanchart
+                 </span>
+                </span>
+                <span class="sig-paren">
+                 (
+                </span>
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   variables
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   'all'
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   save
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   True
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   name
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   'Fancharts'
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   show
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   True
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   agg
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   False
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   nhist
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   10
+                  </span>
+                 </span>
+                </em>
+                <span class="sig-paren">
+                 )
+                </span>
+                <a class="headerlink" href="#MUFBVAR.multifrequency_var.fanchart" title="Link to this definition">
+                 &para;
+                </a>
+               </dt>
+               <dd>
+                <p>
+                 Creates fan plots of the desired variables.
+                </p>
+                <dl class="field-list simple">
+                 <dt class="field-odd">
+                  Parameters
+                  <span class="colon">
+                   :
+                  </span>
+                 </dt>
+                 <dd class="field-odd">
+                  <ul class="simple">
+                   <li>
+                    <p>
+                     <strong>
+                      variable
+                     </strong>
+                     (
+                     <em>
+                      list
+                     </em>
+                     <em>
+                      of
+                     </em>
+                     <em>
+                      strings
+                     </em>
+                     ) &ndash; variables for which the plot should be generated, all if it should be generated for all
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      save
+                     </strong>
+                     (
+                     <em>
+                      boolean
+                     </em>
+                     ) &ndash; Whether the plots should be saved. The default is True.
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      name
+                     </strong>
+                     (
+                     <em>
+                      string
+                     </em>
+                     <em>
+                      ,
+                     </em>
+                     <em>
+                      optional
+                     </em>
+                     ) &ndash; If the plots should be saved, path/name not including filetype. The default is None.
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      show
+                     </strong>
+                     (
+                     <em>
+                      boolean
+                     </em>
+                     ) &ndash; Whether the plots should be shown. Default is True.
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      agg
+                     </strong>
+                     (
+                     <em>
+                      boolean
+                     </em>
+                     ) &ndash; Whether the aggregated values should be shown
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      nhist
+                     </strong>
+                     (
+                     <em>
+                      int
+                     </em>
+                     ) &ndash; number of historical periods that should be shown on the plot
+Default is 5
+                    </p>
+                   </li>
+                  </ul>
+                 </dd>
+                </dl>
+               </dd>
+              </dl>
+              <dl class="py method">
+               <dt class="sig sig-object py" id="MUFBVAR.multifrequency_var.fit">
+                <span class="sig-name descname">
+                 <span class="pre">
+                  fit
+                 </span>
+                </span>
+                <span class="sig-paren">
+                 (
+                </span>
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   mufbvar_data
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   hyp
+                  </span>
+                 </span>
+                </em>
+                <span class="sig-paren">
+                 )
+                </span>
+                <a class="headerlink" href="#MUFBVAR.multifrequency_var.fit" title="Link to this definition">
+                 &para;
+                </a>
+               </dt>
+               <dd>
+                <p>
+                 Estimates the model using the model parameter specified in the initialization.
+                </p>
+                <p>
+                 And the data provided.
+                </p>
+                <dl class="field-list simple">
+                 <dt class="field-odd">
+                  Parameters
+                  <span class="colon">
+                   :
+                  </span>
+                 </dt>
+                 <dd class="field-odd">
+                  <ul class="simple">
+                   <li>
+                    <p>
+                     <strong>
+                      mufbvar_data
+                     </strong>
+                     (
+                     <em>
+                      mufbvar_data class object
+                     </em>
+                     ) &ndash; data in the form of a mufbvar_data class object
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      hyp
+                     </strong>
+                     (
+                     <em>
+                      list
+                     </em>
+                     <em>
+                      of
+                     </em>
+                     <em>
+                      list
+                     </em>
+                     ) &ndash;
+                     <p>
+                      list containing list of the hyperparameters for each frequency step
+                     </p>
+                     <ol class="arabic simple">
+                      <li>
+                       <p>
+                        overall tightness
+                       </p>
+                      </li>
+                      <li>
+                       <p>
+                        scaling down the variance for the coefficients of a distant lag
+                       </p>
+                      </li>
+                      <li>
+                       <p>
+                        number of observations used for obtaining the prior for the covariance matrix of error terms
+                       </p>
+                      </li>
+                      <li>
+                       <p>
+                        tuning parameter for coefficients for constant
+                       </p>
+                      </li>
+                      <li>
+                       <p>
+                        tuning parameter for the covariance between coefficients
+                       </p>
+                      </li>
+                     </ol>
+                    </p>
+                   </li>
+                  </ul>
+                 </dd>
+                </dl>
+               </dd>
+              </dl>
+              <dl class="py method">
+               <dt class="sig sig-object py" id="MUFBVAR.multifrequency_var.forecast">
+                <span class="sig-name descname">
+                 <span class="pre">
+                  forecast
+                 </span>
+                </span>
+                <span class="sig-paren">
+                 (
+                </span>
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   H
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   conditionals
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   None
+                  </span>
+                 </span>
+                </em>
+                <span class="sig-paren">
+                 )
+                </span>
+                <a class="headerlink" href="#MUFBVAR.multifrequency_var.forecast" title="Link to this definition">
+                 &para;
+                </a>
+               </dt>
+               <dd>
+                <p>
+                 Method to generate the forecasts in the highest frequency.
+                </p>
+                <dl class="field-list simple">
+                 <dt class="field-odd">
+                  Parameters
+                  <span class="colon">
+                   :
+                  </span>
+                 </dt>
+                 <dd class="field-odd">
+                  <ul class="simple">
+                   <li>
+                    <p>
+                     <strong>
+                      H
+                     </strong>
+                     (
+                     <em>
+                      int
+                     </em>
+                     ) &ndash; Forecast horizon in highest frequnecy
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      conditionals
+                     </strong>
+                     (
+                     <em>
+                      pandas DataFrame
+                     </em>
+                     <em>
+                      or
+                     </em>
+                     <em>
+                      None
+                     </em>
+                     ) &ndash;
+                     <p>
+                      Conditional forecasts
+                     </p>
+                     <p>
+                      column names must be the variable names
+                     </p>
+                     <p>
+                      no index needed
+                     </p>
+                     <p>
+                      either values or np.nan
+                     </p>
+                    </p>
+                   </li>
+                  </ul>
+                 </dd>
+                </dl>
+               </dd>
+              </dl>
+              <dl class="py method">
+               <dt class="sig sig-object py" id="MUFBVAR.multifrequency_var.mean_plot">
+                <span class="sig-name descname">
+                 <span class="pre">
+                  mean_plot
+                 </span>
+                </span>
+                <span class="sig-paren">
+                 (
+                </span>
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   variables
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   'all'
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   save
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   True
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   name
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   'Output'
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   show
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   True
+                  </span>
+                 </span>
+                </em>
+                <span class="sig-paren">
+                 )
+                </span>
+                <a class="headerlink" href="#MUFBVAR.multifrequency_var.mean_plot" title="Link to this definition">
+                 &para;
+                </a>
+               </dt>
+               <dd>
+                <p>
+                 Creates cumulative mean plots of the forecasts. If the model has converged the cumulative mean should be stable after burnin.
+                </p>
+                <dl class="field-list simple">
+                 <dt class="field-odd">
+                  Parameters
+                  <span class="colon">
+                   :
+                  </span>
+                 </dt>
+                 <dd class="field-odd">
+                  <ul class="simple">
+                   <li>
+                    <p>
+                     <strong>
+                      variable
+                     </strong>
+                     (
+                     <em>
+                      list
+                     </em>
+                     <em>
+                      of
+                     </em>
+                     <em>
+                      strings
+                     </em>
+                     ) &ndash; variables for which the plot should be generated, all if it should be generated for all
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      save
+                     </strong>
+                     (
+                     <em>
+                      boolean
+                     </em>
+                     ) &ndash; Whether the plots should be saved. The default is True.
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      name
+                     </strong>
+                     (
+                     <em>
+                      string
+                     </em>
+                     <em>
+                      ,
+                     </em>
+                     <em>
+                      optional
+                     </em>
+                     ) &ndash; If the plots should be saved, path/name not including filetype. The default is None.
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      show
+                     </strong>
+                     (
+                     <em>
+                      boolean
+                     </em>
+                     ) &ndash; Whether the plots should be shown. Default is True.
+                    </p>
+                   </li>
+                  </ul>
+                 </dd>
+                </dl>
+               </dd>
+              </dl>
+              <dl class="py method">
+               <dt class="sig sig-object py" id="MUFBVAR.multifrequency_var.save">
+                <span class="sig-name descname">
+                 <span class="pre">
+                  save
+                 </span>
+                </span>
+                <span class="sig-paren">
+                 (
+                </span>
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   filename
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   'mufbvar_model.pkl'
+                  </span>
+                 </span>
+                </em>
+                <span class="sig-paren">
+                 )
+                </span>
+                <a class="headerlink" href="#MUFBVAR.multifrequency_var.save" title="Link to this definition">
+                 &para;
+                </a>
+               </dt>
+               <dd>
+                <p>
+                 Saves the MFBVAR Object
+                </p>
+                <dl class="field-list simple">
+                 <dt class="field-odd">
+                  Parameters
+                  <span class="colon">
+                   :
+                  </span>
+                 </dt>
+                 <dd class="field-odd">
+                  <p>
+                   <strong>
+                    filename
+                   </strong>
+                   (
+                   <em>
+                    str
+                   </em>
+                   ) &ndash; Path where to save the object. End must be .pkl
+                  </p>
+                 </dd>
+                </dl>
+               </dd>
+              </dl>
+              <dl class="py method">
+               <dt class="sig sig-object py" id="MUFBVAR.multifrequency_var.to_excel">
+                <span class="sig-name descname">
+                 <span class="pre">
+                  to_excel
+                 </span>
+                </span>
+                <span class="sig-paren">
+                 (
+                </span>
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   filename
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   agg
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   False
+                  </span>
+                 </span>
+                </em>
+                <span class="sig-paren">
+                 )
+                </span>
+                <a class="headerlink" href="#MUFBVAR.multifrequency_var.to_excel" title="Link to this definition">
+                 &para;
+                </a>
+               </dt>
+               <dd>
+                <p>
+                 Writes the results to an excel
+                </p>
+                <dl class="field-list simple">
+                 <dt class="field-odd">
+                  Parameters
+                  <span class="colon">
+                   :
+                  </span>
+                 </dt>
+                 <dd class="field-odd">
+                  <ul class="simple">
+                   <li>
+                    <p>
+                     <strong>
+                      agg
+                     </strong>
+                     (
+                     <em>
+                      Boolean
+                     </em>
+                     ) &ndash; Should the aggregated series be saved
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      filname
+                     </strong>
+                     (
+                     <em>
+                      Sting
+                     </em>
+                     ) &ndash; file path.
+                    </p>
+                   </li>
+                  </ul>
+                 </dd>
+                </dl>
+               </dd>
+              </dl>
+              <dl class="py method">
+               <dt class="sig sig-object py" id="MUFBVAR.multifrequency_var.update_hyperparameters">
+                <span class="sig-name descname">
+                 <span class="pre">
+                  update_hyperparameters
+                 </span>
+                </span>
+                <span class="sig-paren">
+                 (
+                </span>
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   mufbvar_data
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   pbounds
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   init_points
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   n_iter
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   nsim
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   save
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   False
+                  </span>
+                 </span>
+                </em>
+                ,
+                <em class="sig-param">
+                 <span class="n">
+                  <span class="pre">
+                   name
+                  </span>
+                 </span>
+                 <span class="o">
+                  <span class="pre">
+                   =
+                  </span>
+                 </span>
+                 <span class="default_value">
+                  <span class="pre">
+                   'hyp.txt'
+                  </span>
+                 </span>
+                </em>
+                <span class="sig-paren">
+                 )
+                </span>
+                <a class="headerlink" href="#MUFBVAR.multifrequency_var.update_hyperparameters" title="Link to this definition">
+                 &para;
+                </a>
+               </dt>
+               <dd>
+                <p>
+                 This method uses bayesian optimization to find the hyperparameters with the highest mdd
+                </p>
+                <p>
+                 lambda 1: overall tightness
+                </p>
+                <p>
+                 lambda 2:  scaling down the variance for the coefficients of a distant lag
+                </p>
+                <p>
+                 lambda 3:  number of observations used for obtaining the prior for the covariance matrix of error terms, fixed to 1
+                </p>
+                <p>
+                 lambda 4: . tuning parameter for coefficients for constant
+                </p>
+                <p>
+                 lambda 5:  tuning parameter for the covariance between coefficients
+                </p>
+                <dl class="field-list simple">
+                 <dt class="field-odd">
+                  Parameters
+                  <span class="colon">
+                   :
+                  </span>
+                 </dt>
+                 <dd class="field-odd">
+                  <ul class="simple">
+                   <li>
+                    <p>
+                     <strong>
+                      mufbvar_data
+                     </strong>
+                     (
+                     <em>
+                      mufbvar_data class object
+                     </em>
+                     ) &ndash; data in the form of a mufbvar_data class object
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      pbound
+                     </strong>
+                     (
+                     <em>
+                      dict
+                     </em>
+                     ) &ndash;
+                     <p>
+                      boundries for each hyperparameter
+                     </p>
+                     <p>
+                      two frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1
+three frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2
+four frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2, lambda1_3, lambda2_3, lambda4_3, lambda5_3
+                     </p>
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      init_points
+                     </strong>
+                     (
+                     <em>
+                      int
+                     </em>
+                     ) &ndash; How many steps of random exploration you want to perform
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      n_iter
+                     </strong>
+                     (
+                     <em>
+                      int
+                     </em>
+                     ) &ndash; How many steps of bayesian optimization you want to perform
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      nsim
+                     </strong>
+                     (
+                     <em>
+                      int
+                     </em>
+                     ) &ndash; number of draws in each MUFBVAR estimation
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      save
+                     </strong>
+                     (
+                     <em>
+                      boolean
+                     </em>
+                     ) &ndash; True if you want to save the hyperparameters as a txt
+                    </p>
+                   </li>
+                   <li>
+                    <p>
+                     <strong>
+                      name
+                     </strong>
+                     (
+                     <em>
+                      str
+                     </em>
+                     ) &ndash; path where you want to save the hyperparameters
+                    </p>
+                   </li>
+                  </ul>
+                 </dd>
+                </dl>
+               </dd>
+              </dl>
+             </dd>
+            </dl>
+           </section>
+           <section id="submodules">
+            <h4>
+             Submodules
+             <a class="headerlink" href="#submodules" title="Link to this heading">
+              &para;
+             </a>
+            </h4>
+           </section>
+           <section id="module-MUFBVAR.mfbvar_funcs">
+            <span id="mufbvar-mfbvar-funcs-module">
+            </span>
+            <h4>
+             MUFBVAR.mfbvar_funcs module
+             <a class="headerlink" href="#module-MUFBVAR.mfbvar_funcs" title="Link to this heading">
+              &para;
+             </a>
+            </h4>
+            <p>
+             This file contains functions used in mf_bvar_estim
+            </p>
+            <p>
+             @author: florinl
+            </p>
+            <dl class="py function">
+             <dt class="sig sig-object py" id="MUFBVAR.mfbvar_funcs.calc_yyact">
+              <span class="sig-prename descclassname">
+               <span class="pre">
+                MUFBVAR.mfbvar_funcs.
+               </span>
+              </span>
+              <span class="sig-name descname">
+               <span class="pre">
+                calc_yyact
+               </span>
+              </span>
+              <span class="sig-paren">
+               (
+              </span>
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 hyp
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 YY
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 spec
+                </span>
+               </span>
+              </em>
+              <span class="sig-paren">
+               )
+              </span>
+              <a class="reference internal" href="_modules/MUFBVAR/mfbvar_funcs.html#calc_yyact">
+               <span class="viewcode-link">
+                <span class="pre">
+                 [source]
+                </span>
+               </span>
+              </a>
+              <a class="headerlink" href="#MUFBVAR.mfbvar_funcs.calc_yyact" title="Link to this definition">
+               &para;
+              </a>
+             </dt>
+             <dd>
+              <dl class="field-list simple">
+               <dt class="field-odd">
+                Parameters
+                <span class="colon">
+                 :
+                </span>
+               </dt>
+               <dd class="field-odd">
+                <ul class="simple">
+                 <li>
+                  <p>
+                   <strong>
+                    hyp
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    YY
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    spec
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    efficient
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                </ul>
+               </dd>
+               <dt class="field-even">
+                Return type
+                <span class="colon">
+                 :
+                </span>
+               </dt>
+               <dd class="field-even">
+                <p>
+                 None.
+                </p>
+               </dd>
+              </dl>
+             </dd>
+            </dl>
+            <dl class="py function">
+             <dt class="sig sig-object py" id="MUFBVAR.mfbvar_funcs.initialize">
+              <span class="sig-prename descclassname">
+               <span class="pre">
+                MUFBVAR.mfbvar_funcs.
+               </span>
+              </span>
+              <span class="sig-name descname">
+               <span class="pre">
+                initialize
+               </span>
+              </span>
+              <span class="sig-paren">
+               (
+              </span>
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 GAMMAs
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 GAMMAz
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 GAMMAc
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 GAMMAu
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 LAMBDAs
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 LAMBDAz
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 LAMBDAc
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 LAMBDAu
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 LAMBDAs_t
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 LAMBDAz_t
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 LAMBDAc_t
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 LAMBDAu_t
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 sig_qq
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 sig_mm
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 sig_qm
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 sig_mq
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 Zm
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 YDATA
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 init_mean
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 init_var
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 spec
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 Nm
+                </span>
+               </span>
+              </em>
+              <span class="sig-paren">
+               )
+              </span>
+              <a class="reference internal" href="_modules/MUFBVAR/mfbvar_funcs.html#initialize">
+               <span class="viewcode-link">
+                <span class="pre">
+                 [source]
+                </span>
+               </span>
+              </a>
+              <a class="headerlink" href="#MUFBVAR.mfbvar_funcs.initialize" title="Link to this definition">
+               &para;
+              </a>
+             </dt>
+             <dd>
+             </dd>
+            </dl>
+            <dl class="py function">
+             <dt class="sig sig-object py" id="MUFBVAR.mfbvar_funcs.mdd_">
+              <span class="sig-prename descclassname">
+               <span class="pre">
+                MUFBVAR.mfbvar_funcs.
+               </span>
+              </span>
+              <span class="sig-name descname">
+               <span class="pre">
+                mdd_
+               </span>
+              </span>
+              <span class="sig-paren">
+               (
+              </span>
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 hyp
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 YY
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 spec
+                </span>
+               </span>
+              </em>
+              <span class="sig-paren">
+               )
+              </span>
+              <a class="reference internal" href="_modules/MUFBVAR/mfbvar_funcs.html#mdd_">
+               <span class="viewcode-link">
+                <span class="pre">
+                 [source]
+                </span>
+               </span>
+              </a>
+              <a class="headerlink" href="#MUFBVAR.mfbvar_funcs.mdd_" title="Link to this definition">
+               &para;
+              </a>
+             </dt>
+             <dd>
+              <dl class="field-list simple">
+               <dt class="field-odd">
+                Parameters
+                <span class="colon">
+                 :
+                </span>
+               </dt>
+               <dd class="field-odd">
+                <ul class="simple">
+                 <li>
+                  <p>
+                   <strong>
+                    hyp
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    YY
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    spec
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    efficient
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                </ul>
+               </dd>
+               <dt class="field-even">
+                Return type
+                <span class="colon">
+                 :
+                </span>
+               </dt>
+               <dd class="field-even">
+                <p>
+                 None.
+                </p>
+               </dd>
+              </dl>
+             </dd>
+            </dl>
+            <dl class="py function">
+             <dt class="sig sig-object py" id="MUFBVAR.mfbvar_funcs.prior_init">
+              <span class="sig-prename descclassname">
+               <span class="pre">
+                MUFBVAR.mfbvar_funcs.
+               </span>
+              </span>
+              <span class="sig-name descname">
+               <span class="pre">
+                prior_init
+               </span>
+              </span>
+              <span class="sig-paren">
+               (
+              </span>
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 hyp
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 YY
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 spec
+                </span>
+               </span>
+              </em>
+              <span class="sig-paren">
+               )
+              </span>
+              <a class="reference internal" href="_modules/MUFBVAR/mfbvar_funcs.html#prior_init">
+               <span class="viewcode-link">
+                <span class="pre">
+                 [source]
+                </span>
+               </span>
+              </a>
+              <a class="headerlink" href="#MUFBVAR.mfbvar_funcs.prior_init" title="Link to this definition">
+               &para;
+              </a>
+             </dt>
+             <dd>
+              <dl class="field-list simple">
+               <dt class="field-odd">
+                Parameters
+                <span class="colon">
+                 :
+                </span>
+               </dt>
+               <dd class="field-odd">
+                <ul class="simple">
+                 <li>
+                  <p>
+                   <strong>
+                    hyp
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    YY
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    spec
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                </ul>
+               </dd>
+               <dt class="field-even">
+                Returns
+                <span class="colon">
+                 :
+                </span>
+               </dt>
+               <dd class="field-even">
+                <p>
+                 <ul class="simple">
+                  <li>
+                   <p>
+                    <em>
+                     Phi_tilde
+                    </em>
+                   </p>
+                  </li>
+                  <li>
+                   <p>
+                    <em>
+                     sigma
+                    </em>
+                   </p>
+                  </li>
+                 </ul>
+                </p>
+               </dd>
+              </dl>
+             </dd>
+            </dl>
+            <dl class="py function">
+             <dt class="sig sig-object py" id="MUFBVAR.mfbvar_funcs.prior_pdf">
+              <span class="sig-prename descclassname">
+               <span class="pre">
+                MUFBVAR.mfbvar_funcs.
+               </span>
+              </span>
+              <span class="sig-name descname">
+               <span class="pre">
+                prior_pdf
+               </span>
+              </span>
+              <span class="sig-paren">
+               (
+              </span>
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 hyp
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 YY
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 spec
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 PHI
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 SIG
+                </span>
+               </span>
+              </em>
+              <span class="sig-paren">
+               )
+              </span>
+              <a class="reference internal" href="_modules/MUFBVAR/mfbvar_funcs.html#prior_pdf">
+               <span class="viewcode-link">
+                <span class="pre">
+                 [source]
+                </span>
+               </span>
+              </a>
+              <a class="headerlink" href="#MUFBVAR.mfbvar_funcs.prior_pdf" title="Link to this definition">
+               &para;
+              </a>
+             </dt>
+             <dd>
+              <dl class="field-list simple">
+               <dt class="field-odd">
+                Parameters
+                <span class="colon">
+                 :
+                </span>
+               </dt>
+               <dd class="field-odd">
+                <ul class="simple">
+                 <li>
+                  <p>
+                   <strong>
+                    hyp
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    YY
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    spec
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    PHI
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    SIG
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; DESCRIPTION.
+                  </p>
+                 </li>
+                </ul>
+               </dd>
+               <dt class="field-even">
+                Return type
+                <span class="colon">
+                 :
+                </span>
+               </dt>
+               <dd class="field-even">
+                <p>
+                 None.
+                </p>
+               </dd>
+              </dl>
+             </dd>
+            </dl>
+            <dl class="py function">
+             <dt class="sig sig-object py" id="MUFBVAR.mfbvar_funcs.varprior">
+              <span class="sig-prename descclassname">
+               <span class="pre">
+                MUFBVAR.mfbvar_funcs.
+               </span>
+              </span>
+              <span class="sig-name descname">
+               <span class="pre">
+                varprior
+               </span>
+              </span>
+              <span class="sig-paren">
+               (
+              </span>
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 nv
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 nlags
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 nex
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 hyp
+                </span>
+               </span>
+              </em>
+              ,
+              <em class="sig-param">
+               <span class="n">
+                <span class="pre">
+                 premom
+                </span>
+               </span>
+              </em>
+              <span class="sig-paren">
+               )
+              </span>
+              <a class="reference internal" href="_modules/MUFBVAR/mfbvar_funcs.html#varprior">
+               <span class="viewcode-link">
+                <span class="pre">
+                 [source]
+                </span>
+               </span>
+              </a>
+              <a class="headerlink" href="#MUFBVAR.mfbvar_funcs.varprior" title="Link to this definition">
+               &para;
+              </a>
+             </dt>
+             <dd>
+              <dl class="field-list simple">
+               <dt class="field-odd">
+                Parameters
+                <span class="colon">
+                 :
+                </span>
+               </dt>
+               <dd class="field-odd">
+                <ul class="simple">
+                 <li>
+                  <p>
+                   <strong>
+                    nv
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; numer of variables.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    nlags
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; number of lags.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    nex
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; number of exogenous variables inculding intercept.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    hyp
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; vector of hyperparameters.
+                  </p>
+                 </li>
+                 <li>
+                  <p>
+                   <strong>
+                    premom
+                   </strong>
+                   (
+                   <em>
+                    TYPE
+                   </em>
+                   ) &ndash; pre-sample moments.
+                  </p>
+                 </li>
+                </ul>
+               </dd>
+               <dt class="field-even">
+                Return type
+                <span class="colon">
+                 :
+                </span>
+               </dt>
+               <dd class="field-even">
+                <p>
+                 None.
+                </p>
+               </dd>
+              </dl>
+             </dd>
+            </dl>
+           </section>
+          </section>
+         </div>
+        </section>
+        <span id="document-source/examples">
+        </span>
+        <section id="examples">
+         <h2>
+          Examples
+          <a class="headerlink" href="#examples" title="Link to this heading">
+           &para;
+          </a>
+         </h2>
+         <section id="example-in-python">
+          <h3>
+           Example in python:
+           <a class="headerlink" href="#example-in-python" title="Link to this heading">
+            &para;
+           </a>
+          </h3>
+          <div class="highlight-python notranslate">
+           <div class="highlight">
+            <pre><span></span><span class="kn">import</span> <span class="nn">MUFBVAR</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<span class="n">io_data</span> <span class="o">=</span> <span class="s2">"hist.xlsx"</span>
+
+<span class="c1">#Model Specification</span>
+<span class="n">H</span> <span class="o">=</span> <span class="mi">96</span>        <span class="c1"># forecast horizon</span>
+<span class="n">nsim</span>     <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># number of draws from Posterior Density</span>
+<span class="n">nburn</span>    <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># number of draws to discard</span>
+<span class="n">nlags</span> <span class="o">=</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
+<span class="n">thining</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">hyp</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.09</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.7</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">)</span>
+
+<span class="n">frequencies</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Q"</span><span class="p">,</span><span class="s2">"M"</span><span class="p">,</span><span class="s2">"W"</span><span class="p">]</span>
+
+
+
+<span class="c1"># Load the data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">freq</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">frequencies</span><span class="p">)):</span>
+            <span class="n">freq</span> <span class="o">=</span> <span class="n">frequencies</span><span class="p">[</span><span class="n">freq</span><span class="p">]</span>
+            <span class="n">data_temp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">io_data</span><span class="p">,</span> <span class="n">sheet_name</span> <span class="o">=</span> <span class="n">freq</span><span class="p">,</span> <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_temp</span><span class="p">)</span>
+<span class="c1">#Transformations</span>
+<span class="n">trans</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))]</span>
+
+
+<span class="c1">#Initialize data class</span>
+<span class="n">data_in</span> <span class="o">=</span> <span class="n">MUFBVAR</span><span class="o">.</span><span class="n">mufbvar_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="n">frequencies</span><span class="p">)</span>
+
+
+<span class="c1">#Initialize model class</span>
+<span class="n">model</span> <span class="o">=</span>  <span class="n">MUFBVAR</span><span class="o">.</span><span class="n">multifrequency_var</span><span class="p">(</span><span class="n">nsim</span><span class="p">,</span> <span class="n">nburn</span><span class="p">,</span> <span class="n">nlags</span> <span class="p">,</span><span class="n">thining</span><span class="p">)</span>
+
+<span class="c1">#Estimate the model</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">hyp</span> <span class="o">=</span> <span class="n">hyp</span><span class="p">)</span>
+
+<span class="c1">#Conditional forecasts</span>
+<span class="n">conditionals</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'w_1'</span> <span class="p">:</span> <span class="p">[</span><span class="mf">0.018</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">0.0228</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span>
+                            <span class="s1">'m_2'</span> <span class="p">:</span> <span class="p">[</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">0.002</span><span class="p">,</span> <span class="mf">0.01</span> <span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]})</span>
+
+<span class="c1">#Create forecasts in highest frequency</span>
+<span class="n">model</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">conditionals</span><span class="p">)</span>
+
+<span class="c1">#Aggregate</span>
+<span class="n">model</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">frequency</span> <span class="o">=</span> <span class="s2">"Q"</span><span class="p">)</span>
+
+<span class="c1">#Save results</span>
+<span class="c1">#model.to_excel('out_test.xlsx', agg = True)</span>
+
+<span class="c1">#Plots</span>
+<span class="n">model</span><span class="o">.</span><span class="n">mean_plot</span><span class="p">(</span><span class="n">variables</span> <span class="o">=</span> <span class="s2">"all"</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">show</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">fanchart</span><span class="p">(</span><span class="n">variables</span> <span class="o">=</span> <span class="s2">"all"</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">show</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">agg</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">nhist</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Optimizing Hyperparameters</span>
+
+<span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'lambda1_1'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="s1">'lambda2_1'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">'lambda4_1'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">'lambda5_1'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">'lambda1_2'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="s1">'lambda2_2'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">'lambda4_2'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">'lambda5_2'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">)}</span>
+<span class="n">init_points</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">n_iter</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">nsim</span> <span class="o">=</span> <span class="mi">100</span>
+
+<span class="n">hyp</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">update_hyperparameters</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">pbounds</span><span class="p">,</span> <span class="n">init_points</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">,</span> <span class="n">nsim</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">"hyp.txt"</span><span class="p">)</span>
+</pre>
+           </div>
+          </div>
+         </section>
+         <section id="example-in-r">
+          <h3>
+           Example in R:
+           <a class="headerlink" href="#example-in-r" title="Link to this heading">
+            &para;
+           </a>
+          </h3>
+          <p>
+           The module can also be used in r, using the reticulate package:
+          </p>
+          <div class="highlight-r notranslate">
+           <div class="highlight">
+            <pre><span></span><span class="nf">library</span><span class="p">(</span><span class="n">reticulate</span><span class="p">)</span>
+
+<span class="nf">setwd</span><span class="p">(</span><span class="nf">dirname</span><span class="p">(</span><span class="n">rstudioapi</span><span class="o">::</span><span class="nf">getActiveDocumentContext</span><span class="p">()</span><span class="o">$</span><span class="n">path</span><span class="p">))</span>
+
+<span class="n">mufbvar</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">import</span><span class="p">(</span><span class="s">"MUFBVAR"</span><span class="p">)</span>
+<span class="n">pd</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">impoty</span><span class="p">(</span><span class="s">"pandas"</span><span class="p">)</span>
+<span class="n">np</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">import</span><span class="p">(</span><span class="s">"numpy"</span><span class="p">)</span>
+
+<span class="n">io_data</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s">"hist.xlsx"</span>
+
+
+<span class="n">H</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">96L</span><span class="w">        </span><span class="c1"># forecast horizon</span>
+<span class="n">nsim</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">20000L</span><span class="w">  </span><span class="c1"># number of draws from Posterior Density</span>
+<span class="n">nburn</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">0.5</span><span class="w">  </span><span class="c1"># number of draws to discard</span>
+<span class="n">nlags</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="m">6L</span><span class="p">,</span><span class="m">4L</span><span class="p">)</span>
+<span class="n">thining</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span>
+
+<span class="n">hyp</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">0.09</span><span class="p">,</span><span class="w"> </span><span class="m">4.3</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">2.7</span><span class="p">,</span><span class="w"> </span><span class="m">4.3</span><span class="p">)</span>
+
+<span class="n">frequencies</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="s">"Q"</span><span class="p">,</span><span class="w"> </span><span class="s">"M"</span><span class="p">,</span><span class="w"> </span><span class="s">"W"</span><span class="p">)</span>
+
+
+<span class="n">data</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">()</span>
+<span class="nf">for </span><span class="p">(</span><span class="n">freq</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="m">1</span><span class="o">:</span><span class="nf">length</span><span class="p">(</span><span class="n">frequencies</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">freq</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">frequencies</span><span class="p">[[</span><span class="n">freq</span><span class="p">]]</span>
+<span class="w">    </span><span class="n">data_temp</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">pd</span><span class="o">$</span><span class="nf">read_excel</span><span class="p">(</span><span class="n">io_data</span><span class="p">,</span><span class="w"> </span><span class="n">sheet_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">freq</span><span class="p">,</span><span class="w"> </span><span class="n">index_col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">)</span>
+<span class="w">    </span><span class="n">data</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">append</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="n">data_temp</span><span class="p">))</span>
+<span class="p">}</span>
+
+<span class="c1">#Transformations</span>
+<span class="n">trans</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="n">np</span><span class="o">$</span><span class="nf">array</span><span class="p">((</span><span class="m">1</span><span class="p">)),</span><span class="w"> </span><span class="n">np</span><span class="o">$</span><span class="nf">array</span><span class="p">((</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">)),</span><span class="w"> </span><span class="n">np</span><span class="o">$</span><span class="nf">array</span><span class="p">((</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">)))</span>
+
+
+<span class="c1">#Initialize data class</span>
+<span class="n">data_in</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">mufbvar</span><span class="o">$</span><span class="nf">mufbvar_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">trans</span><span class="p">,</span><span class="w"> </span><span class="n">frequencies</span><span class="p">)</span>
+
+
+<span class="c1">#Initialize model class</span>
+<span class="n">model</span><span class="w"> </span><span class="o">&lt;-</span><span class="w">  </span><span class="n">mufbvar</span><span class="o">$</span><span class="nf">multifrequency_var</span><span class="p">(</span><span class="n">nsim</span><span class="p">,</span><span class="w"> </span><span class="n">nburn</span><span class="p">,</span><span class="w"> </span><span class="n">nlags</span><span class="w"> </span><span class="p">,</span><span class="n">thining</span><span class="p">)</span>
+
+<span class="c1">#Estimate the model</span>
+<span class="n">model</span><span class="o">$</span><span class="nf">fit</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span><span class="w"> </span><span class="n">hyp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hyp</span><span class="p">)</span>
+
+<span class="c1">#Conditional forecasts</span>
+<span class="n">conditionals</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pd.DataFrame</span><span class="p">({</span><span class="s">'w_1'</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="m">0.018</span><span class="p">,</span><span class="w"> </span><span class="m">0.025</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="m">0.0228</span><span class="p">,</span><span class="w"> </span><span class="m">0.05</span><span class="p">],</span>
+<span class="w">                            </span><span class="s">'m_2'</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="m">0.002</span><span class="p">,</span><span class="w"> </span><span class="m">0.01</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="m">0.01</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">]})</span>
+
+<span class="c1">#Create forecasts in highest frequency</span>
+<span class="n">model</span><span class="o">$</span><span class="nf">forecast</span><span class="p">(</span><span class="n">H</span><span class="p">,</span><span class="w"> </span><span class="n">conditionals</span><span class="p">)</span>
+
+<span class="c1">#Aggregate</span>
+<span class="n">model</span><span class="o">$</span><span class="nf">aggregate</span><span class="p">(</span><span class="n">frequency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Q"</span><span class="p">)</span>
+
+<span class="c1">#Save results</span>
+<span class="c1">#model$to_excel('out_test.xlsx', agg = True)</span>
+
+<span class="c1">#Plots</span>
+<span class="n">model</span><span class="o">$</span><span class="nf">mean_plot</span><span class="p">(</span><span class="n">variables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"all"</span><span class="p">,</span><span class="w"> </span><span class="n">save</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="p">,</span><span class="w"> </span><span class="n">show</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">$</span><span class="nf">fanchart</span><span class="p">(</span><span class="n">variables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"all"</span><span class="p">,</span><span class="w"> </span><span class="n">save</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="p">,</span><span class="w"> </span><span class="n">show</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">,</span><span class="w"> </span><span class="n">agg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">,</span><span class="w"> </span><span class="n">nhist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10L</span><span class="p">)</span>
+</pre>
+           </div>
+          </div>
+         </section>
+        </section>
+       </div>
+      </section>
+      <section id="indices-and-tables">
+       <h1>
+        Indices and tables
+        <a class="headerlink" href="#indices-and-tables" title="Link to this heading">
+         &para;
+        </a>
+       </h1>
+       <ul class="simple">
+        <li>
+         <p>
+          <a class="reference internal" href="genindex.html">
+           <span class="std std-ref">
+            Index
+           </span>
+          </a>
+         </p>
+        </li>
+        <li>
+         <p>
+          <a class="reference internal" href="py-modindex.html">
+           <span class="std std-ref">
+            Module Index
+           </span>
+          </a>
+         </p>
+        </li>
+       </ul>
+      </section>
+      <div class="clearer">
+      </div>
+     </div>
+    </div>
+   </div>
+   <div class="clearer">
+   </div>
+  </div>
+  <article id="back-cover">
+   <div class="container">
+    <div class="back-cover-footer">
+     <p>
+      &copy; Copyright 2024, Laurent Florin.
+     </p>
+     <p>
+      Created using
+      <a href="http://sphinx-doc.org/">
+       Sphinx
+      </a>
+      7.3.7.
+     </p>
+    </div>
+   </div>
+  </article>
+ </body>
+</html>
