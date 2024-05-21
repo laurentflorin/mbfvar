@@ -67,6 +67,12 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
     name : str
         path where you want to save the hyperparameters
         
+    Returns
+    ----------
+    
+    hyp : list
+        list containing the optimized hyperparameters
+        
 
     '''
     
