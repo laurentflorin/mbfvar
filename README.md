@@ -6,7 +6,7 @@ Module to handel, disaggregate and forecast Multiple frequency data using Bayesi
 
 [Documentation Markdown](./docs/_build/markdown/index.md)
 
-[Documentation html](./docs/_build/html/index.html)
+[Documentation html](file:///O:/FP/FS/Modelle/database/test/lfl/Repositories/MUFBVAR/docs/_build/html/index.html)
 
 # Installation
 
