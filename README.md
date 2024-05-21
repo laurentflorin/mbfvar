@@ -3,7 +3,7 @@
 Module to handel, disaggregate and forecast Multiple frequency data using Bayesian VAR Models.
 
 
-[Documentation](./docs/_build/markdown/index.md)
+[Documentation](O:\FP\FS\Modelle\database\test\lfl\Repositories\MUFBVAR\docs\MUFBVAR.html)
 
 # Installation
 
