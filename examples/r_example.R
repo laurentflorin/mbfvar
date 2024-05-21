@@ -59,3 +59,13 @@ model$aggregate(frequency = "Q")
 model$mean_plot(variables = "all", save = False, show = True)
 
 model$fanchart(variables = "all", save = False, show = True, agg = True, nhist = 10)
+
+# scenario analysis
+
+conditionals = [pd.DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.05],
+                            'm_2' : [ np.nan, 0.002, 0.01 , 0.01, np.nan, np.nan]}),
+                    pd.DataFrame({'w_1' : [-0.02, -0.25, np.nan, np.nan, -0.228, 0.1],
+                            'm_2' : [ np.nan, -0.012, 0 , 0.1, np.nan, np.nan]}), 
+                            None]
+
+names = ["good", "bad", "base"]

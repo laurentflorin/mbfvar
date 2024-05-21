@@ -958,7 +958,8 @@ def forecast(self, H, conditionals = None):
         YYcond = np.array(YYcond) 
         YYcond[:,(self.select_list[-1] == 1)] = YYcond[:,(self.select_list[-1] == 1)]/100
         YYcond[:,(self.select_list[-1] == 0)] = np.log(YYcond[:,(self.select_list[-1] == 0)])
-    exc = ~np.isnan(YYcond)
+    exc = np.array(~np.isnan(YYcond))
+    YYcond = np.array(YYcond)
         
     YY_m_list = deque()
     YY_med_list = deque()
@@ -1373,3 +1374,37 @@ def aggregate(self, frequency, reset_index = True):
         self.YY_016_agg.index = index_new
     
     self.agg_freq = frequency
+
+def scenario_forecast(self, H, conditionals, names, agg = True):
+    
+    '''
+    Generates the mean forecasts for multiple scenarios
+    
+    Parameters
+    ----------
+    H : int
+        Forecast Horizon in highest frequency
+    conditionals : list
+        list of panda DataFrames 
+    names : list
+        list of the names for the scenarios
+    agg : boolean
+        If true aggregates output to lowest frequency\n
+        Default is True
+
+    '''
+    
+    out = []
+    
+    for i in range(len(names)):
+        
+        temp = copy.deepcopy(self)
+        if conditionals[i] is not None:
+            temp.forecast(H, conditionals[i])
+        else:
+            temp.forecast(H)
+        if agg == True:
+            temp.aggregate(temp.frequencies[0], reset_index = True)
+        
+        out.append(temp.YY_mean_agg)
+    out_dict = dict(zip(names, out))
