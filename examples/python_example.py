@@ -75,7 +75,7 @@ conditionals = [pd.DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.0
 
 names = ["good", "bad", "base"]
 
-out_scenarios = MUFBVAR.scenario_forecast(H, conditionals, names, agg = True)
+out_scenarios = model.scenario_forecast(H, conditionals, names, agg = True)
 
 # Scenario Plot
-scenario_plot(out_scenarios, variables = "all", save = False, name = "Scenario", show = True, nhist = 10)
+model.scenario_plot(scenario_dict = out_scenarios, variables = "all", save = False, name = "Scenario", show = True, nhist = 10)

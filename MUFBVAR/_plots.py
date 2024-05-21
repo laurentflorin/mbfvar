@@ -225,7 +225,7 @@ def fanchart(self, variables = "all", save = True, name = "Fancharts", show = Tr
     plt.close("all")
     
 
-def scenario_plot(scenario_dict, variables = "all", save = True, name = "Scenario", show = True, nhist = 5):
+def scenario_plot(self, scenario_dict, variables = "all", save = True, name = "Scenario", show = True, nhist = 5):
 
     '''
     Creates a plot with the different scenarios
