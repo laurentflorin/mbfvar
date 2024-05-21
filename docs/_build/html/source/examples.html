@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html  lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+      <title>Examples</title>
+    
+          <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+          <link rel="stylesheet" href="../_static/theme.css " type="text/css" />
+      
+      <!-- sphinx script_files -->
+        <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+
+      
+      <!-- bundled in js (rollup iife) -->
+      <!-- <script src="../_static/theme-vendors.js"></script> -->
+      <script src="../_static/theme.js" defer></script>
+    
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <link rel="prev" title="MUFBVAR.solve package" href="MUFBVAR.solve.html" /> 
+  </head>
+
+  <body>
+    <div id="app">
+    <div class="theme-container" :class="pageClasses"><navbar @toggle-sidebar="toggleSidebar">
+  <router-link to="../index.html" class="home-link">
+    
+      <span class="site-name">MUFBVAR</span>
+    
+  </router-link>
+
+  <div class="links">
+    <navlinks class="can-hide">
+
+
+
+    </navlinks>
+  </div>
+</navbar>
+
+      
+      <div class="sidebar-mask" @click="toggleSidebar(false)">
+      </div>
+        <sidebar @toggle-sidebar="toggleSidebar">
+          
+          <navlinks>
+            
+
+
+
+            
+          </navlinks><div id="searchbox" class="searchbox" role="search">
+  <div class="caption"><span class="caption-text">Quick search</span>
+    <div class="searchformwrapper">
+      <form class="search" action="../search.html" method="get">
+        <input type="text" name="q" />
+        <input type="submit" value="Search" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div><div class="sidebar-links" role="navigation" aria-label="main navigation">
+  
+    <div class="sidebar-group">
+      <p class="caption">
+        <span class="caption-text"><a href="../index.html#welcome-to-mufbvar-s-documentation">Contents:</a></span>
+      </p>
+      <ul class="current">
+        
+          <li class="toctree-l1 ">
+            
+              <a href="intro.html" class="reference internal ">Introduction</a>
+            
+
+            
+          </li>
+
+        
+          <li class="toctree-l1 ">
+            
+              <a href="modules.html" class="reference internal ">MUFBVAR</a>
+            
+
+            
+          </li>
+
+        
+          <li class="toctree-l1 current">
+            
+              <a href="#" class="reference internal current">Examples</a>
+            
+
+            
+              <ul>
+                
+                  <li class="toctree-l2"><a href="#example-in-python" class="reference internal">Example in python:</a></li>
+                
+                  <li class="toctree-l2"><a href="#id1" class="reference internal">Example in python:</a></li>
+                
+              </ul>
+            
+          </li>
+
+        
+      </ul>
+    </div>
+  
+</div>
+        </sidebar>
+
+      <page>
+          <div class="body-header" role="navigation" aria-label="navigation">
+  
+  <ul class="breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+    
+    <li>Examples</li>
+  </ul>
+  
+
+  <ul class="page-nav">
+  <li class="prev">
+    <a href="MUFBVAR.solve.html"
+       title="previous chapter">← MUFBVAR.solve package</a>
+  </li>
+</ul>
+  
+</div>
+<hr>
+          <div class="content" role="main" v-pre>
+            
+  <section id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h1>
+<section id="example-in-python">
+<h2>Example in python:<a class="headerlink" href="#example-in-python" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MUFBVAR</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<span class="n">io_data</span> <span class="o">=</span> <span class="s2">&quot;hist.xlsx&quot;</span>
+
+<span class="c1">#Model Specification</span>
+<span class="n">H</span> <span class="o">=</span> <span class="mi">96</span>        <span class="c1"># forecast horizon</span>
+<span class="n">nsim</span>     <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># number of draws from Posterior Density</span>
+<span class="n">nburn</span>    <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># number of draws to discard</span>
+<span class="n">nlags</span> <span class="o">=</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
+<span class="n">thining</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">hyp</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.09</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.7</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">)</span>
+
+<span class="n">frequencies</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Q&quot;</span><span class="p">,</span><span class="s2">&quot;M&quot;</span><span class="p">,</span><span class="s2">&quot;W&quot;</span><span class="p">]</span>
+
+
+
+<span class="c1"># Load the data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">freq</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">frequencies</span><span class="p">)):</span>
+            <span class="n">freq</span> <span class="o">=</span> <span class="n">frequencies</span><span class="p">[</span><span class="n">freq</span><span class="p">]</span>
+            <span class="n">data_temp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">io_data</span><span class="p">,</span> <span class="n">sheet_name</span> <span class="o">=</span> <span class="n">freq</span><span class="p">,</span> <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_temp</span><span class="p">)</span>
+<span class="c1">#Transformations</span>
+<span class="n">trans</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))]</span>
+
+
+<span class="c1">#Initialize data class</span>
+<span class="n">data_in</span> <span class="o">=</span> <span class="n">MUFBVAR</span><span class="o">.</span><span class="n">mufbvar_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="n">frequencies</span><span class="p">)</span>
+
+
+<span class="c1">#Initialize model class</span>
+<span class="n">model</span> <span class="o">=</span>  <span class="n">MUFBVAR</span><span class="o">.</span><span class="n">multifrequency_var</span><span class="p">(</span><span class="n">nsim</span><span class="p">,</span> <span class="n">nburn</span><span class="p">,</span> <span class="n">nlags</span> <span class="p">,</span><span class="n">thining</span><span class="p">)</span>
+
+<span class="c1">#Estimate the model</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">hyp</span> <span class="o">=</span> <span class="n">hyp</span><span class="p">)</span>
+
+<span class="c1">#Conditional forecasts</span>
+<span class="n">conditionals</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;w_1&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="mf">0.018</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">0.0228</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span>
+                            <span class="s1">&#39;m_2&#39;</span> <span class="p">:</span> <span class="p">[</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">0.002</span><span class="p">,</span> <span class="mf">0.01</span> <span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]})</span>
+
+<span class="c1">#Create forecasts in highest frequency</span>
+<span class="n">model</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">conditionals</span><span class="p">)</span>
+
+<span class="c1">#Aggregate</span>
+<span class="n">model</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">frequency</span> <span class="o">=</span> <span class="s2">&quot;Q&quot;</span><span class="p">)</span>
+
+<span class="c1">#Save results</span>
+<span class="c1">#model.to_excel(&#39;out_test.xlsx&#39;, agg = True)</span>
+
+<span class="c1">#Plots</span>
+<span class="n">model</span><span class="o">.</span><span class="n">mean_plot</span><span class="p">(</span><span class="n">variables</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">show</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">fanchart</span><span class="p">(</span><span class="n">variables</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">show</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">agg</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">nhist</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Optimizing Hyperparameters</span>
+
+<span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lambda1_1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="s1">&#39;lambda2_1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">&#39;lambda4_1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">&#39;lambda5_1&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">&#39;lambda1_2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="s1">&#39;lambda2_2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">&#39;lambda4_2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">&#39;lambda5_2&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">)}</span>
+<span class="n">init_points</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">n_iter</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">nsim</span> <span class="o">=</span> <span class="mi">100</span>
+
+<span class="n">hyp</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">update_hyperparameters</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">pbounds</span><span class="p">,</span> <span class="n">init_points</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">,</span> <span class="n">nsim</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;hyp.txt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id1">
+<h2>Example in python:<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<p>The module can also be used in r, using the reticulate package:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">library</span><span class="p">(</span><span class="n">reticulate</span><span class="p">)</span>
+
+<span class="nf">setwd</span><span class="p">(</span><span class="nf">dirname</span><span class="p">(</span><span class="n">rstudioapi</span><span class="o">::</span><span class="nf">getActiveDocumentContext</span><span class="p">()</span><span class="o">$</span><span class="n">path</span><span class="p">))</span>
+
+<span class="n">mufbvar</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">import</span><span class="p">(</span><span class="s">&quot;MUFBVAR&quot;</span><span class="p">)</span>
+<span class="n">pd</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">impoty</span><span class="p">(</span><span class="s">&quot;pandas&quot;</span><span class="p">)</span>
+<span class="n">np</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">import</span><span class="p">(</span><span class="s">&quot;numpy&quot;</span><span class="p">)</span>
+
+<span class="n">io_data</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s">&quot;hist.xlsx&quot;</span>
+
+
+<span class="n">H</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">96L</span><span class="w">        </span><span class="c1"># forecast horizon</span>
+<span class="n">nsim</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">20000L</span><span class="w">  </span><span class="c1"># number of draws from Posterior Density</span>
+<span class="n">nburn</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">0.5</span><span class="w">  </span><span class="c1"># number of draws to discard</span>
+<span class="n">nlags</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="m">6L</span><span class="p">,</span><span class="m">4L</span><span class="p">)</span>
+<span class="n">thining</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span>
+
+<span class="n">hyp</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">0.09</span><span class="p">,</span><span class="w"> </span><span class="m">4.3</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">2.7</span><span class="p">,</span><span class="w"> </span><span class="m">4.3</span><span class="p">)</span>
+
+<span class="n">frequencies</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="s">&quot;Q&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;M&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;W&quot;</span><span class="p">)</span>
+
+
+<span class="n">data</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">()</span>
+<span class="nf">for </span><span class="p">(</span><span class="n">freq</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="m">1</span><span class="o">:</span><span class="nf">length</span><span class="p">(</span><span class="n">frequencies</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">freq</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">frequencies</span><span class="p">[[</span><span class="n">freq</span><span class="p">]]</span>
+<span class="w">    </span><span class="n">data_temp</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">pd</span><span class="o">$</span><span class="nf">read_excel</span><span class="p">(</span><span class="n">io_data</span><span class="p">,</span><span class="w"> </span><span class="n">sheet_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">freq</span><span class="p">,</span><span class="w"> </span><span class="n">index_col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">)</span>
+<span class="w">    </span><span class="n">data</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">append</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="n">data_temp</span><span class="p">))</span>
+<span class="p">}</span>
+
+<span class="c1">#Transformations</span>
+<span class="n">trans</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="n">np</span><span class="o">$</span><span class="nf">array</span><span class="p">((</span><span class="m">1</span><span class="p">)),</span><span class="w"> </span><span class="n">np</span><span class="o">$</span><span class="nf">array</span><span class="p">((</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">)),</span><span class="w"> </span><span class="n">np</span><span class="o">$</span><span class="nf">array</span><span class="p">((</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">)))</span>
+
+
+<span class="c1">#Initialize data class</span>
+<span class="n">data_in</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">mufbvar</span><span class="o">$</span><span class="nf">mufbvar_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">trans</span><span class="p">,</span><span class="w"> </span><span class="n">frequencies</span><span class="p">)</span>
+
+
+<span class="c1">#Initialize model class</span>
+<span class="n">model</span><span class="w"> </span><span class="o">&lt;-</span><span class="w">  </span><span class="n">mufbvar</span><span class="o">$</span><span class="nf">multifrequency_var</span><span class="p">(</span><span class="n">nsim</span><span class="p">,</span><span class="w"> </span><span class="n">nburn</span><span class="p">,</span><span class="w"> </span><span class="n">nlags</span><span class="w"> </span><span class="p">,</span><span class="n">thining</span><span class="p">)</span>
+
+<span class="c1">#Estimate the model</span>
+<span class="n">model</span><span class="o">$</span><span class="nf">fit</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span><span class="w"> </span><span class="n">hyp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hyp</span><span class="p">)</span>
+
+<span class="c1">#Conditional forecasts</span>
+<span class="n">conditionals</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pd.DataFrame</span><span class="p">({</span><span class="s">&#39;w_1&#39;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="m">0.018</span><span class="p">,</span><span class="w"> </span><span class="m">0.025</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="m">0.0228</span><span class="p">,</span><span class="w"> </span><span class="m">0.05</span><span class="p">],</span>
+<span class="w">                            </span><span class="s">&#39;m_2&#39;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="m">0.002</span><span class="p">,</span><span class="w"> </span><span class="m">0.01</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="m">0.01</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">]})</span>
+
+<span class="c1">#Create forecasts in highest frequency</span>
+<span class="n">model</span><span class="o">$</span><span class="nf">forecast</span><span class="p">(</span><span class="n">H</span><span class="p">,</span><span class="w"> </span><span class="n">conditionals</span><span class="p">)</span>
+
+<span class="c1">#Aggregate</span>
+<span class="n">model</span><span class="o">$</span><span class="nf">aggregate</span><span class="p">(</span><span class="n">frequency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Q&quot;</span><span class="p">)</span>
+
+<span class="c1">#Save results</span>
+<span class="c1">#model$to_excel(&#39;out_test.xlsx&#39;, agg = True)</span>
+
+<span class="c1">#Plots</span>
+<span class="n">model</span><span class="o">$</span><span class="nf">mean_plot</span><span class="p">(</span><span class="n">variables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;all&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">save</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="p">,</span><span class="w"> </span><span class="n">show</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">$</span><span class="nf">fanchart</span><span class="p">(</span><span class="n">variables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;all&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">save</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="p">,</span><span class="w"> </span><span class="n">show</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">,</span><span class="w"> </span><span class="n">agg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">,</span><span class="w"> </span><span class="n">nhist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10L</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          <div class="page-nav">
+            <div class="inner"><ul class="page-nav">
+  <li class="prev">
+    <a href="MUFBVAR.solve.html"
+       title="previous chapter">← MUFBVAR.solve package</a>
+  </li>
+</ul><div class="footer" role="contentinfo">
+      &#169; Copyright 2024, Laurent Florin.
+    <br>
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a> 0.9.1.
+</div>
+            </div>
+          </div>
+      </page>
+    </div></div>
+    
+    
+  </body>
+</html>

@@ -10,7 +10,9 @@ Welcome to MUFBVAR's documentation!
    :maxdepth: 2
    :caption: Contents:
    
+   source/intro
    source/modules
+   source/examples
 
 
 Indices and tables
