@@ -10,7 +10,7 @@ Welcome to MUFBVAR's documentation!
    :maxdepth: 2
    :caption: Contents:
    
-   modules
+   source/modules
 
 
 Indices and tables
@@ -18,4 +18,4 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
+
