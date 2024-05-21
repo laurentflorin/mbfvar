@@ -1,69 +1,5 @@
 # MUFBVAR package
 
-## Subpackages
-
-## Submodules
-
-## MUFBVAR.mfbvar_funcs module
-
-This file contains functions used in mf_bvar_estim
-
-@author: florinl
-
-### MUFBVAR.mfbvar_funcs.calc_yyact(hyp, YY, spec)
-
-* **Parameters:**
-  * **hyp** (*TYPE*) – DESCRIPTION.
-  * **YY** (*TYPE*) – DESCRIPTION.
-  * **spec** (*TYPE*) – DESCRIPTION.
-  * **efficient** (*TYPE*) – DESCRIPTION.
-* **Return type:**
-  None.
-
-### MUFBVAR.mfbvar_funcs.initialize(GAMMAs, GAMMAz, GAMMAc, GAMMAu, LAMBDAs, LAMBDAz, LAMBDAc, LAMBDAu, LAMBDAs_t, LAMBDAz_t, LAMBDAc_t, LAMBDAu_t, sig_qq, sig_mm, sig_qm, sig_mq, Zm, YDATA, init_mean, init_var, spec, Nm)
-
-### MUFBVAR.mfbvar_funcs.mdd_(hyp, YY, spec)
-
-* **Parameters:**
-  * **hyp** (*TYPE*) – DESCRIPTION.
-  * **YY** (*TYPE*) – DESCRIPTION.
-  * **spec** (*TYPE*) – DESCRIPTION.
-  * **efficient** (*TYPE*) – DESCRIPTION.
-* **Return type:**
-  None.
-
-### MUFBVAR.mfbvar_funcs.prior_init(hyp, YY, spec)
-
-* **Parameters:**
-  * **hyp** (*TYPE*) – DESCRIPTION.
-  * **YY** (*TYPE*) – DESCRIPTION.
-  * **spec** (*TYPE*) – DESCRIPTION.
-* **Returns:**
-  * *Phi_tilde*
-  * *sigma*
-
-### MUFBVAR.mfbvar_funcs.prior_pdf(hyp, YY, spec, PHI, SIG)
-
-* **Parameters:**
-  * **hyp** (*TYPE*) – DESCRIPTION.
-  * **YY** (*TYPE*) – DESCRIPTION.
-  * **spec** (*TYPE*) – DESCRIPTION.
-  * **PHI** (*TYPE*) – DESCRIPTION.
-  * **SIG** (*TYPE*) – DESCRIPTION.
-* **Return type:**
-  None.
-
-### MUFBVAR.mfbvar_funcs.varprior(nv, nlags, nex, hyp, premom)
-
-* **Parameters:**
-  * **nv** (*TYPE*) – numer of variables.
-  * **nlags** (*TYPE*) – number of lags.
-  * **nex** (*TYPE*) – number of exogenous variables inculding intercept.
-  * **hyp** (*TYPE*) – vector of hyperparameters.
-  * **premom** (*TYPE*) – pre-sample moments.
-* **Return type:**
-  None.
-
 ## Module contents
 
 ### *class* MUFBVAR.mufbvar_data(data, trans, frequencies)
@@ -201,3 +137,65 @@ lambda 5:  tuning parameter for the covariance between coefficients
   * **nsim** (*int*) – number of draws in each MUFBVAR estimation
   * **save** (*boolean*) – True if you want to save the hyperparameters as a txt
   * **name** (*str*) – path where you want to save the hyperparameters
+
+## Submodules
+
+## MUFBVAR.mfbvar_funcs module
+
+This file contains functions used in mf_bvar_estim
+
+@author: florinl
+
+### MUFBVAR.mfbvar_funcs.calc_yyact(hyp, YY, spec)
+
+* **Parameters:**
+  * **hyp** (*TYPE*) – DESCRIPTION.
+  * **YY** (*TYPE*) – DESCRIPTION.
+  * **spec** (*TYPE*) – DESCRIPTION.
+  * **efficient** (*TYPE*) – DESCRIPTION.
+* **Return type:**
+  None.
+
+### MUFBVAR.mfbvar_funcs.initialize(GAMMAs, GAMMAz, GAMMAc, GAMMAu, LAMBDAs, LAMBDAz, LAMBDAc, LAMBDAu, LAMBDAs_t, LAMBDAz_t, LAMBDAc_t, LAMBDAu_t, sig_qq, sig_mm, sig_qm, sig_mq, Zm, YDATA, init_mean, init_var, spec, Nm)
+
+### MUFBVAR.mfbvar_funcs.mdd_(hyp, YY, spec)
+
+* **Parameters:**
+  * **hyp** (*TYPE*) – DESCRIPTION.
+  * **YY** (*TYPE*) – DESCRIPTION.
+  * **spec** (*TYPE*) – DESCRIPTION.
+  * **efficient** (*TYPE*) – DESCRIPTION.
+* **Return type:**
+  None.
+
+### MUFBVAR.mfbvar_funcs.prior_init(hyp, YY, spec)
+
+* **Parameters:**
+  * **hyp** (*TYPE*) – DESCRIPTION.
+  * **YY** (*TYPE*) – DESCRIPTION.
+  * **spec** (*TYPE*) – DESCRIPTION.
+* **Returns:**
+  * *Phi_tilde*
+  * *sigma*
+
+### MUFBVAR.mfbvar_funcs.prior_pdf(hyp, YY, spec, PHI, SIG)
+
+* **Parameters:**
+  * **hyp** (*TYPE*) – DESCRIPTION.
+  * **YY** (*TYPE*) – DESCRIPTION.
+  * **spec** (*TYPE*) – DESCRIPTION.
+  * **PHI** (*TYPE*) – DESCRIPTION.
+  * **SIG** (*TYPE*) – DESCRIPTION.
+* **Return type:**
+  None.
+
+### MUFBVAR.mfbvar_funcs.varprior(nv, nlags, nex, hyp, premom)
+
+* **Parameters:**
+  * **nv** (*TYPE*) – numer of variables.
+  * **nlags** (*TYPE*) – number of lags.
+  * **nex** (*TYPE*) – number of exogenous variables inculding intercept.
+  * **hyp** (*TYPE*) – vector of hyperparameters.
+  * **premom** (*TYPE*) – pre-sample moments.
+* **Return type:**
+  None.
