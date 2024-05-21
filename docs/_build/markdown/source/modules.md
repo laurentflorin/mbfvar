@@ -10,5 +10,7 @@
       * [`multifrequency_var.forecast()`](MUFBVAR.md#MUFBVAR.multifrequency_var.forecast)
       * [`multifrequency_var.mean_plot()`](MUFBVAR.md#MUFBVAR.multifrequency_var.mean_plot)
       * [`multifrequency_var.save()`](MUFBVAR.md#MUFBVAR.multifrequency_var.save)
+      * [`multifrequency_var.scenario_forecast()`](MUFBVAR.md#MUFBVAR.multifrequency_var.scenario_forecast)
+      * [`multifrequency_var.scenario_plot()`](MUFBVAR.md#MUFBVAR.multifrequency_var.scenario_plot)
       * [`multifrequency_var.to_excel()`](MUFBVAR.md#MUFBVAR.multifrequency_var.to_excel)
       * [`multifrequency_var.update_hyperparameters()`](MUFBVAR.md#MUFBVAR.multifrequency_var.update_hyperparameters)

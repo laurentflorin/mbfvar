@@ -101,6 +101,38 @@ Saves the MFBVAR Object
 * **Parameters:**
   **filename** (*str*) – Path where to save the object. End must be .pkl
 
+#### scenario_forecast(H, conditionals, names, agg=True)
+
+Generates the mean forecasts for multiple scenarios
+
+* **Parameters:**
+  * **H** (*int*) – Forecast Horizon in highest frequency
+  * **conditionals** (*list*) – list of panda DataFrames
+  * **names** (*list*) – list of the names for the scenarios
+  * **agg** (*boolean*) – 
+
+    If true aggregates output to lowest frequency
+
+    Default is True
+* **Returns:**
+  **out_dict** – Dictionary containing the panda DataFrames for each szenario
+* **Return type:**
+  dict
+
+#### scenario_plot(scenario_dict, variables='all', save=True, name='Scenario', show=True, nhist=5)
+
+Creates a plot with the different scenarios
+
+* **Parameters:**
+  * **scenario_dict** (*dict*) – output of self.scenario_forecast
+  * **variable** (*list* *of* *strings*) – variables for which the plot should be generated, all if it should be generated for all
+  * **save** (*boolean*) – Whether the plots should be saved. The default is True.
+  * **name** (*string* *,* *optional*) – If the plots should be saved, path/name not including filetype. The default is None.
+  * **show** (*boolean*) – Whether the plots should be shown. Default is True.
+  * **agg** (*boolean*) – Whether the aggregated values should be shown
+  * **nhist** (*int*) – number of historical periods that should be shown on the plot
+    Default is 5
+
 #### to_excel(filename, agg=False)
 
 Writes the results to an excel
