@@ -26,12 +26,7 @@ tqdm = partial(tqdm, position = 0, leave=True) # this line does the magic
 # for plots
 
 import matplotlib.backends.backend_pdf
-
-import plotly.graph_objects as go
-
-import plotly.io as pio
-pio.renderers.default='browser'
-import plotly.express as px
+from matplotlib.pyplot import cm
 
 #to save objects
 import pickle
@@ -43,8 +38,6 @@ import copy
 from .cholcov.cholcov_module import cholcovOrEigendecomp
 from .inverse.matrix_inversion import invert_matrix
 
-# for hyperparameter tuning
-from bayes_opt import BayesianOptimization
 
 def mean_plot(self, variables = "all", save = True, name = "Output", show = True):
     
@@ -214,7 +207,6 @@ def fanchart(self, variables = "all", save = True, name = "Fancharts", show = Tr
             
             idx, = np.where(self.varlist_list[-1] == variable)
             
-            self.YY_095_pd
             fig, ax = plt.subplots()
             ax.fill_between(self.YY_095_pd.iloc[-(self.H+nhist):,idx].index, np.squeeze(np.array(self.YY_095_pd.iloc[-(self.H+nhist):,idx])), np.squeeze(np.array(self.YY_005_pd.iloc[-(self.H+nhist):,idx])), alpha = 0.5, color = "blue")
             ax.fill_between(self.YY_095_pd.iloc[-(self.H+nhist):,idx].index, np.squeeze(np.array(self.YY_084_pd.iloc[-(self.H+nhist):,idx])), np.squeeze(np.array(self.YY_016_pd.iloc[-(self.H+nhist):,idx])), alpha = 0.7, color = "blue")          
@@ -228,6 +220,88 @@ def fanchart(self, variables = "all", save = True, name = "Fancharts", show = Tr
                 pdf.savefig( fig )
             if show == True:
                 plt.show()
+        if save == True:
+            pdf.close()
+    plt.close("all")
+    
+
+def scenario_plot(self, scenario_dict, variables = "all", save = True, name = "Scenario", show = True, nhist = 5):
+
+    '''
+    Creates a plot with the different scenarios
+    
+    
+    Parameters
+    ----------
+    scenario_dict : dict
+        output of self.scenario_forecast
+    variable : list of strings
+        variables for which the plot should be generated, all if it should be generated for all
+    save : boolean
+        Whether the plots should be saved. The default is True.
+    name : string, optional
+        If the plots should be saved, path/name not including filetype. The default is None.
+    show : boolean
+        Whether the plots should be shown. Default is True.
+    agg : boolean
+        Whether the aggregated values should be shown
+    nhist : int
+        number of historical periods that should be shown on the plot
+        Default is 5
+
+    '''
+    #first get the history data. this is identical in all the scenarios
+    names = list(scenario_dict.keys())
+    
+    hist = pd.merge(scenario_dict[names[0]], scenario_dict[names[1]], how = "inner")
+    hist.index = scenario_dict[names[0]].index[:len(hist)]
+    hist = hist.iloc[-nhist:,:]
+    
+    plt.ioff()
+    
+    if isinstance(variables, str):
+        if variables == "all":
+            variables = self.varlist_list[-1]
+        else:
+            sys.exit("variables must be either a list of variables or all")
+        
+        
+    check = set(variables)-set(self.varlist_list[-1])        
+    if check and not variables == "all":
+        sys.exit(print(check, " not in " , self.varlist_list[-1]))
+    
+    if save == True:
+        pdf = matplotlib.backends.backend_pdf.PdfPages(name + ".pdf")
+    
+    
+    
+    for variable in variables:
+        color = iter(cm.tab10(np.linspace(0, 1, len(scenario_dict))))
+        fig, ax = plt.subplots(dpi= 360)
+        
+        for i in range(len(scenario_dict)):
+            c = next(color)
+            temp = scenario_dict[names[i]].loc[hist.index[0]:,:]
+            ax.plot(temp.index.to_timestamp(), temp[variable], color = c, linewidth = 0.9, linestyle = "dashed", label = names[i])
+            ax.plot(hist.index.to_timestamp(), hist[variable], color = "black", linewidth = 1)
+        
+        ax.set_xticks(temp.index.to_timestamp())
+        ax.set_xticklabels(temp.index)
+        plt.setp(ax.get_xticklabels(), rotation=40, horizontalalignment='right')
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        plt.title("Scenario plot for " + variable)
+        plt.grid(axis='both', alpha=.1)
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+
+        # Put a legend to the right of the current axis
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
+        
+        if save == True:
+            pdf.savefig( fig )
+        if show == True:
+            plt.show()
         if save == True:
             pdf.close()
     plt.close("all")

@@ -400,6 +400,50 @@ Default is 5</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="MUFBVAR.multifrequency_var.scenario_forecast">
+<span class="sig-name descname"><span class="pre">scenario_forecast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">H</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conditionals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#MUFBVAR.multifrequency_var.scenario_forecast" title="Link to this definition">¶</a></dt>
+<dd><p>Generates the mean forecasts for multiple scenarios</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>H</strong> (<em>int</em>) – Forecast Horizon in highest frequency</p></li>
+<li><p><strong>conditionals</strong> (<em>list</em>) – list of panda DataFrames</p></li>
+<li><p><strong>names</strong> (<em>list</em>) – list of the names for the scenarios</p></li>
+<li><p><strong>agg</strong> (<em>boolean</em>) – <p>If true aggregates output to lowest frequency</p>
+<p>Default is True</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out_dict</strong> – Dictionary containing the panda DataFrames for each szenario</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="MUFBVAR.multifrequency_var.scenario_plot">
+<span class="sig-name descname"><span class="pre">scenario_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Scenario'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#MUFBVAR.multifrequency_var.scenario_plot" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a plot with the different scenarios</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scenario_dict</strong> (<em>dict</em>) – output of self.scenario_forecast</p></li>
+<li><p><strong>variable</strong> (<em>list</em><em> of </em><em>strings</em>) – variables for which the plot should be generated, all if it should be generated for all</p></li>
+<li><p><strong>save</strong> (<em>boolean</em>) – Whether the plots should be saved. The default is True.</p></li>
+<li><p><strong>name</strong> (<em>string</em><em>, </em><em>optional</em>) – If the plots should be saved, path/name not including filetype. The default is None.</p></li>
+<li><p><strong>show</strong> (<em>boolean</em>) – Whether the plots should be shown. Default is True.</p></li>
+<li><p><strong>agg</strong> (<em>boolean</em>) – Whether the aggregated values should be shown</p></li>
+<li><p><strong>nhist</strong> (<em>int</em>) – number of historical periods that should be shown on the plot
+Default is 5</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="MUFBVAR.multifrequency_var.to_excel">
 <span class="sig-name descname"><span class="pre">to_excel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#MUFBVAR.multifrequency_var.to_excel" title="Link to this definition">¶</a></dt>
 <dd><p>Writes the results to an excel</p>
@@ -438,117 +482,15 @@ four frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2
 <li><p><strong>name</strong> (<em>str</em>) – path where you want to save the hyperparameters</p></li>
 </ul>
 </dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
-</section>
-<section id="module-MUFBVAR.mfbvar_funcs">
-<span id="mufbvar-mfbvar-funcs-module"></span><h2>MUFBVAR.mfbvar_funcs module<a class="headerlink" href="#module-MUFBVAR.mfbvar_funcs" title="Link to this heading">¶</a></h2>
-<p>This file contains functions used in mf_bvar_estim</p>
-<p>&#64;author: florinl</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="MUFBVAR.mfbvar_funcs.calc_yyact">
-<span class="sig-prename descclassname"><span class="pre">MUFBVAR.mfbvar_funcs.</span></span><span class="sig-name descname"><span class="pre">calc_yyact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hyp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">YY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/MUFBVAR/mfbvar_funcs.html#calc_yyact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MUFBVAR.mfbvar_funcs.calc_yyact" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>hyp</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-<li><p><strong>YY</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-<li><p><strong>spec</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-<li><p><strong>efficient</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="MUFBVAR.mfbvar_funcs.initialize">
-<span class="sig-prename descclassname"><span class="pre">MUFBVAR.mfbvar_funcs.</span></span><span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">GAMMAs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">GAMMAz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">GAMMAc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">GAMMAu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LAMBDAs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LAMBDAz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LAMBDAc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LAMBDAu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LAMBDAs_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LAMBDAz_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LAMBDAc_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LAMBDAu_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig_qq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig_mm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig_qm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig_mq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Zm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">YDATA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nm</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/MUFBVAR/mfbvar_funcs.html#initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MUFBVAR.mfbvar_funcs.initialize" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="MUFBVAR.mfbvar_funcs.mdd_">
-<span class="sig-prename descclassname"><span class="pre">MUFBVAR.mfbvar_funcs.</span></span><span class="sig-name descname"><span class="pre">mdd_</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hyp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">YY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/MUFBVAR/mfbvar_funcs.html#mdd_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MUFBVAR.mfbvar_funcs.mdd_" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>hyp</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-<li><p><strong>YY</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-<li><p><strong>spec</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-<li><p><strong>efficient</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="MUFBVAR.mfbvar_funcs.prior_init">
-<span class="sig-prename descclassname"><span class="pre">MUFBVAR.mfbvar_funcs.</span></span><span class="sig-name descname"><span class="pre">prior_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hyp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">YY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/MUFBVAR/mfbvar_funcs.html#prior_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MUFBVAR.mfbvar_funcs.prior_init" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>hyp</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-<li><p><strong>YY</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-<li><p><strong>spec</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-</ul>
-</dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><em>Phi_tilde</em></p></li>
-<li><p><em>sigma</em></p></li>
-</ul>
-</p>
+<dd class="field-even"><p><strong>hyp</strong> – list containing the optimized hyperparameters</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="MUFBVAR.mfbvar_funcs.prior_pdf">
-<span class="sig-prename descclassname"><span class="pre">MUFBVAR.mfbvar_funcs.</span></span><span class="sig-name descname"><span class="pre">prior_pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hyp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">YY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PHI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SIG</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/MUFBVAR/mfbvar_funcs.html#prior_pdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MUFBVAR.mfbvar_funcs.prior_pdf" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>hyp</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-<li><p><strong>YY</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-<li><p><strong>spec</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-<li><p><strong>PHI</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-<li><p><strong>SIG</strong> (<em>TYPE</em>) – DESCRIPTION.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="MUFBVAR.mfbvar_funcs.varprior">
-<span class="sig-prename descclassname"><span class="pre">MUFBVAR.mfbvar_funcs.</span></span><span class="sig-name descname"><span class="pre">varprior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hyp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">premom</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/MUFBVAR/mfbvar_funcs.html#varprior"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MUFBVAR.mfbvar_funcs.varprior" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>nv</strong> (<em>TYPE</em>) – numer of variables.</p></li>
-<li><p><strong>nlags</strong> (<em>TYPE</em>) – number of lags.</p></li>
-<li><p><strong>nex</strong> (<em>TYPE</em>) – number of exogenous variables inculding intercept.</p></li>
-<li><p><strong>hyp</strong> (<em>TYPE</em>) – vector of hyperparameters.</p></li>
-<li><p><strong>premom</strong> (<em>TYPE</em>) – pre-sample moments.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None.</p>
-</dd>
-</dl>
 </dd></dl>
 
 </section>
@@ -619,20 +561,12 @@ four frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2
 <li><a class="reference internal" href="#MUFBVAR.multifrequency_var.forecast"><code class="docutils literal notranslate"><span class="pre">multifrequency_var.forecast()</span></code></a></li>
 <li><a class="reference internal" href="#MUFBVAR.multifrequency_var.mean_plot"><code class="docutils literal notranslate"><span class="pre">multifrequency_var.mean_plot()</span></code></a></li>
 <li><a class="reference internal" href="#MUFBVAR.multifrequency_var.save"><code class="docutils literal notranslate"><span class="pre">multifrequency_var.save()</span></code></a></li>
+<li><a class="reference internal" href="#MUFBVAR.multifrequency_var.scenario_forecast"><code class="docutils literal notranslate"><span class="pre">multifrequency_var.scenario_forecast()</span></code></a></li>
+<li><a class="reference internal" href="#MUFBVAR.multifrequency_var.scenario_plot"><code class="docutils literal notranslate"><span class="pre">multifrequency_var.scenario_plot()</span></code></a></li>
 <li><a class="reference internal" href="#MUFBVAR.multifrequency_var.to_excel"><code class="docutils literal notranslate"><span class="pre">multifrequency_var.to_excel()</span></code></a></li>
 <li><a class="reference internal" href="#MUFBVAR.multifrequency_var.update_hyperparameters"><code class="docutils literal notranslate"><span class="pre">multifrequency_var.update_hyperparameters()</span></code></a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-MUFBVAR.mfbvar_funcs">MUFBVAR.mfbvar_funcs module</a><ul>
-<li><a class="reference internal" href="#MUFBVAR.mfbvar_funcs.calc_yyact"><code class="docutils literal notranslate"><span class="pre">calc_yyact()</span></code></a></li>
-<li><a class="reference internal" href="#MUFBVAR.mfbvar_funcs.initialize"><code class="docutils literal notranslate"><span class="pre">initialize()</span></code></a></li>
-<li><a class="reference internal" href="#MUFBVAR.mfbvar_funcs.mdd_"><code class="docutils literal notranslate"><span class="pre">mdd_()</span></code></a></li>
-<li><a class="reference internal" href="#MUFBVAR.mfbvar_funcs.prior_init"><code class="docutils literal notranslate"><span class="pre">prior_init()</span></code></a></li>
-<li><a class="reference internal" href="#MUFBVAR.mfbvar_funcs.prior_pdf"><code class="docutils literal notranslate"><span class="pre">prior_pdf()</span></code></a></li>
-<li><a class="reference internal" href="#MUFBVAR.mfbvar_funcs.varprior"><code class="docutils literal notranslate"><span class="pre">varprior()</span></code></a></li>
 </ul>
 </li>
 </ul>

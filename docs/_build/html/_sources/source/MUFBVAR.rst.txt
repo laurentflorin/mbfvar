@@ -8,14 +8,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-
-Submodules
-----------
-
-MUFBVAR.mfbvar\_funcs module
-----------------------------
-
-.. automodule:: MUFBVAR.mfbvar_funcs
-   :members:
-   :undoc-members:
-   :show-inheritance:
