@@ -74,7 +74,7 @@ Example in python:
     hyp = model.update_hyperparameters(data_in, pbounds, init_points, n_iter, nsim, save = False, name = "hyp.txt")
 
 
-Example in python:
+Example in R:
 *******************
 
 The module can also be used in r, using the reticulate package:
