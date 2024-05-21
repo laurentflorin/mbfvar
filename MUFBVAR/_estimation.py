@@ -1391,6 +1391,11 @@ def scenario_forecast(self, H, conditionals, names, agg = True):
     agg : boolean
         If true aggregates output to lowest frequency\n
         Default is True
+        
+    Returns
+    ----------
+    out_dict : dict
+        Dictionary containing the panda DataFrames for each szenario
 
     '''
     
@@ -1408,3 +1413,5 @@ def scenario_forecast(self, H, conditionals, names, agg = True):
         
         out.append(temp.YY_mean_agg)
     out_dict = dict(zip(names, out))
+    
+    return out_dict

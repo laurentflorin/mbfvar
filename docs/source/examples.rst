@@ -73,6 +73,21 @@ Example in python:
 
     hyp = model.update_hyperparameters(data_in, pbounds, init_points, n_iter, nsim, save = False, name = "hyp.txt")
 
+    # scenario analysis
+
+    conditionals = [pd.DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.05],
+                                'm_2' : [ 0.3, 0.002, 0.01 , 0.01, np.nan, np.nan]}),
+                        pd.DataFrame({'w_1' : [-0.02, -0.25, np.nan, np.nan, -0.228, 0.1],
+                                'm_2' : [ -0.2, -0.012, 0 , 0.1, np.nan, np.nan]}), 
+                                None]
+
+    names = ["good", "bad", "base"]
+
+    out_scenarios = scenario_forecast(H, conditionals, names, agg = True)
+
+    # Scenario Plot
+    scenario_plot(out_scenarios, variables = "all", save = False, name = "Scenario", show = True, nhist = 10)
+
 
 Example in R:
 *******************
