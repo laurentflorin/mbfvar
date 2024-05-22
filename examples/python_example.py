@@ -110,6 +110,6 @@ model_names = ["2001-Q4", "2001-Q3"]
 
 multifrquency_var_models = [model_q1]
 
-compare_models(multifrquency_var_models, model_names, agg = True, variables = "all", save = False, name = "Comparison", show = True, nhist = 5)
+model.compare_models(multifrquency_var_models, model_names, agg = True, variables = "all", save = False, name = "Comparison", show = True, nhist = 5)
 
-compare_models(multifrquency_var_models, model_names, agg = True, variables = "q_1", save = False, name = "Comparison", show = True, nhist = 50)
+model.compare_models(multifrquency_var_models, model_names, agg = False, variables = ["q_1"], save = False, name = "Comparison", show = True, nhist = 20)

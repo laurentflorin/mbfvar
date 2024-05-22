@@ -15,8 +15,6 @@ from pandas.tseries.offsets import Week , MonthBegin, QuarterBegin, Day
 import itertools
 
 from .mfbvar_funcs import calc_yyact
-#plotting
-import matplotlib.pyplot as plt
 
 #for progressbar
 from tqdm import tqdm
@@ -24,7 +22,7 @@ from functools import partial
 tqdm = partial(tqdm, position = 0, leave=True) # this line does the magic
 
 # for plots
-
+import matplotlib.pyplot as plt
 import matplotlib.backends.backend_pdf
 from matplotlib.pyplot import cm
 
@@ -412,7 +410,13 @@ def compare_models(self, multifrquency_var_models, model_names, agg = True, vari
         if not hasattr(self, 'YY_mean_pd'):
                 sys.exit("Error: To generate aggregated comparison plots, aggregate first")
         
+        diffs = []
+        for i in range(len(multifrquency_var_models)):
+            diffs.append(len(self.YY_mean_pd.index)- len(multifrquency_var_models[i].YY_mean_pd.index))
+        diff = np.max(diffs)
         
+        if nhist < diff:
+            nhist = nhist + diff
         current = copy.deepcopy(self.YY_mean_pd.iloc[-(self.H+nhist):,:])
         
         if self.frequencies[-1] == "W":

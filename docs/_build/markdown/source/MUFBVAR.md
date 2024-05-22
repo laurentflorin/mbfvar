@@ -38,6 +38,22 @@ The Function ensures, that we start at the beginning of a Year or Quarter depend
   * **frequency** (*str*) – The frequency to which the data should be aggregated to
   * **reset_index** (*boolean*) – Schould index be changed to period Index
 
+#### compare_models(multifrquency_var_models, model_names, agg=True, variables='all', save=True, name='Comparison', show=True, nhist=5)
+
+Creates a plot with the different scenarios
+
+* **Parameters:**
+  * **multifrquency_var_models** (*list*) – list of multifrquency_var_models with forecasts
+  * **model_names** (*list*) – list of names of the models, including the current model at position 0
+  * **agg** (*boolean*) – should the aggregated time series be shown
+  * **variable** (*list* *of* *strings*) – variables for which the plot should be generated, all if it should be generated for all
+  * **save** (*boolean*) – Whether the plots should be saved. The default is True.
+  * **name** (*string* *,* *optional*) – If the plots should be saved, path/name not including filetype. The default is None.
+  * **show** (*boolean*) – Whether the plots should be shown. Default is True.
+  * **agg** – Whether the aggregated values should be shown
+  * **nhist** (*int*) – number of historical periods that should be shown on the plot
+    Default is 5
+
 #### fanchart(variables='all', save=True, name='Fancharts', show=True, agg=False, nhist=10)
 
 Creates fan plots of the desired variables.
