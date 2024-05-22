@@ -36,7 +36,7 @@ class multifrequency_var:
         
     # Imported methods
     from ._estimation import fit, forecast, aggregate, scenario_forecast
-    from ._plots import fanchart, mean_plot, scenario_plot
+    from ._plots import fanchart, mean_plot, scenario_plot, compare_models
     from ._save import to_excel, save
     from ._hyp_opt import update_hyperparameters
 

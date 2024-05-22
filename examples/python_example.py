@@ -79,3 +79,37 @@ out_scenarios = model.scenario_forecast(H, conditionals, names, agg = True)
 
 # Scenario Plot
 model.scenario_plot(scenario_dict = out_scenarios, variables = "all", save = False, name = "Scenario", show = True, nhist = 10)
+
+#compare with model from last quarter
+
+data_old = []
+idx = ['2001-07-01', '2001-09-01', '2001-09-28']
+for i in range(len(frequencies)):
+                freq = frequencies[i]
+                data_temp = pd.read_excel(io_data, sheet_name = freq, index_col = 0)
+                data_old.append(data_temp.loc[:idx[i]])
+
+
+data_in_old = MUFBVAR.mufbvar_data(data_old, trans, frequencies)
+
+
+#Initialize model class    
+model_q1 =  MUFBVAR.multifrequency_var(nsim, nburn, nlags ,thining)
+
+#Estimate the model
+model_q1.fit(data_in_old, hyp = hyp)
+
+
+#Create forecasts in highest frequency
+model_q1.forecast(H = 96)
+
+#Aggregate
+model_q1.aggregate(frequency = "Q")
+
+model_names = ["2001-Q4", "2001-Q3"]
+
+multifrquency_var_models = [model_q1]
+
+compare_models(multifrquency_var_models, model_names, agg = True, variables = "all", save = False, name = "Comparison", show = True, nhist = 5)
+
+compare_models(multifrquency_var_models, model_names, agg = True, variables = "q_1", save = False, name = "Comparison", show = True, nhist = 50)

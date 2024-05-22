@@ -34,7 +34,7 @@ nburn    = 0.5  # number of draws to discard
 nlags = [6,4]
 thining = 1
 
-hyp = (0.09, 4.3, 1, 2.7, 4.3)
+hyp = [[0.09, 4.3, 1, 2.7, 4.3], [0.09, 4.3, 1, 2.7, 4.3]]
 
 frequencies = ["Q","M","W"]
 
@@ -87,7 +87,7 @@ nsim = 100
 
 hyp = model.update_hyperparameters(data_in, pbounds, init_points, n_iter, nsim, save = False, name = "hyp.txt")
 
-# You can also generate forecasts for multiple scenarios and plot them
+# scenario analysis
 
 conditionals = [pd.DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.05],
                             'm_2' : [ 0.3, 0.002, 0.01 , 0.01, np.nan, np.nan]}),
@@ -97,10 +97,10 @@ conditionals = [pd.DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.0
 
 names = ["good", "bad", "base"]
 
-out_scenarios = scenario_forecast(H, conditionals, names, agg = True)
+out_scenarios = model.scenario_forecast(H, conditionals, names, agg = True)
 
 # Scenario Plot
-scenario_plot(out_scenarios, variables = "all", save = False, name = "Scenario", show = True, nhist = 10)
+model.scenario_plot(scenario_dict = out_scenarios, variables = "all", save = False, name = "Scenario", show = True, nhist = 10)
 
 ```
 
