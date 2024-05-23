@@ -313,6 +313,28 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="MUFBVAR.multifrequency_var.compare_models">
+<span class="sig-name descname"><span class="pre">compare_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">multifrquency_var_models</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Comparison'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#MUFBVAR.multifrequency_var.compare_models" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a plot with the different scenarios</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>multifrquency_var_models</strong> (<em>list</em>) – list of multifrquency_var_models with forecasts</p></li>
+<li><p><strong>model_names</strong> (<em>list</em>) – list of names of the models, including the current model at position 0</p></li>
+<li><p><strong>agg</strong> (<em>boolean</em>) – should the aggregated time series be shown</p></li>
+<li><p><strong>variable</strong> (<em>list</em><em> of </em><em>strings</em>) – variables for which the plot should be generated, all if it should be generated for all</p></li>
+<li><p><strong>save</strong> (<em>boolean</em>) – Whether the plots should be saved. The default is True.</p></li>
+<li><p><strong>name</strong> (<em>string</em><em>, </em><em>optional</em>) – If the plots should be saved, path/name not including filetype. The default is None.</p></li>
+<li><p><strong>show</strong> (<em>boolean</em>) – Whether the plots should be shown. Default is True.</p></li>
+<li><p><strong>agg</strong> – Whether the aggregated values should be shown</p></li>
+<li><p><strong>nhist</strong> (<em>int</em>) – number of historical periods that should be shown on the plot
+Default is 5</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="MUFBVAR.multifrequency_var.fanchart">
 <span class="sig-name descname"><span class="pre">fanchart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Fancharts'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#MUFBVAR.multifrequency_var.fanchart" title="Link to this definition">¶</a></dt>
 <dd><p>Creates fan plots of the desired variables.</p>
@@ -556,6 +578,7 @@ four frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2
 <li><a class="reference internal" href="#MUFBVAR.mufbvar_data"><code class="docutils literal notranslate"><span class="pre">mufbvar_data</span></code></a></li>
 <li><a class="reference internal" href="#MUFBVAR.multifrequency_var"><code class="docutils literal notranslate"><span class="pre">multifrequency_var</span></code></a><ul>
 <li><a class="reference internal" href="#MUFBVAR.multifrequency_var.aggregate"><code class="docutils literal notranslate"><span class="pre">multifrequency_var.aggregate()</span></code></a></li>
+<li><a class="reference internal" href="#MUFBVAR.multifrequency_var.compare_models"><code class="docutils literal notranslate"><span class="pre">multifrequency_var.compare_models()</span></code></a></li>
 <li><a class="reference internal" href="#MUFBVAR.multifrequency_var.fanchart"><code class="docutils literal notranslate"><span class="pre">multifrequency_var.fanchart()</span></code></a></li>
 <li><a class="reference internal" href="#MUFBVAR.multifrequency_var.fit"><code class="docutils literal notranslate"><span class="pre">multifrequency_var.fit()</span></code></a></li>
 <li><a class="reference internal" href="#MUFBVAR.multifrequency_var.forecast"><code class="docutils literal notranslate"><span class="pre">multifrequency_var.forecast()</span></code></a></li>

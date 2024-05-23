@@ -5,6 +5,7 @@
     * [`mufbvar_data`](MUFBVAR.md#MUFBVAR.mufbvar_data)
     * [`multifrequency_var`](MUFBVAR.md#MUFBVAR.multifrequency_var)
       * [`multifrequency_var.aggregate()`](MUFBVAR.md#MUFBVAR.multifrequency_var.aggregate)
+      * [`multifrequency_var.compare_models()`](MUFBVAR.md#MUFBVAR.multifrequency_var.compare_models)
       * [`multifrequency_var.fanchart()`](MUFBVAR.md#MUFBVAR.multifrequency_var.fanchart)
       * [`multifrequency_var.fit()`](MUFBVAR.md#MUFBVAR.multifrequency_var.fit)
       * [`multifrequency_var.forecast()`](MUFBVAR.md#MUFBVAR.multifrequency_var.forecast)
