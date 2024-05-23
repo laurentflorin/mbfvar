@@ -30,10 +30,13 @@ To use the module in R studio, a virtual python environment must be set up and t
 ## Virtual Python environment setup
 
 1. In RStudio click on Tools -> Global Options
+   
 ![Gloabl Options](./readme_images/global_options.png)
 
-2. Go to `Python`, and then click `Select...`
+1. Go to `Python`, and then click `Select...`
+   
 ![Python Options](./readme_images/python.png)
 
-3. Go to `Virtual Environments` tab and select the virtual environment including a Python version (e.g. ../python3.11)
+1. Go to `Virtual Environments` tab and select the virtual environment including a Python version (e.g. ../python3.11)
+   
 ![Python Options](./readme_images/virtenv.png)
