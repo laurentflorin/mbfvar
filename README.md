@@ -19,9 +19,9 @@ foo@bar:~$ pip install git+https://gitea.efv.admin.ch/efv_fs/MUFBVAR.git
 
 # Example code
 
-[Python Example](./docs/_build/markdown/examples.md)
+[Python Example](./docs/_build/markdown/source/examples.md)
 
-[R Example](./docs/_build/markdown/examples.md)
+[R Example](./docs/_build/markdown/source/examples.md)
 
 # Use in R studio
 
