@@ -2254,77 +2254,97 @@ four frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2
             <pre><span></span><span class="kn">import</span> <span class="nn">MUFBVAR</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
 
+
+<span class="c1"># Preparations</span>
+<span class="c1">#---------------------</span>
 
 <span class="n">io_data</span> <span class="o">=</span> <span class="s2">"hist.xlsx"</span>
 
 <span class="c1">#Model Specification</span>
-<span class="n">H</span> <span class="o">=</span> <span class="mi">96</span>        <span class="c1"># forecast horizon</span>
-<span class="n">nsim</span>     <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># number of draws from Posterior Density</span>
-<span class="n">nburn</span>    <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># number of draws to discard</span>
-<span class="n">nlags</span> <span class="o">=</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
-<span class="n">thining</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">H</span> <span class="o">=</span> <span class="mi">96</span>          <span class="c1"># forecast horizon</span>
+<span class="n">nsim</span> <span class="o">=</span> <span class="mi">100</span>      <span class="c1"># number of draws from Posterior Density</span>
+<span class="n">nburn</span> <span class="o">=</span> <span class="mf">0.5</span>     <span class="c1"># number of draws to discard</span>
+<span class="n">nlags</span> <span class="o">=</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>   <span class="c1"># Number of lags</span>
+<span class="n">thining</span> <span class="o">=</span> <span class="mi">1</span>     <span class="c1"># Thining</span>
 
-<span class="n">hyp</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">0.09</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.7</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.09</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.7</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">]]</span>
+<span class="n">hyp</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">0.09</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.7</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.09</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.7</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">]]</span> <span class="c1"># Hyperparameters see documentation for details</span>
 
-<span class="n">frequencies</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Q"</span><span class="p">,</span><span class="s2">"M"</span><span class="p">,</span><span class="s2">"W"</span><span class="p">]</span>
+<span class="n">frequencies</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Q"</span><span class="p">,</span><span class="s2">"M"</span><span class="p">,</span><span class="s2">"W"</span><span class="p">]</span> <span class="c1"># Frequencies</span>
 
 
 
 <span class="c1"># Load the data</span>
+<span class="c1"># --------------</span>
 <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">freq</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">frequencies</span><span class="p">)):</span>
-            <span class="n">freq</span> <span class="o">=</span> <span class="n">frequencies</span><span class="p">[</span><span class="n">freq</span><span class="p">]</span>
-            <span class="n">data_temp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">io_data</span><span class="p">,</span> <span class="n">sheet_name</span> <span class="o">=</span> <span class="n">freq</span><span class="p">,</span> <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_temp</span><span class="p">)</span>
+        <span class="n">freq</span> <span class="o">=</span> <span class="n">frequencies</span><span class="p">[</span><span class="n">freq</span><span class="p">]</span>
+        <span class="n">data_temp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">io_data</span><span class="p">,</span> <span class="n">sheet_name</span> <span class="o">=</span> <span class="n">freq</span><span class="p">,</span> <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_temp</span><span class="p">)</span>
+
 <span class="c1">#Transformations</span>
 <span class="n">trans</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))]</span>
 
 
-<span class="c1">#Initialize data class</span>
+<span class="c1"># Initialize data class</span>
 <span class="n">data_in</span> <span class="o">=</span> <span class="n">MUFBVAR</span><span class="o">.</span><span class="n">mufbvar_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="n">frequencies</span><span class="p">)</span>
 
 
-<span class="c1">#Initialize model class</span>
+<span class="c1"># Fit and Forecast</span>
+<span class="c1">#--------------------</span>
+
+<span class="c1"># Initialize model class</span>
 <span class="n">model</span> <span class="o">=</span>  <span class="n">MUFBVAR</span><span class="o">.</span><span class="n">multifrequency_var</span><span class="p">(</span><span class="n">nsim</span><span class="p">,</span> <span class="n">nburn</span><span class="p">,</span> <span class="n">nlags</span> <span class="p">,</span><span class="n">thining</span><span class="p">)</span>
 
-<span class="c1">#Estimate the model</span>
+<span class="c1"># Estimate the model</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">hyp</span> <span class="o">=</span> <span class="n">hyp</span><span class="p">)</span>
 
-<span class="c1">#Conditional forecasts</span>
-<span class="n">conditionals</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'w_1'</span> <span class="p">:</span> <span class="p">[</span><span class="mf">0.018</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">0.0228</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span>
-                            <span class="s1">'m_2'</span> <span class="p">:</span> <span class="p">[</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">0.002</span><span class="p">,</span> <span class="mf">0.01</span> <span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]})</span>
+<span class="c1"># Conditional forecasts</span>
 
-<span class="c1">#Create forecasts in highest frequency</span>
+<span class="n">conditionals</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'w_1'</span> <span class="p">:</span> <span class="p">[</span><span class="mf">0.018</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">0.0228</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span>
+                        <span class="s1">'m_2'</span> <span class="p">:</span> <span class="p">[</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">0.002</span><span class="p">,</span> <span class="mf">0.01</span> <span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]})</span>
+
+<span class="c1"># Create forecasts in highest frequency</span>
 <span class="n">model</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">conditionals</span><span class="p">)</span>
 
-<span class="c1">#Aggregate</span>
+<span class="c1"># Aggregate</span>
 <span class="n">model</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">frequency</span> <span class="o">=</span> <span class="s2">"Q"</span><span class="p">)</span>
 
-<span class="c1">#Save results</span>
+<span class="c1"># Save results</span>
+<span class="c1">#------------</span>
 <span class="c1">#model.to_excel('out_test.xlsx', agg = True)</span>
+<span class="c1">#model.save("model_2002_Q4")</span>
 
-<span class="c1">#Plots</span>
+<span class="c1"># Plots</span>
+<span class="c1">#---------</span>
+
 <span class="n">model</span><span class="o">.</span><span class="n">mean_plot</span><span class="p">(</span><span class="n">variables</span> <span class="o">=</span> <span class="s2">"all"</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">show</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 
 <span class="n">model</span><span class="o">.</span><span class="n">fanchart</span><span class="p">(</span><span class="n">variables</span> <span class="o">=</span> <span class="s2">"all"</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">show</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">agg</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">nhist</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
 
 <span class="c1"># Optimizing Hyperparameters</span>
+<span class="c1">#------------------------------</span>
 
+<span class="c1"># Define boundaries for each hyperparameter, see documentation for details</span>
 <span class="n">pbounds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'lambda1_1'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="s1">'lambda2_1'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">'lambda4_1'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">'lambda5_1'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">'lambda1_2'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="s1">'lambda2_2'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">'lambda4_2'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="s1">'lambda5_2'</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mi">10</span><span class="p">)}</span>
-<span class="n">init_points</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="n">n_iter</span> <span class="o">=</span> <span class="mi">8</span>
-<span class="n">nsim</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">init_points</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1"># number of random points</span>
+<span class="n">n_iter</span> <span class="o">=</span> <span class="mi">8</span> <span class="c1"># number of baysian optimization steps</span>
+<span class="n">nsim</span> <span class="o">=</span> <span class="mi">100</span> <span class="c1"># number of simulations</span>
 
 <span class="n">hyp</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">update_hyperparameters</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">pbounds</span><span class="p">,</span> <span class="n">init_points</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">,</span> <span class="n">nsim</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">"hyp.txt"</span><span class="p">)</span>
 
-<span class="c1"># scenario analysis</span>
+<span class="c1"># Scenario Analysis</span>
+<span class="c1">#-------------------------------</span>
+
+<span class="c1"># We can compare different scenarios</span>
 
 <span class="n">conditionals</span> <span class="o">=</span> <span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'w_1'</span> <span class="p">:</span> <span class="p">[</span><span class="mf">0.018</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">0.0228</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span>
-                            <span class="s1">'m_2'</span> <span class="p">:</span> <span class="p">[</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.002</span><span class="p">,</span> <span class="mf">0.01</span> <span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]}),</span>
-                    <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'w_1'</span> <span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.228</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
-                            <span class="s1">'m_2'</span> <span class="p">:</span> <span class="p">[</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.012</span><span class="p">,</span> <span class="mi">0</span> <span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]}),</span>
-                            <span class="kc">None</span><span class="p">]</span>
+                        <span class="s1">'m_2'</span> <span class="p">:</span> <span class="p">[</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.002</span><span class="p">,</span> <span class="mf">0.01</span> <span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]}),</span>
+                <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'w_1'</span> <span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.228</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
+                        <span class="s1">'m_2'</span> <span class="p">:</span> <span class="p">[</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.012</span><span class="p">,</span> <span class="mi">0</span> <span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]}),</span>
+                <span class="kc">None</span>
+                <span class="p">]</span>
 
 <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"good"</span><span class="p">,</span> <span class="s2">"bad"</span><span class="p">,</span> <span class="s2">"base"</span><span class="p">]</span>
 
@@ -2333,35 +2353,15 @@ four frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2
 <span class="c1"># Scenario Plot</span>
 <span class="n">model</span><span class="o">.</span><span class="n">scenario_plot</span><span class="p">(</span><span class="n">scenario_dict</span> <span class="o">=</span> <span class="n">out_scenarios</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="s2">"all"</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">"Scenario"</span><span class="p">,</span> <span class="n">show</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">nhist</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
 
-<span class="c1">#compare with model from last quarter</span>
+<span class="c1"># Compare with model from last quarter</span>
+<span class="c1">#--------------------------------------</span>
 
-<span class="n">data_old</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'2001-07-01'</span><span class="p">,</span> <span class="s1">'2001-09-01'</span><span class="p">,</span> <span class="s1">'2001-09-28'</span><span class="p">]</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">frequencies</span><span class="p">)):</span>
-                <span class="n">freq</span> <span class="o">=</span> <span class="n">frequencies</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-                <span class="n">data_temp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">io_data</span><span class="p">,</span> <span class="n">sheet_name</span> <span class="o">=</span> <span class="n">freq</span><span class="p">,</span> <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="n">data_old</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_temp</span><span class="o">.</span><span class="n">loc</span><span class="p">[:</span><span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
-
-
-<span class="n">data_in_old</span> <span class="o">=</span> <span class="n">MUFBVAR</span><span class="o">.</span><span class="n">mufbvar_data</span><span class="p">(</span><span class="n">data_old</span><span class="p">,</span> <span class="n">trans</span><span class="p">,</span> <span class="n">frequencies</span><span class="p">)</span>
-
-
-<span class="c1">#Initialize model class</span>
-<span class="n">model_q1</span> <span class="o">=</span>  <span class="n">MUFBVAR</span><span class="o">.</span><span class="n">multifrequency_var</span><span class="p">(</span><span class="n">nsim</span><span class="p">,</span> <span class="n">nburn</span><span class="p">,</span> <span class="n">nlags</span> <span class="p">,</span><span class="n">thining</span><span class="p">)</span>
-
-<span class="c1">#Estimate the model</span>
-<span class="n">model_q1</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_in_old</span><span class="p">,</span> <span class="n">hyp</span> <span class="o">=</span> <span class="n">hyp</span><span class="p">)</span>
-
-
-<span class="c1">#Create forecasts in highest frequency</span>
-<span class="n">model_q1</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">H</span> <span class="o">=</span> <span class="mi">96</span><span class="p">)</span>
-
-<span class="c1">#Aggregate</span>
-<span class="n">model_q1</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">frequency</span> <span class="o">=</span> <span class="s2">"Q"</span><span class="p">)</span>
+<span class="c1">#load previous quarter model:</span>
+<span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"model_2001_Q3.pkl"</span><span class="p">,</span><span class="s1">'rb'</span><span class="p">)</span>
+<span class="n">model_2001_Q3</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 
 <span class="n">model_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"2001-Q4"</span><span class="p">,</span> <span class="s2">"2001-Q3"</span><span class="p">]</span>
-
-<span class="n">multifrquency_var_models</span> <span class="o">=</span> <span class="p">[</span><span class="n">model_q1</span><span class="p">]</span>
+<span class="n">multifrquency_var_models</span> <span class="o">=</span> <span class="p">[</span><span class="n">model_2001_Q3</span><span class="p">]</span>
 
 <span class="n">model</span><span class="o">.</span><span class="n">compare_models</span><span class="p">(</span><span class="n">multifrquency_var_models</span><span class="p">,</span> <span class="n">model_names</span><span class="p">,</span> <span class="n">agg</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="s2">"all"</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">"Comparison"</span><span class="p">,</span> <span class="n">show</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">nhist</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
 
@@ -2378,7 +2378,19 @@ four frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2
            </a>
           </h3>
           <p>
-           The module can also be used in r, using the reticulate package:
+           The module can also be used in r, using the reticulate package. The easiest way is to source a python script with reticulate
+          </p>
+          <div class="highlight-r notranslate">
+           <div class="highlight">
+            <pre><span></span><span class="nf">library</span><span class="p">(</span><span class="n">reticulate</span><span class="p">)</span>
+<span class="nf">setwd</span><span class="p">(</span><span class="nf">dirname</span><span class="p">(</span><span class="n">rstudioapi</span><span class="o">::</span><span class="nf">getActiveDocumentContext</span><span class="p">()</span><span class="o">$</span><span class="n">path</span><span class="p">))</span>
+
+<span class="nf">source_python</span><span class="p">(</span><span class="s">'python_example.py'</span><span class="p">)</span>
+</pre>
+           </div>
+          </div>
+          <p>
+           It is also possible to load the package into R and use the functions inside of an R script.
           </p>
           <div class="highlight-r notranslate">
            <div class="highlight">
@@ -2389,9 +2401,12 @@ four frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2
 <span class="n">mufbvar</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">import</span><span class="p">(</span><span class="s">"MUFBVAR"</span><span class="p">)</span>
 <span class="n">pd</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">impoty</span><span class="p">(</span><span class="s">"pandas"</span><span class="p">)</span>
 <span class="n">np</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">import</span><span class="p">(</span><span class="s">"numpy"</span><span class="p">)</span>
+<span class="n">pickle</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">import</span><span class="p">(</span><span class="s">"pickle"</span><span class="p">)</span>
 
 <span class="n">io_data</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s">"hist.xlsx"</span>
 
+<span class="c1"># Preparations</span>
+<span class="c1">#---------------------</span>
 
 <span class="n">H</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">96L</span><span class="w">        </span><span class="c1"># forecast horizon</span>
 <span class="n">nsim</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">20000L</span><span class="w">  </span><span class="c1"># number of draws from Posterior Density</span>
@@ -2399,7 +2414,7 @@ four frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2
 <span class="n">nlags</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="m">6L</span><span class="p">,</span><span class="m">4L</span><span class="p">)</span>
 <span class="n">thining</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span>
 
-<span class="n">hyp</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">0.09</span><span class="p">,</span><span class="w"> </span><span class="m">4.3</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">2.7</span><span class="p">,</span><span class="w"> </span><span class="m">4.3</span><span class="p">)</span>
+<span class="n">hyp</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="nf">list</span><span class="p">(</span><span class="m">0.09</span><span class="p">,</span><span class="w"> </span><span class="m">4.3</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">2.7</span><span class="p">,</span><span class="w"> </span><span class="m">4.3</span><span class="p">),</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="m">0.09</span><span class="p">,</span><span class="w"> </span><span class="m">4.3</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">2.7</span><span class="p">,</span><span class="w"> </span><span class="m">4.3</span><span class="p">))</span>
 
 <span class="n">frequencies</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="s">"Q"</span><span class="p">,</span><span class="w"> </span><span class="s">"M"</span><span class="p">,</span><span class="w"> </span><span class="s">"W"</span><span class="p">)</span>
 
@@ -2419,29 +2434,81 @@ four frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2
 <span class="n">data_in</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">mufbvar</span><span class="o">$</span><span class="nf">mufbvar_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">trans</span><span class="p">,</span><span class="w"> </span><span class="n">frequencies</span><span class="p">)</span>
 
 
-<span class="c1">#Initialize model class</span>
-<span class="n">model</span><span class="w"> </span><span class="o">&lt;-</span><span class="w">  </span><span class="n">mufbvar</span><span class="o">$</span><span class="nf">multifrequency_var</span><span class="p">(</span><span class="n">nsim</span><span class="p">,</span><span class="w"> </span><span class="n">nburn</span><span class="p">,</span><span class="w"> </span><span class="n">nlags</span><span class="w"> </span><span class="p">,</span><span class="n">thining</span><span class="p">)</span>
+<span class="c1"># Fit and Forecast</span>
+<span class="c1">#--------------------</span>
 
-<span class="c1">#Estimate the model</span>
+<span class="c1"># Initialize model class</span>
+<span class="n">model</span><span class="w"> </span><span class="o">&lt;-</span><span class="w">  </span><span class="n">MUFBVAR</span><span class="o">$</span><span class="nf">multifrequency_var</span><span class="p">(</span><span class="n">nsim</span><span class="p">,</span><span class="w"> </span><span class="n">nburn</span><span class="p">,</span><span class="w"> </span><span class="n">nlags</span><span class="w"> </span><span class="p">,</span><span class="n">thining</span><span class="p">)</span>
+
+<span class="c1"># Estimate the model</span>
 <span class="n">model</span><span class="o">$</span><span class="nf">fit</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span><span class="w"> </span><span class="n">hyp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hyp</span><span class="p">)</span>
 
-<span class="c1">#Conditional forecasts</span>
-<span class="n">conditionals</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pd.DataFrame</span><span class="p">({</span><span class="s">'w_1'</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="m">0.018</span><span class="p">,</span><span class="w"> </span><span class="m">0.025</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="m">0.0228</span><span class="p">,</span><span class="w"> </span><span class="m">0.05</span><span class="p">],</span>
-<span class="w">                            </span><span class="s">'m_2'</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="m">0.002</span><span class="p">,</span><span class="w"> </span><span class="m">0.01</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="m">0.01</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">]})</span>
+<span class="c1"># Conditional forecasts</span>
 
-<span class="c1">#Create forecasts in highest frequency</span>
+<span class="n">conditionals</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">pd</span><span class="o">$</span><span class="nf">DataFrame</span><span class="p">({</span><span class="s">'w_1'</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="m">0.018</span><span class="p">,</span><span class="w"> </span><span class="m">0.025</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="m">0.0228</span><span class="p">,</span><span class="w"> </span><span class="m">0.05</span><span class="p">],</span>
+<span class="w">                        </span><span class="s">'m_2'</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="m">0.002</span><span class="p">,</span><span class="w"> </span><span class="m">0.01</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="m">0.01</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">]})</span>
+
+<span class="c1"># Create forecasts in highest frequency</span>
 <span class="n">model</span><span class="o">$</span><span class="nf">forecast</span><span class="p">(</span><span class="n">H</span><span class="p">,</span><span class="w"> </span><span class="n">conditionals</span><span class="p">)</span>
 
-<span class="c1">#Aggregate</span>
+<span class="c1"># Aggregate</span>
 <span class="n">model</span><span class="o">$</span><span class="nf">aggregate</span><span class="p">(</span><span class="n">frequency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Q"</span><span class="p">)</span>
 
-<span class="c1">#Save results</span>
+<span class="c1"># Save results</span>
+<span class="c1">#------------</span>
 <span class="c1">#model$to_excel('out_test.xlsx', agg = True)</span>
+<span class="c1">#model$save("model_2002_Q4")</span>
 
-<span class="c1">#Plots</span>
+<span class="c1"># Plots</span>
+<span class="c1">#---------</span>
+
 <span class="n">model</span><span class="o">$</span><span class="nf">mean_plot</span><span class="p">(</span><span class="n">variables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"all"</span><span class="p">,</span><span class="w"> </span><span class="n">save</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="p">,</span><span class="w"> </span><span class="n">show</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">)</span>
 
-<span class="n">model</span><span class="o">$</span><span class="nf">fanchart</span><span class="p">(</span><span class="n">variables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"all"</span><span class="p">,</span><span class="w"> </span><span class="n">save</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="p">,</span><span class="w"> </span><span class="n">show</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">,</span><span class="w"> </span><span class="n">agg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">,</span><span class="w"> </span><span class="n">nhist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10L</span><span class="p">)</span>
+<span class="n">model</span><span class="o">$</span><span class="nf">fanchart</span><span class="p">(</span><span class="n">variables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"all"</span><span class="p">,</span><span class="w"> </span><span class="n">save</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="p">,</span><span class="w"> </span><span class="n">show</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">,</span><span class="w"> </span><span class="n">agg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">,</span><span class="w"> </span><span class="n">nhist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">)</span>
+
+<span class="c1"># Optimizing Hyperparameters</span>
+<span class="c1">#------------------------------</span>
+
+<span class="c1"># Define boundaries for each hyperparameter, see documentation for details</span>
+<span class="n">pbounds</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="p">{</span><span class="s">'lambda1_1'</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="m">0.001</span><span class="p">,</span><span class="w"> </span><span class="m">20</span><span class="p">),</span><span class="w"> </span><span class="s">'lambda2_1'</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="m">0.01</span><span class="p">,</span><span class="w"> </span><span class="m">10</span><span class="p">),</span><span class="w"> </span><span class="s">'lambda4_1'</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="m">0.01</span><span class="p">,</span><span class="w"> </span><span class="m">10</span><span class="p">),</span><span class="w"> </span><span class="s">'lambda5_1'</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="m">0.01</span><span class="p">,</span><span class="w"> </span><span class="m">10</span><span class="p">),</span><span class="w"> </span><span class="s">'lambda1_2'</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="m">0.001</span><span class="p">,</span><span class="w"> </span><span class="m">20</span><span class="p">),</span><span class="w"> </span><span class="s">'lambda2_2'</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="m">0.01</span><span class="p">,</span><span class="w"> </span><span class="m">10</span><span class="p">),</span><span class="w"> </span><span class="s">'lambda4_2'</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="m">0.01</span><span class="p">,</span><span class="w"> </span><span class="m">10</span><span class="p">),</span><span class="w"> </span><span class="s">'lambda5_2'</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="m">0.01</span><span class="p">,</span><span class="w"> </span><span class="m">10</span><span class="p">)}</span>
+<span class="n">init_points</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">3L</span><span class="w"> </span><span class="c1"># number of random points</span>
+<span class="n">n_iter</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">8L</span><span class="w"> </span><span class="c1"># number of baysian optimization steps</span>
+<span class="n">nsim</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">100L</span><span class="w"> </span><span class="c1"># number of simulations</span>
+
+<span class="n">hyp</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">model</span><span class="o">$</span><span class="nf">update_hyperparameters</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span><span class="w"> </span><span class="n">pbounds</span><span class="p">,</span><span class="w"> </span><span class="n">init_points</span><span class="p">,</span><span class="w"> </span><span class="n">n_iter</span><span class="p">,</span><span class="w"> </span><span class="n">nsim</span><span class="p">,</span><span class="w"> </span><span class="n">save</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"hyp.txt"</span><span class="p">)</span>
+
+<span class="c1"># Scenario Analysis</span>
+<span class="c1">#-------------------------------</span>
+
+<span class="c1"># We can compare different scenarios</span>
+
+<span class="n">conditionals</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="p">[</span><span class="n">pd</span><span class="o">$</span><span class="nf">DataFrame</span><span class="p">({</span><span class="s">'w_1'</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="m">0.018</span><span class="p">,</span><span class="w"> </span><span class="m">0.025</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="m">0.0228</span><span class="p">,</span><span class="w"> </span><span class="m">0.05</span><span class="p">],</span>
+<span class="w">                        </span><span class="s">'m_2'</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="m">0.3</span><span class="p">,</span><span class="w"> </span><span class="m">0.002</span><span class="p">,</span><span class="w"> </span><span class="m">0.01</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="m">0.01</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">]}),</span>
+<span class="w">                </span><span class="n">pd</span><span class="o">$</span><span class="nf">DataFrame</span><span class="p">({</span><span class="s">'w_1'</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="m">-0.02</span><span class="p">,</span><span class="w"> </span><span class="m">-0.25</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="m">-0.228</span><span class="p">,</span><span class="w"> </span><span class="m">0.1</span><span class="p">],</span>
+<span class="w">                        </span><span class="s">'m_2'</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="m">-0.2</span><span class="p">,</span><span class="w"> </span><span class="m">-0.012</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="m">0.1</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">,</span><span class="w"> </span><span class="n">np.nan</span><span class="p">]}),</span>
+<span class="w">                </span><span class="n">None</span>
+<span class="w">                </span><span class="p">]</span>
+
+<span class="n">names</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="s">"good"</span><span class="p">,</span><span class="w"> </span><span class="s">"bad"</span><span class="p">,</span><span class="w"> </span><span class="s">"base"</span><span class="p">)</span>
+
+<span class="n">out_scenarios</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model</span><span class="o">$</span><span class="nf">scenario_forecast</span><span class="p">(</span><span class="n">H</span><span class="p">,</span><span class="w"> </span><span class="n">conditionals</span><span class="p">,</span><span class="w"> </span><span class="n">names</span><span class="p">,</span><span class="w"> </span><span class="n">agg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">)</span>
+
+<span class="c1"># Scenario Plot</span>
+<span class="n">model</span><span class="o">$</span><span class="nf">scenario_plot</span><span class="p">(</span><span class="n">scenario_dict</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">out_scenarios</span><span class="p">,</span><span class="w"> </span><span class="n">variables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"all"</span><span class="p">,</span><span class="w"> </span><span class="n">save</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Scenario"</span><span class="p">,</span><span class="w"> </span><span class="n">show</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">,</span><span class="w"> </span><span class="n">nhist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10L</span><span class="p">)</span>
+
+<span class="c1"># Compare with model from last quarter</span>
+<span class="c1">#--------------------------------------</span>
+
+<span class="c1">#load previous quarter model:</span>
+<span class="n">file</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="s">"model_2001_Q3.pkl"</span><span class="p">,</span><span class="s">'rb'</span><span class="p">)</span>
+<span class="n">model_2001_Q3</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">pickle.load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+<span class="n">model_names</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="s">"2001-Q4"</span><span class="p">,</span><span class="w"> </span><span class="s">"2001-Q3"</span><span class="p">)</span>
+<span class="n">multifrquency_var_models</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="n">model_2001_Q3</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">$</span><span class="nf">compare_models</span><span class="p">(</span><span class="n">multifrquency_var_models</span><span class="p">,</span><span class="w"> </span><span class="n">model_names</span><span class="p">,</span><span class="w"> </span><span class="n">agg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">,</span><span class="w"> </span><span class="n">variables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"all"</span><span class="p">,</span><span class="w"> </span><span class="n">save</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Comparison"</span><span class="p">,</span><span class="w"> </span><span class="n">show</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">,</span><span class="w"> </span><span class="n">nhist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">5L</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">$</span><span class="nf">compare_models</span><span class="p">(</span><span class="n">multifrquency_var_models</span><span class="p">,</span><span class="w"> </span><span class="n">model_names</span><span class="p">,</span><span class="w"> </span><span class="n">agg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="p">,</span><span class="w"> </span><span class="n">variables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s">"q_1"</span><span class="p">],</span><span class="w"> </span><span class="n">save</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Comparison"</span><span class="p">,</span><span class="w"> </span><span class="n">show</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">True</span><span class="p">,</span><span class="w"> </span><span class="n">nhist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">20L</span><span class="p">)</span>
 </pre>
            </div>
           </div>
