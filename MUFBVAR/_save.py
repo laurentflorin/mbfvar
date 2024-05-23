@@ -46,7 +46,7 @@ from .inverse.matrix_inversion import invert_matrix
 # for hyperparameter tuning
 from bayes_opt import BayesianOptimization
 
-def save(self, filename = "mufbvar_model.pkl"):
+def save(self, filename = "mufbvar_model"):
         
         '''
         Saves the MFBVAR Object
@@ -57,7 +57,7 @@ def save(self, filename = "mufbvar_model.pkl"):
             Path where to save the object. End must be .pkl
         
         '''
-        with open(filename, 'wb') as outp:  # Overwrites any existing file.
+        with open(filename + ".pkl", 'wb') as outp:  # Overwrites any existing file.
             pickle.dump(self, outp, pickle.HIGHEST_PROTOCOL)
             
             
