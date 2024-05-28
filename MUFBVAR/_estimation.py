@@ -898,9 +898,11 @@ def forecast(self, H, conditionals = None):
     # First we need to extend the index
     # depending on the highest frequencies the approach differs
     
+    index = copy.deepcopy(self.index_list[-1])
+    
     if self.frequencies[-1] == "D":
         
-        self.index_list[-1] = self.index_list[-1].append(pd.date_range(start=self.index_list[-1][-1] + Day(), periods = H, freq='D'))
+        index = index.append(pd.date_range(start=index[-1] + Day(), periods = H, freq='D'))
 
         # Function to check if a month has more than 20 days
         def has_more_than_20_days(month, dti):
@@ -911,16 +913,16 @@ def forecast(self, H, conditionals = None):
             return dti[~((dti.to_period('M') == month) & (dti.day > 20))]
 
         # Check each month in extended_dti
-        for month in self.index_list[-1].to_period('M').unique():
+        for month in index.to_period('M').unique():
             # If a month has more than 20 days
-            while has_more_than_20_days(month, self.index_list[-1]):
+            while has_more_than_20_days(month, index):
                 # Remove the last day of that month
-                self.index_list[-1] = remove_last_day_of_month(month, self.index_list[-1])
+                index = remove_last_day_of_month(month, index)
                 # Add an additional day at the end
-                self.index_list[-1] = self.index_list[-1].append(pd.DatetimeIndex([self.index_list[-1][-1] + Day()]))
+                index = index.append(pd.DatetimeIndex([index[-1] + Day()]))
     
     if self.frequencies[-1] == 'W':
-        self.index_list[-1] = self.index_list[-1].append(pd.date_range(start=self.index_list[-1][-1] + Week(), periods=H, freq='W-MON'))
+        index = index.append(pd.date_range(start=index[-1] + Week(), periods=H, freq='W-MON'))
 
         # Function to check if a month has more than 4 weeks
         def has_more_than_4_weeks(month, dti):
@@ -931,24 +933,24 @@ def forecast(self, H, conditionals = None):
             return dti[~((dti.to_period('M') == month) & (dti.day > 28))]
 
         # Check each month in extended_dti
-        for month in self.index_list[-1].to_period('M').unique():
+        for month in index.to_period('M').unique():
             # If a month has more than 4 weeks
-            while has_more_than_4_weeks(month, self.index_list[-1]):
+            while has_more_than_4_weeks(month, index):
                 # Remove the last week of that month
-                self.index_list[-1] = remove_last_week_of_month(month, self.index_list[-1])
+                index = remove_last_week_of_month(month, index)
                 # Add an additional week at the end
-                self.index_list[-1] = self.index_list[-1].append(pd.DatetimeIndex([self.index_list[-1][-1] + Week()]))
+                index = index.append(pd.DatetimeIndex([index[-1] + Week()]))
                 
     if self.frequencies[-1] == 'M':
-        self.index_list[-1] = self.index_list[-1].append(pd.date_range(start=self.index_list[-1][-1] + MonthBegin(), periods=12, freq='MS'))
+        index = index.append(pd.date_range(start=index[-1] + MonthBegin(), periods=H, freq='MS'))
     
     if self.frequencies[-1] == 'Q':
-        self.index_list[-1] = self.index_list[-1].append(pd.date_range(start=self.index_list[-1][-1] + QuarterBegin(), periods=H, freq='QS'))
+        index = index.append(pd.date_range(start=index[-1] + QuarterBegin(), periods=H, freq='QS'))
         
     
     # Now we need to look at the conditional forecasts:
     
-    YYcond = pd.DataFrame(np.nan, index =  self.index_list[-1][-H:], columns= self.varlist_list[-1])
+    YYcond = pd.DataFrame(np.nan, index =  index[-H:], columns= self.varlist_list[-1])
     
     if conditionals is not None:
         conditionals.index = YYcond.index[:len(conditionals.index)]
@@ -972,7 +974,7 @@ def forecast(self, H, conditionals = None):
     H_= int(self.H)
             
     #Prepare index for output
-    self.index_list[-1] = self.index_list[-1][self.index_list[-1].shape[0]-(self.lstate_list[-1].shape[2]+H_):]
+    index = index[index.shape[0]-(self.lstate_list[-1].shape[2]+H_):]
 
     ###############  
     # Forecasting #
@@ -1180,22 +1182,22 @@ def forecast(self, H, conditionals = None):
         YY_005_list.append(np.vstack((lstate_005,YYftr_005)))
             
     YY_mean_pd = pd.DataFrame(YY_m_list[-1], columns = self.varlist_list[-1])
-    YY_mean_pd.index = self.index_list[-1]
+    YY_mean_pd.index = index
     
     YY_median_pd = pd.DataFrame(YY_med_list[-1], columns = self.varlist_list[-1])
-    YY_median_pd.index = self.index_list[-1]
+    YY_median_pd.index = index
     
     YY_095_pd = pd.DataFrame(YY_095_list[-1], columns = self.varlist_list[-1])
-    YY_095_pd.index = self.index_list[-1]
+    YY_095_pd.index = index
     
     YY_005_pd = pd.DataFrame(YY_005_list[-1], columns = self.varlist_list[-1])
-    YY_005_pd.index = self.index_list[-1]
+    YY_005_pd.index = index
     
     YY_084_pd = pd.DataFrame(YY_084_list[-1], columns = self.varlist_list[-1])
-    YY_084_pd.index = self.index_list[-1]
+    YY_084_pd.index = index
     
     YY_016_pd = pd.DataFrame(YY_016_list[-1], columns = self.varlist_list[-1])
-    YY_016_pd.index = self.index_list[-1]
+    YY_016_pd.index = index
 
     self.YY_095 = YY_095_list
     self.YY_084 = YY_084_list
@@ -1211,6 +1213,8 @@ def forecast(self, H, conditionals = None):
     self.YY_005_pd = YY_005_pd
     self.YY_084_pd = YY_084_pd
     self.YY_016_pd = YY_016_pd
+    
+    self.index_list[-1] = index
         
         
 def aggregate(self, frequency, reset_index = True):
