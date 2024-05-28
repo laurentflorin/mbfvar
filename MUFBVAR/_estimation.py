@@ -14,7 +14,6 @@ from pandas.tseries.offsets import Week , MonthBegin, QuarterBegin, Day
 
 import itertools
 
-from .mfbvar_funcs import calc_yyact
 #plotting
 import matplotlib.pyplot as plt
 
@@ -42,9 +41,9 @@ import copy
 #from MUFBVAR.pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
 from .cholcov.cholcov_module import cholcovOrEigendecomp
 from .inverse.matrix_inversion import invert_matrix
-
+from .mfbvar_funcs import calc_yyact
 # for hyperparameter tuning
-from bayes_opt import BayesianOptimization
+
 
 
 
@@ -901,7 +900,7 @@ def forecast(self, H, conditionals = None):
     
     if self.frequencies[-1] == "D":
         
-        self.index_list[-1] = self.index_list[-1].append(pd.date_range(start=self.index_list[-1][-1] + Day(), periods=H, freq='D'))
+        self.index_list[-1] = self.index_list[-1].append(pd.date_range(start=self.index_list[-1][-1] + Day(), periods = H, freq='D'))
 
         # Function to check if a month has more than 20 days
         def has_more_than_20_days(month, dti):
@@ -1042,29 +1041,29 @@ def forecast(self, H, conditionals = None):
     
     #mean
     YYftr_m = np.nanmean(YYvector_ml[self.nburn:,:,:], axis = 0)
-    YYftr_m[:, (self.select_list[-1] == 1)[0]] = 100 * YYftr_m[:, (self.select_list[-1] == 1)[0]]
-    YYftr_m[:, (self.select_list[-1] == 0)[0]] = np.exp(YYftr_m[:, (self.select_list[-1] == 0)[0]])
+    YYftr_m[:, (self.select_list[-1] == 1)] = 100 * YYftr_m[:, (self.select_list[-1] == 1)]
+    YYftr_m[:, (self.select_list[-1] == 0)] = np.exp(YYftr_m[:, (self.select_list[-1] == 0)])
     
     YYnow_m = np.mean(self.YYactsim_list[-1][self.nburn:,1:(self.freq_ratio_list[-1]+1),:self.Nm_list[-1]], axis = 0) # actual/nowcast monthlies
     if YYnow_m.size:
-        YYnow_m[:, (self.select_m_list[-1] == 1)[0]] = 100 * YYnow_m[:, (self.select_m_list[-1] == 1)[0]]
-        YYnow_m[:, (self.select_m_list[-1] == 0)[0]] = np.exp(YYnow_m[:,(self.select_m_list[-1] == 0)[0]])
+        YYnow_m[:, (self.select_m_list[-1] == 1)] = 100 * YYnow_m[:, (self.select_m_list[-1] == 1)]
+        YYnow_m[:, (self.select_m_list[-1] == 0)] = np.exp(YYnow_m[:,(self.select_m_list[-1] == 0)])
     
     lstate_m = np.mean(self.lstate_list[-1][self.nburn:,:,:], axis = 0).T # hf obs for lf vars
-    lstate_m[:, (self.select_q[-1] == 1)[0]] = 100 * lstate_m[:, (self.select_q[-1] == 1)[0]]
-    lstate_m[:, (self.select_q[-1] == 0)[0]] = np.exp(lstate_m[:, (self.select_q[-1]== 0)[0]])
+    lstate_m[:, (self.select_q[-1] == 1)] = 100 * lstate_m[:, (self.select_q[-1] == 1)]
+    lstate_m[:, (self.select_q[-1] == 0)] = np.exp(lstate_m[:, (self.select_q[-1]== 0)])
     
-
+    YMh_list = copy.deepcopy(self.YMh_list)
     
-    YMh_len_correction = int(self.YMh_list[-1].shape[0] - lstate_m[:-(self.freq_ratio_list[-1]),:].shape[0])
+    YMh_len_correction = int(YMh_list[-1].shape[0] - lstate_m[:-(self.freq_ratio_list[-1]),:].shape[0])
     
-    if self.YMh_list[-1].size:
-        self.YMh_list[-1][:, (self.select_m_list[-1] == 1)[0]] = 100 * self.YMh_list[-1][:, (self.select_m_list[-1] == 1)[0]]
-        self.YMh_list[-1][:, (self.select_m_list[-1] == 0)[0]] =  np.exp(self.YMh_list[-1][:, (self.select_m_list[-1] == 0)[0]])
+    #if YMh_list[-1].size:
+    #    YMh_list[-1][:, (self.select_m_list[-1] == 1)] = 100 * YMh_list[-1][:, (self.select_m_list[-1] == 1)]
+    #    YMh_list[-1][:, (self.select_m_list[-1] == 0)] =  np.exp(YMh_list[-1][:, (self.select_m_list[-1] == 0)])
     
-    if self.YMh_list[-1].size:
-        YY_m_list.append(np.vstack((np.vstack((np.hstack((self.YMh_list[-1][YMh_len_correction:,:], lstate_m[:-(self.freq_ratio_list[-1]),:])), np.hstack((YYnow_m, lstate_m[-self.freq_ratio_list[-1]:,:])))), YYftr_m)))
-        #YY_m_list.append(np.vstack((np.vstack((np.hstack((self.YMh_list[-1], lstate_m[:-(self.freq_ratio_list[-1]),:])), np.hstack((YYnow_m, lstate_m[-self.freq_ratio_list[-1]:,:])))), YYftr_m)))
+    if YMh_list[-1].size:
+        YY_m_list.append(np.vstack((np.vstack((np.hstack((YMh_list[-1][YMh_len_correction:,:], lstate_m[:-(self.freq_ratio_list[-1]),:])), np.hstack((YYnow_m, lstate_m[-self.freq_ratio_list[-1]:,:])))), YYftr_m)))
+        #YY_m_list.append(np.vstack((np.vstack((np.hstack((YMh_list[-1], lstate_m[:-(self.freq_ratio_list[-1]),:])), np.hstack((YYnow_m, lstate_m[-self.freq_ratio_list[-1]:,:])))), YYftr_m)))
     else:
         YY_m_list.append(np.vstack((lstate_m,YYftr_m)))
     
@@ -1075,40 +1074,40 @@ def forecast(self, H, conditionals = None):
     
     #median
     YYftr_med = np.nanmedian(YYvector_ml[self.nburn:,:,:], axis = 0)
-    YYftr_med[:, (self.select_list[-1] == 1)[0]] = 100 * YYftr_med[:, (self.select_list[-1] == 1)[0]]
-    YYftr_med[:, (self.select_list[-1] == 0)[0]] = np.exp(YYftr_med[:, (self.select_list[-1] == 0)[0]])
+    YYftr_med[:, (self.select_list[-1] == 1)] = 100 * YYftr_med[:, (self.select_list[-1] == 1)]
+    YYftr_med[:, (self.select_list[-1] == 0)] = np.exp(YYftr_med[:, (self.select_list[-1] == 0)])
     
     YYnow_med = np.median(self.YYactsim_list[-1][self.nburn:,1:(self.freq_ratio+1),:self.Nm_list[-1]], axis = 0) # actual/nowcast monthlies
     
     if YYnow_med.size:
-        YYnow_med[:, (self.select_m_list[-1] == 1)[0]] = 100 * YYnow_med[:, (self.select_m_list[-1] == 1)[0]]
-        YYnow_med[:, (self.select_m_list[-1] == 0)[0]] = np.exp(YYnow_med[:, (self.select_m_list[-1] == 0)[0]])
+        YYnow_med[:, (self.select_m_list[-1] == 1)] = 100 * YYnow_med[:, (self.select_m_list[-1] == 1)]
+        YYnow_med[:, (self.select_m_list[-1] == 0)] = np.exp(YYnow_med[:, (self.select_m_list[-1] == 0)])
     
     lstate_med = np.median(self.lstate_list[-1][self.nburn:,:,:], axis = 0).T # hf obs for lf vars
-    lstate_med[:, (self.select_q[-1] == 1)[0]] = 100 * lstate_med[:, (self.select_q[-1] == 1)[0]]
-    lstate_med[:, (self.select_q[-1] == 0)[0]] = np.exp(lstate_med[:, (self.select_q[-1]== 0)[0]])
+    lstate_med[:, (self.select_q[-1] == 1)] = 100 * lstate_med[:, (self.select_q[-1] == 1)]
+    lstate_med[:, (self.select_q[-1] == 0)] = np.exp(lstate_med[:, (self.select_q[-1]== 0)])
     
-    if self.YMh_list[-1].size:
-        YY_med_list.append(np.vstack((np.vstack((np.hstack((self.YMh_list[-1][YMh_len_correction:,:], lstate_med[:-self.freq_ratio_list[-1],:])), np.hstack((YYnow_med, lstate_m[-self.freq_ratio_list[-1]:,:])))), YYftr_med)))
+    if YMh_list[-1].size:
+        YY_med_list.append(np.vstack((np.vstack((np.hstack((YMh_list[-1][YMh_len_correction:,:], lstate_med[:-self.freq_ratio_list[-1],:])), np.hstack((YYnow_med, lstate_m[-self.freq_ratio_list[-1]:,:])))), YYftr_med)))
     else:
         YY_med_list.append(np.vstack((lstate_med,YYftr_med)))
         
     # safe uncertainty
     # 95%
     YYftr_095 = np.nanquantile(YYvector_ml[self.nburn:,:,:], q = 0.95 ,axis = 0)
-    YYftr_095[:, (self.select_list[-1] == 1)[0]] = 100 * YYftr_095[:, (self.select_list[-1] == 1)[0]]
-    YYftr_095[:, (self.select_list[-1] == 0)[0]] = np.exp(YYftr_095[:, (self.select_list[-1] == 0)[0]])
+    YYftr_095[:, (self.select_list[-1] == 1)] = 100 * YYftr_095[:, (self.select_list[-1] == 1)]
+    YYftr_095[:, (self.select_list[-1] == 0)] = np.exp(YYftr_095[:, (self.select_list[-1] == 0)])
     
     YYnow_095 = np.quantile(self.YYactsim_list[-1][self.nburn:,1:(self.freq_ratio_list[-1]+1),:self.Nm_list[-1]], q = 0.95, axis = 0) # actual/nowcast monthlies
     if YYnow_095.size:
-        YYnow_095[:, (self.select_m_list[-1] == 1)[0]] = 100 * YYnow_095[:, (self.select_m_list[-1] == 1)[0]]
-        YYnow_095[:, (self.select_m_list[-1] == 0)[0]] = np.exp(YYnow_095[:, (self.select_m_list[-1] == 0)[0]])
+        YYnow_095[:, (self.select_m_list[-1] == 1)] = 100 * YYnow_095[:, (self.select_m_list[-1] == 1)]
+        YYnow_095[:, (self.select_m_list[-1] == 0)] = np.exp(YYnow_095[:, (self.select_m_list[-1] == 0)])
     
     lstate_095 = np.quantile(self.lstate_list[-1][self.nburn:,:,:], q = 0.95, axis = 0).T # hf obs for lf vars
-    lstate_095[:, (self.select_q[-1] == 1)[0]] = 100 * lstate_095[:, (self.select_q[-1] == 1)[0]]
-    lstate_095[:, (self.select_q[-1] == 0)[0]] = np.exp(lstate_095[:, (self.select_q[-1] == 0)[0]])
+    lstate_095[:, (self.select_q[-1] == 1)] = 100 * lstate_095[:, (self.select_q[-1] == 1)]
+    lstate_095[:, (self.select_q[-1] == 0)] = np.exp(lstate_095[:, (self.select_q[-1] == 0)])
     
-    YMna = np.full(self.YMh_list[-1].shape, np.nan)
+    YMna = np.full(YMh_list[-1].shape, np.nan)
     
     if YMna.size:
         YY_095_list.append(np.vstack((np.vstack((np.hstack((YMna[YMh_len_correction:,:],lstate_095[:-self.freq_ratio_list[-1],:])), np.hstack((YYnow_095, lstate_095[-self.freq_ratio_list[-1]:,:])))), YYftr_095)))
@@ -1117,19 +1116,19 @@ def forecast(self, H, conditionals = None):
     
     # 84%
     YYftr_084 = np.nanquantile(YYvector_ml[self.nburn:,:,:], q = 0.84 ,axis = 0)
-    YYftr_084[:, (self.select_list[-1] == 1)[0]] = 100 * YYftr_084[:, (self.select_list[-1] == 1)[0]]
-    YYftr_084[:, (self.select_list[-1] == 0)[0]] = np.exp(YYftr_084[:, (self.select_list[-1] == 0)[0]])
+    YYftr_084[:, (self.select_list[-1] == 1)] = 100 * YYftr_084[:, (self.select_list[-1] == 1)]
+    YYftr_084[:, (self.select_list[-1] == 0)] = np.exp(YYftr_084[:, (self.select_list[-1] == 0)])
     
     YYnow_084 = np.quantile(self.YYactsim_list[-1][self.nburn:,1:(self.freq_ratio_list[-1]+1),:self.Nm_list[-1]], q = 0.84, axis = 0) # actual/nowcast monthlies
     if YYnow_084.size:
-        YYnow_084[:, (self.select_m_list[-1] == 1)[0]] = 100 * YYnow_084[:, (self.select_m_list[-1] == 1)[0]]
-        YYnow_084[:, (self.select_m_list[-1] == 0)[0]] = np.exp(YYnow_084[:, (self.select_m_list[-1] == 0)[0]])
+        YYnow_084[:, (self.select_m_list[-1] == 1)] = 100 * YYnow_084[:, (self.select_m_list[-1] == 1)]
+        YYnow_084[:, (self.select_m_list[-1] == 0)] = np.exp(YYnow_084[:, (self.select_m_list[-1] == 0)])
     
     lstate_084 = np.quantile(self.lstate_list[-1][self.nburn:,:,:], q = 0.84, axis = 0).T # hf obs for lf vars
-    lstate_084[:, (self.select_q[-1] == 1)[0]] = 100 * lstate_084[:, (self.select_q[-1] == 1)[0]]
-    lstate_084[:, (self.select_q[-1] == 0)[0]] = np.exp(lstate_084[:, (self.select_q[-1] == 0)[0]])
+    lstate_084[:, (self.select_q[-1] == 1)] = 100 * lstate_084[:, (self.select_q[-1] == 1)]
+    lstate_084[:, (self.select_q[-1] == 0)] = np.exp(lstate_084[:, (self.select_q[-1] == 0)])
     
-    YMna = np.full(self.YMh_list[-1].shape, np.nan)
+    YMna = np.full(YMh_list[-1].shape, np.nan)
     
     if YMna.size:
         YY_084_list.append(np.vstack((np.vstack((np.hstack((YMna[YMh_len_correction:,:],lstate_084[:-self.freq_ratio_list[-1],:])), np.hstack((YYnow_084, lstate_084[-self.freq_ratio_list[-1]:,:])))), YYftr_084)))
@@ -1139,19 +1138,19 @@ def forecast(self, H, conditionals = None):
     # 16%
     
     YYftr_016 = np.nanquantile(YYvector_ml[self.nburn:,:,:], q = 0.16 ,axis = 0)
-    YYftr_016[:, (self.select_list[-1] == 1)[0]] = 100 * YYftr_016[:, (self.select_list[-1] == 1)[0]]
-    YYftr_016[:, (self.select_list[-1] == 0)[0]] = np.exp(YYftr_016[:, (self.select_list[-1] == 0)[0]])
+    YYftr_016[:, (self.select_list[-1] == 1)] = 100 * YYftr_016[:, (self.select_list[-1] == 1)]
+    YYftr_016[:, (self.select_list[-1] == 0)] = np.exp(YYftr_016[:, (self.select_list[-1] == 0)])
     
     YYnow_016 = np.quantile(self.YYactsim_list[-1][self.nburn:,1:(self.freq_ratio_list[-1]+1),:self.Nm_list[-1]], q = 0.16, axis = 0) # actual/nowcast monthlies
     if YYnow_016.size:
-        YYnow_016[:, (self.select_m_list[-1] == 1)[0]] = 100 * YYnow_016[:, (self.select_m_list[-1] == 1)[0]]
-        YYnow_016[:, (self.select_m_list[-1] == 0)[0]] = np.exp(YYnow_016[:, (self.select_m_list[-1] == 0)[0]])
+        YYnow_016[:, (self.select_m_list[-1] == 1)] = 100 * YYnow_016[:, (self.select_m_list[-1] == 1)]
+        YYnow_016[:, (self.select_m_list[-1] == 0)] = np.exp(YYnow_016[:, (self.select_m_list[-1] == 0)])
     
     lstate_016 = np.quantile(self.lstate_list[-1][self.nburn:,:,:], q = 0.16, axis = 0).T # hf obs for lf vars
-    lstate_016[:, (self.select_q[-1] == 1)[0]] = 100 * lstate_016[:, (self.select_q[-1] == 1)[0]]
-    lstate_016[:, (self.select_q[-1] == 0)[0]] = np.exp(lstate_016[:, (self.select_q[-1] == 0)[0]])
+    lstate_016[:, (self.select_q[-1] == 1)] = 100 * lstate_016[:, (self.select_q[-1] == 1)]
+    lstate_016[:, (self.select_q[-1] == 0)] = np.exp(lstate_016[:, (self.select_q[-1] == 0)])
     
-    YMna = np.full(self.YMh_list[-1].shape, np.nan)
+    YMna = np.full(YMh_list[-1].shape, np.nan)
     
     if YMna.size:
         YY_016_list.append(np.vstack((np.vstack((np.hstack((YMna[YMh_len_correction:,:],lstate_016[:-self.freq_ratio_list[-1],:])), np.hstack((YYnow_016, lstate_016[-self.freq_ratio_list[-1]:,:])))), YYftr_016)))
@@ -1162,18 +1161,18 @@ def forecast(self, H, conditionals = None):
     # 5%    
     
     YYftr_005 = np.nanquantile(YYvector_ml[self.nburn:,:,:], q = 0.05 ,axis = 0)
-    YYftr_005[:, (self.select_list[-1] == 1)[0]] = 100 * YYftr_005[:, (self.select_list[-1] == 1)[0]]
-    YYftr_005[:, (self.select_list[-1] == 0)[0]] = np.exp(YYftr_005[:, (self.select_list[-1] == 0)[0]])
+    YYftr_005[:, (self.select_list[-1] == 1)] = 100 * YYftr_005[:, (self.select_list[-1] == 1)]
+    YYftr_005[:, (self.select_list[-1] == 0)] = np.exp(YYftr_005[:, (self.select_list[-1] == 0)])
     
     YYnow_005 = np.quantile(self.YYactsim_list[-1][self.nburn:,1:(self.freq_ratio_list[-1]+1),:self.Nm_list[-1]], q = 0.05, axis = 0) # actual/nowcast monthlies
     
     if YYnow_005.size:   
-        YYnow_005[:, (self.select_m_list[-1] == 1)[0]] = 100 * YYnow_005[:, (self.select_m_list[-1] == 1)[0]]
-        YYnow_005[:, (self.select_m_list[-1] == 0)[0]] = np.exp(YYnow_005[:, (self.select_m_list[-1] == 0)[0]])
+        YYnow_005[:, (self.select_m_list[-1] == 1)] = 100 * YYnow_005[:, (self.select_m_list[-1] == 1)]
+        YYnow_005[:, (self.select_m_list[-1] == 0)] = np.exp(YYnow_005[:, (self.select_m_list[-1] == 0)])
     
     lstate_005 = np.quantile(self.lstate_list[-1][self.nburn:,:,:], q = 0.05, axis = 0).T # hf obs for lf vars
-    lstate_005[:, (self.select_q[-1] == 1)[0]] = 100 * lstate_005[:, (self.select_q[-1] == 1)[0]]
-    lstate_005[:, (self.select_q[-1] == 0)[0]] = np.exp(lstate_005[:, (self.select_q[-1] == 0)[0]])
+    lstate_005[:, (self.select_q[-1] == 1)] = 100 * lstate_005[:, (self.select_q[-1] == 1)]
+    lstate_005[:, (self.select_q[-1] == 0)] = np.exp(lstate_005[:, (self.select_q[-1] == 0)])
     
     if YMna.size:
         YY_005_list.append(np.vstack((np.vstack((np.hstack((YMna[YMh_len_correction:,:], lstate_005[:-self.freq_ratio_list[-1],:])), np.hstack((YYnow_005, lstate_005[-self.freq_ratio_list[-1]:,:])))), YYftr_005)))
@@ -1248,14 +1247,14 @@ def aggregate(self, frequency, reset_index = True):
     if self.YMh_list[-1].size:
         for i in range(self.nsim):
             lstate_temp = lstate[i].T
-            lstate_temp[:, (self.select_q[-1] == 1)[0]] = 100 * lstate_temp[:, (self.select_q[-1] == 1)[0]]
-            lstate_temp[:, (self.select_q[-1] == 0)[0]] = np.exp(lstate_temp[:, (self.select_q[-1]== 0)[0]])
+            lstate_temp[:, (self.select_q[-1] == 1)] = 100 * lstate_temp[:, (self.select_q[-1] == 1)]
+            lstate_temp[:, (self.select_q[-1] == 0)] = np.exp(lstate_temp[:, (self.select_q[-1]== 0)])
             YYnow_temp = YYnow[i][1:(self.freq_ratio_list[-1]+1),:self.Nm_list[-1]]
-            YYnow_temp[:, (self.select_m_list[-1] == 1)[0]] = 100 * YYnow_temp[:, (self.select_m_list[-1] == 1)[0]]
-            YYnow_temp[:, (self.select_m_list[-1] == 0)[0]] = np.exp(YYnow_temp[:, (self.select_m_list[-1] == 0)[0]])
+            YYnow_temp[:, (self.select_m_list[-1] == 1)] = 100 * YYnow_temp[:, (self.select_m_list[-1] == 1)]
+            YYnow_temp[:, (self.select_m_list[-1] == 0)] = np.exp(YYnow_temp[:, (self.select_m_list[-1] == 0)])
             forecast_draws_temp = copy.copy(self.forecast_draws_list[-1][i,:,:])
-            forecast_draws_temp[:, (self.select_list[-1] == 1)[0]] = 100 * forecast_draws_temp[:, (self.select_list[-1] == 1)[0]]
-            forecast_draws_temp[:, (self.select_list[-1] == 0)[0]] = np.exp(forecast_draws_temp[:, (self.select_list[-1] == 0)[0]])
+            forecast_draws_temp[:, (self.select_list[-1] == 1)] = 100 * forecast_draws_temp[:, (self.select_list[-1] == 1)]
+            forecast_draws_temp[:, (self.select_list[-1] == 0)] = np.exp(forecast_draws_temp[:, (self.select_list[-1] == 0)])
 
             temp = np.vstack((np.vstack((np.hstack((self.YMh_list[-1][YMh_len_correction:,:], lstate_temp[:-(self.freq_ratio_list[-1]), :])), np.hstack((YYnow_temp, lstate_temp[-self.freq_ratio_list[-1]:,:])))), forecast_draws_temp))
             temp = pd.DataFrame(temp, columns = self.varlist_list[-1])
