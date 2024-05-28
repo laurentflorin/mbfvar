@@ -1053,7 +1053,7 @@ def forecast(self, H, conditionals = None):
     lstate_m[:, (self.select_q[-1] == 1)] = 100 * lstate_m[:, (self.select_q[-1] == 1)]
     lstate_m[:, (self.select_q[-1] == 0)] = np.exp(lstate_m[:, (self.select_q[-1]== 0)])
     
-    YMh_list = copy.deepcopy(YMh_list)
+    YMh_list = copy.deepcopy(self.YMh_list)
     
     YMh_len_correction = int(YMh_list[-1].shape[0] - lstate_m[:-(self.freq_ratio_list[-1]),:].shape[0])
     
