@@ -1247,14 +1247,14 @@ def aggregate(self, frequency, reset_index = True):
     if self.YMh_list[-1].size:
         for i in range(self.nsim):
             lstate_temp = lstate[i].T
-            lstate_temp[:, (self.select_q[-1] == 1)[0]] = 100 * lstate_temp[:, (self.select_q[-1] == 1)[0]]
-            lstate_temp[:, (self.select_q[-1] == 0)[0]] = np.exp(lstate_temp[:, (self.select_q[-1]== 0)[0]])
+            lstate_temp[:, (self.select_q[-1] == 1)] = 100 * lstate_temp[:, (self.select_q[-1] == 1)]
+            lstate_temp[:, (self.select_q[-1] == 0)] = np.exp(lstate_temp[:, (self.select_q[-1]== 0)])
             YYnow_temp = YYnow[i][1:(self.freq_ratio_list[-1]+1),:self.Nm_list[-1]]
-            YYnow_temp[:, (self.select_m_list[-1] == 1)[0]] = 100 * YYnow_temp[:, (self.select_m_list[-1] == 1)[0]]
-            YYnow_temp[:, (self.select_m_list[-1] == 0)[0]] = np.exp(YYnow_temp[:, (self.select_m_list[-1] == 0)[0]])
+            YYnow_temp[:, (self.select_m_list[-1] == 1)] = 100 * YYnow_temp[:, (self.select_m_list[-1] == 1)]
+            YYnow_temp[:, (self.select_m_list[-1] == 0)] = np.exp(YYnow_temp[:, (self.select_m_list[-1] == 0)])
             forecast_draws_temp = copy.copy(self.forecast_draws_list[-1][i,:,:])
-            forecast_draws_temp[:, (self.select_list[-1] == 1)[0]] = 100 * forecast_draws_temp[:, (self.select_list[-1] == 1)[0]]
-            forecast_draws_temp[:, (self.select_list[-1] == 0)[0]] = np.exp(forecast_draws_temp[:, (self.select_list[-1] == 0)[0]])
+            forecast_draws_temp[:, (self.select_list[-1] == 1)] = 100 * forecast_draws_temp[:, (self.select_list[-1] == 1)]
+            forecast_draws_temp[:, (self.select_list[-1] == 0)] = np.exp(forecast_draws_temp[:, (self.select_list[-1] == 0)])
 
             temp = np.vstack((np.vstack((np.hstack((self.YMh_list[-1][YMh_len_correction:,:], lstate_temp[:-(self.freq_ratio_list[-1]), :])), np.hstack((YYnow_temp, lstate_temp[-self.freq_ratio_list[-1]:,:])))), forecast_draws_temp))
             temp = pd.DataFrame(temp, columns = self.varlist_list[-1])
