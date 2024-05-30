@@ -692,7 +692,10 @@ def fit(self, mufbvar_data, hyp):
                     YQ0_list.append(YYact)#YQ0_list.append(YYact[:,-Nq_list[m+1]:])
                     YQ_list.append(np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1))))#[np.product(np.array(nlags_list_[:(m+2)])):,:])
                     #Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
-                    YM_list[m+1] = YM_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)])):,:]
+                    if YM_list[m].size:
+                        YM_list[m+1] = YM_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)])):,:]
+                    else:
+                        YM_list[m+1] = YM_list[m+1][2*nlags_list_[(m+1)]:,:]
                     
                     T_list.append(YQ_list[m+1].shape[0])
                     
