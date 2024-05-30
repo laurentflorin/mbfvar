@@ -76,7 +76,7 @@ def to_excel(self, filename, agg = False):
 
     '''
     
-    if self.forecast_draws_list is None :
+    if not hasattr(self, 'forecast_draws_list'):
             sys.exit("Error: To generate traceplots, generate forecasts first")
             
     if agg == True and not hasattr(self, 'YY_095_agg'):
