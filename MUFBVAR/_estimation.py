@@ -718,7 +718,8 @@ def fit(self, mufbvar_data, hyp):
                     
                     #for writing to a forecast w/ history file
                     #YMh_list[m+1] = YMh_list[m+1][int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
-                    YMh_list[m+1] = YMh_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)]))+int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
+                    if YM_list[m].size:
+                        YMh_list[m+1] = YMh_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)]))+int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
                     varstxt_list.append(np.hstack((YMX_list[m+1].columns, YQX_list[0].columns)))
                     smpltxt_list.append(YMX_list[m+1].index[int(T0_list[m+1]):])
                     
