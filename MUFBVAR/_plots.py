@@ -67,6 +67,8 @@ def mean_plot(self, variables = "all", save = True, name = "Output", show = True
         
     for variable in variables:
         
+        idx, = np.where(self.varlist_list[-1] == variable)
+        
         df = pd.DataFrame(self.Phip_list[-1][:,:,idx[0]]).expanding().mean()
         
         plt.style.use('seaborn-dark-palette')
