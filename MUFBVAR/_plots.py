@@ -212,6 +212,7 @@ def fanchart(self, variables = "all", save = True, name = "Fancharts", show = Tr
             plt.title(title)
             plt.xlabel('Date')
             plt.ylabel('Value')
+            plt.xlim(min(self.YY_095_agg.iloc[-int(self.H/freq_ratio+nhist):,idx].index), max(self.YY_095_agg.iloc[-int(self.H/freq_ratio+nhist):,idx].index))
             if save == True:
                 pdf.savefig( fig )
             if show == True:
@@ -255,6 +256,7 @@ def fanchart(self, variables = "all", save = True, name = "Fancharts", show = Tr
             plt.title(title)
             plt.xlabel('Date')
             plt.ylabel('Value')
+            plt.xlim(min(self.YY_mean_pd.iloc[-(self.H+nhist):,idx].index), max(self.YY_mean_pd.iloc[-(self.H+nhist):,idx].index))
             if save == True:
                 pdf.savefig( fig )
             if show == True:
@@ -343,7 +345,7 @@ def scenario_plot(self, scenario_dict, variables = "all", save = True, name = "S
         ax.grid(False)
         ax.grid(axis = "y", color="#A8BAC4", lw=0.4)
         plt.gcf().set_dpi(320)
-        
+        plt.xlim(min(temp.index), max(temp.index))
         
         plt.title("Scenario plot for " + variable)
         plt.grid(axis='both', alpha=.1)
@@ -459,7 +461,7 @@ def compare_models(self, multifrquency_var_models, model_names, agg = True, vari
             ax.grid(False)
             ax.grid(axis = "y", color="#A8BAC4", lw=0.4)
             plt.gcf().set_dpi(320)
-            
+            plt.xlim(min(current.index.to_timestamp()), max(current.index.to_timestamp()))
             
             ax.set_xticks(current.index.to_timestamp())
             ax.set_xticklabels(current.index)
