@@ -840,7 +840,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
         
     def calc_mdd_1(lambda1_1, lambda2_1, lambda4_1, lambda5_1):
         
-        hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5]]
+        hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1]]
         mdd = estim(hyp_list, nsim)
         
         return mdd
