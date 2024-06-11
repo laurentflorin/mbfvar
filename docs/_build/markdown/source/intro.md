@@ -5,6 +5,7 @@
 ## Installation:
 
 You can use pip to install the module form Gitea:
-.. code-block:: bash
 
-> [foo@bar](mailto:foo@bar):~$ pip install git+https://gitea.efv.admin.ch/efv_fs/MUFBVAR.git
+```bash
+foo@bar:~$ pip install git+https://gitea.efv.admin.ch/efv_fs/MUFBVAR.git
+```

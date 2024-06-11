@@ -14,7 +14,6 @@ from pandas.tseries.offsets import Week , MonthBegin, QuarterBegin, Day
 
 import itertools
 
-from .mfbvar_funcs import calc_yyact
 
 #for progressbar
 from tqdm import tqdm
@@ -30,11 +29,6 @@ from matplotlib.pyplot import cm
 import pickle
 import copy
 
-
-
-#from MUFBVAR.pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
-from .cholcov.cholcov_module import cholcovOrEigendecomp
-from .inverse.matrix_inversion import invert_matrix
 
 
 def mean_plot(self, variables = "all", save = True, name = "Output", show = True):
@@ -57,9 +51,6 @@ def mean_plot(self, variables = "all", save = True, name = "Output", show = True
     plt.ioff()
     
     
-    if self.forecast_draws_list is None :
-            sys.exit("Error: To generate traceplots, generate forecasts first")
-    
     if isinstance(variables, str):
         if variables == "all":
             variables = self.varlist_list[-1]
@@ -76,17 +67,35 @@ def mean_plot(self, variables = "all", save = True, name = "Output", show = True
         
     for variable in variables:
         
-        idx, = np.where(self.varlist_list[-1] == variables)
-        lst = list(self.forecast_draws_list[-1].T)
+        idx, = np.where(self.varlist_list[-1] == variable)
+        
+        df = pd.DataFrame(self.Phip_list[-1][:,:,idx[0]]).expanding().mean()
+        
+        plt.style.use('seaborn-dark-palette')
+        idx, = np.where(self.varlist_list[-1] == variable)
 
-        fig = plt.figure()           
-        df = pd.DataFrame(lst[idx[0]].T).expanding().mean()
-        plt.plot(df, linewidth=0.5)
-        plt.axvline(x=self.nburn,  color='black', ls='--', lw=0.5)
+        fig, ax = plt.subplots(figsize = (14, 8.5))
+        fig.patch.set_facecolor("#fdfdfd")
+        ax.set_facecolor("#fdfdfd")
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.spines["left"].set_lw(1)
+        ax.spines["left"].set_color("black")
+        ax.spines["left"].set_capstyle("butt")
+        ax.spines["bottom"].set_lw(1.5)
+        ax.spines["bottom"].set_color("black")
+        ax.spines["bottom"].set_capstyle("butt")
+        ax.grid(False)
+        ax.grid(axis = "y", color="#A8BAC4", lw=0.4)
+        ax.plot(df, linewidth=0.5)
+        ax.axvline(x=self.nburn,  color='black', ls='--', lw=0.5)
         title = "Mean Plot of: " + variable
         plt.title(title)
         plt.xlabel('Draws')
         plt.ylabel('Value')
+        plt.xlim(min(df.index), max(df.index))
+        plt.gcf().set_dpi(320)
+        
         if save == True:
             pdf.savefig( fig )
         if show == True:
@@ -94,6 +103,7 @@ def mean_plot(self, variables = "all", save = True, name = "Output", show = True
     if save == True:
         pdf.close() 
     plt.close("all")  
+    
     
     
 
@@ -172,6 +182,8 @@ def fanchart(self, variables = "all", save = True, name = "Fancharts", show = Tr
             
         for variable in variables:
             
+            plt.style.use('seaborn-dark-palette')
+            
             idx, = np.where(self.varlist_list[-1] == variable)
             
             fig, ax = plt.subplots()
@@ -179,6 +191,19 @@ def fanchart(self, variables = "all", save = True, name = "Fancharts", show = Tr
             ax.fill_between(x, np.squeeze(np.array(self.YY_095_agg.iloc[-int(self.H/freq_ratio+nhist):,idx])), np.squeeze(np.array(self.YY_005_agg.iloc[-int(self.H/freq_ratio+nhist):,idx])), alpha = 0.5, color = "blue")
             ax.fill_between(x, np.squeeze(np.array(self.YY_084_agg.iloc[-int(self.H/freq_ratio+nhist):,idx])), np.squeeze(np.array(self.YY_016_agg.iloc[-int(self.H/freq_ratio+nhist):,idx])), alpha = 0.7, color = "blue")          
             ax.plot(x, np.squeeze(np.array(self.YY_mean_agg.iloc[-int(self.H/freq_ratio+nhist):,idx])), color = "red", linewidth = 0.5)
+            
+            ax.set_facecolor("#fdfdfd")
+            ax.spines["right"].set_visible(False)
+            ax.spines["top"].set_visible(False)
+            ax.spines["left"].set_lw(1)
+            ax.spines["left"].set_color("black")
+            ax.spines["left"].set_capstyle("butt")
+            ax.spines["bottom"].set_lw(1.5)
+            ax.spines["bottom"].set_color("black")
+            ax.spines["bottom"].set_capstyle("butt")
+            ax.grid(False)
+            ax.grid(axis = "y", color="#A8BAC4", lw=0.4)
+            plt.gcf().set_dpi(320)
             
             ax.set_xticks(x)
             ax.set_xticklabels(self.YY_095_agg.iloc[-int(self.H/freq_ratio+nhist):,idx].index)
@@ -189,6 +214,7 @@ def fanchart(self, variables = "all", save = True, name = "Fancharts", show = Tr
             plt.title(title)
             plt.xlabel('Date')
             plt.ylabel('Value')
+            plt.xlim(min(self.YY_095_agg.iloc[-int(self.H/freq_ratio+nhist):,idx].index), max(self.YY_095_agg.iloc[-int(self.H/freq_ratio+nhist):,idx].index))
             if save == True:
                 pdf.savefig( fig )
             if show == True:
@@ -203,17 +229,36 @@ def fanchart(self, variables = "all", save = True, name = "Fancharts", show = Tr
             
         for variable in variables:
             
+            plt.style.use('seaborn-dark-palette')
+            
             idx, = np.where(self.varlist_list[-1] == variable)
             
             fig, ax = plt.subplots()
             ax.fill_between(self.YY_095_pd.iloc[-(self.H+nhist):,idx].index, np.squeeze(np.array(self.YY_095_pd.iloc[-(self.H+nhist):,idx])), np.squeeze(np.array(self.YY_005_pd.iloc[-(self.H+nhist):,idx])), alpha = 0.5, color = "blue")
             ax.fill_between(self.YY_095_pd.iloc[-(self.H+nhist):,idx].index, np.squeeze(np.array(self.YY_084_pd.iloc[-(self.H+nhist):,idx])), np.squeeze(np.array(self.YY_016_pd.iloc[-(self.H+nhist):,idx])), alpha = 0.7, color = "blue")          
             ax.plot(self.YY_mean_pd.iloc[-(self.H+nhist):,idx].index, np.squeeze(np.array(self.YY_mean_pd.iloc[-(self.H+nhist):,idx])), color = "red", linewidth = 0.5)
+            fig.patch.set_facecolor("#fdfdfd")
             plt.axvline(x=forecast_start,  color='black', ls='--', lw=0.5)
+            
+            ax.set_facecolor("#fdfdfd")
+            ax.spines["right"].set_visible(False)
+            ax.spines["top"].set_visible(False)
+            ax.spines["left"].set_lw(1)
+            ax.spines["left"].set_color("black")
+            ax.spines["left"].set_capstyle("butt")
+            ax.spines["bottom"].set_lw(1.5)
+            ax.spines["bottom"].set_color("black")
+            ax.spines["bottom"].set_capstyle("butt")
+            ax.grid(False)
+            ax.grid(axis = "y", color="#A8BAC4", lw=0.4)
+            plt.gcf().set_dpi(320)
+            plt.setp(ax.get_xticklabels(), rotation=40, horizontalalignment='right')
+            
             title = "Mean and 90% and 68% CI of: " + variable
             plt.title(title)
             plt.xlabel('Date')
             plt.ylabel('Value')
+            plt.xlim(min(self.YY_mean_pd.iloc[-(self.H+nhist):,idx].index), max(self.YY_mean_pd.iloc[-(self.H+nhist):,idx].index))
             if save == True:
                 pdf.savefig( fig )
             if show == True:
@@ -274,6 +319,9 @@ def scenario_plot(self, scenario_dict, variables = "all", save = True, name = "S
     
     
     for variable in variables:
+        
+        plt.style.use('seaborn-dark-palette')
+        
         color = iter(cm.tab10(np.linspace(0, 1, len(scenario_dict))))
         fig, ax = plt.subplots(dpi= 360)
         
@@ -286,8 +334,21 @@ def scenario_plot(self, scenario_dict, variables = "all", save = True, name = "S
         ax.set_xticks(temp.index.to_timestamp())
         ax.set_xticklabels(temp.index)
         plt.setp(ax.get_xticklabels(), rotation=40, horizontalalignment='right')
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
+        
+        ax.set_facecolor("#fdfdfd")
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.spines["left"].set_lw(1)
+        ax.spines["left"].set_color("black")
+        ax.spines["left"].set_capstyle("butt")
+        ax.spines["bottom"].set_lw(1.5)
+        ax.spines["bottom"].set_color("black")
+        ax.spines["bottom"].set_capstyle("butt")
+        ax.grid(False)
+        ax.grid(axis = "y", color="#A8BAC4", lw=0.4)
+        plt.gcf().set_dpi(320)
+        plt.xlim(min(temp.index), max(temp.index))
+        
         plt.title("Scenario plot for " + variable)
         plt.grid(axis='both', alpha=.1)
         box = ax.get_position()
@@ -365,6 +426,9 @@ def compare_models(self, multifrquency_var_models, model_names, agg = True, vari
                 
             
         for variable in variables:
+            
+            plt.style.use('seaborn-dark-palette')
+            
             color = iter(cm.tab10(np.linspace(0, 1, len(model_names))))
             fig, ax = plt.subplots(dpi= 360)
             
@@ -385,6 +449,21 @@ def compare_models(self, multifrquency_var_models, model_names, agg = True, vari
                 ax.plot(temp.loc[idx].index.to_timestamp(), temp.loc[idx, variable], color = c, linewidth = 0.9, linestyle = "dashed", label = model_names[i])
                 
             ax.plot(current.iloc[:-H,:].index.to_timestamp(), current.iloc[:-H][variable], color = "black", linewidth = 1)
+            
+            
+            ax.set_facecolor("#fdfdfd")
+            ax.spines["right"].set_visible(False)
+            ax.spines["top"].set_visible(False)
+            ax.spines["left"].set_lw(1)
+            ax.spines["left"].set_color("black")
+            ax.spines["left"].set_capstyle("butt")
+            ax.spines["bottom"].set_lw(1.5)
+            ax.spines["bottom"].set_color("black")
+            ax.spines["bottom"].set_capstyle("butt")
+            ax.grid(False)
+            ax.grid(axis = "y", color="#A8BAC4", lw=0.4)
+            plt.gcf().set_dpi(320)
+            plt.xlim(min(current.index.to_timestamp()), max(current.index.to_timestamp()))
             
             ax.set_xticks(current.index.to_timestamp())
             ax.set_xticklabels(current.index)
@@ -424,6 +503,9 @@ def compare_models(self, multifrquency_var_models, model_names, agg = True, vari
             current.set_index('new_index', inplace=True)
         
         for variable in variables:
+            
+            plt.style.use('seaborn-dark-palette')
+            
             color = iter(cm.tab10(np.linspace(0, 1, len(model_names))))
             fig, ax = plt.subplots(dpi= 360)
             
@@ -450,8 +532,20 @@ def compare_models(self, multifrquency_var_models, model_names, agg = True, vari
             ax.set_xticks(current.index[::5])
             ax.set_xticklabels(current.index[::5])
             plt.setp(ax.get_xticklabels(), rotation=40, horizontalalignment='right', fontsize=8)
-            ax.spines['top'].set_visible(False)
-            ax.spines['right'].set_visible(False)
+            
+            ax.set_facecolor("#fdfdfd")
+            ax.spines["right"].set_visible(False)
+            ax.spines["top"].set_visible(False)
+            ax.spines["left"].set_lw(1)
+            ax.spines["left"].set_color("black")
+            ax.spines["left"].set_capstyle("butt")
+            ax.spines["bottom"].set_lw(1.5)
+            ax.spines["bottom"].set_color("black")
+            ax.spines["bottom"].set_capstyle("butt")
+            ax.grid(False)
+            ax.grid(axis = "y", color="#A8BAC4", lw=0.4)
+            plt.gcf().set_dpi(320)
+            
             plt.title("Comparison plot for " + variable)
             plt.grid(axis='both', alpha=.1)
             box = ax.get_position()

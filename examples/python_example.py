@@ -70,6 +70,8 @@ model.mean_plot(variables = "all", save = False, show = True)
 
 model.fanchart(variables = "all", save = False, show = True, agg = True, nhist = 10)
 
+model.fanchart(variables = "all", save = False, show = True, agg = False, nhist = 50)
+
 # Optimizing Hyperparameters
 #------------------------------
 
