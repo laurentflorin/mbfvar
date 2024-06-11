@@ -182,6 +182,8 @@ def fanchart(self, variables = "all", save = True, name = "Fancharts", show = Tr
             
         for variable in variables:
             
+            plt.style.use('seaborn-dark-palette')
+            
             idx, = np.where(self.varlist_list[-1] == variable)
             
             fig, ax = plt.subplots()
