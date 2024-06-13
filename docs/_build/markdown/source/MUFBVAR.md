@@ -110,7 +110,7 @@ Creates cumulative mean plots of the forecasts. If the model has converged the c
   * **name** (*string* *,* *optional*) – If the plots should be saved, path/name not including filetype. The default is None.
   * **show** (*boolean*) – Whether the plots should be shown. Default is True.
 
-#### save(filename='mufbvar_model.pkl')
+#### save(filename='mufbvar_model')
 
 Saves the MFBVAR Object
 
@@ -175,11 +175,10 @@ lambda 5:  tuning parameter for the covariance between coefficients
   * **mufbvar_data** (*mufbvar_data class object*) – data in the form of a mufbvar_data class object
   * **pbound** (*dict*) – 
 
-    boundries for each hyperparameter
-
-    two frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1
-    three frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2
-    four frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2, lambda1_3, lambda2_3, lambda4_3, lambda5_3
+    boundaries for each hyperparameter:
+    - two frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1
+    - three frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2
+    - four frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2, lambda1_3, lambda2_3, lambda4_3, lambda5_3
   * **init_points** (*int*) – How many steps of random exploration you want to perform
   * **n_iter** (*int*) – How many steps of bayesian optimization you want to perform
   * **nsim** (*int*) – number of draws in each MUFBVAR estimation
