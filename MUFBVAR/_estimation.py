@@ -824,7 +824,11 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
                     Ym_list.append(YM_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
                     #Ym_list.append(YM_list[m+1][:nobs_list[m+1]+T0_list[m+1],:])    
                     #Yq_list.append(YQ_list[m+1])#
-                    Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
+                    
+                    if self.temp_agg == "sum":
+                        Yq_list.append(1/freq_ratio_list[m+1]*YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
+                    if self.temp_agg == "mean":    
+                        Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
                     
                     
                     
@@ -832,7 +836,14 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
                     #Yq_list[m+1] = (np.kron(lstate, np.ones((1,freq_ratio_list[m+1])))).T
                     YQ0_list[m+1] = YYact
                     YQ_list[m+1] = np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.product(np.array(nlags_list_[:(m+2)])):,:]
-                    Yq_list[m+1] = YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]#YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
+                    
+                    if self.temp_agg == "sum":
+                        Yq_list[m+1] = 1/freq_ratio_list[m+1]*YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]#YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
+                    if self.temp_agg == "mean":    
+                        Yq_list[m+1] = YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]#YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
+                    
+                    
+                    
                     T_list[m+1] = YQ_list[m+1].shape[0]
                     Tnew_list[m+1] = Tstar_list[m+1]-T_list[m+1]
                     
