@@ -106,6 +106,7 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
     input_data = copy.deepcopy(mufbvar_data.input_data)
     self.input_data = input_data
     
+    
     nburn = round((self.nburn_perc)*self.nsim)
     self.nburn = nburn
     
@@ -266,7 +267,7 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
     
     if self.temp_agg == "sum":
         LAMBDAs_list.append(np.vstack((np.hstack((np.zeros((Nm_list[0],Nq_list[0])), np.transpose(phi_mq_list[0]))),np.hstack((np.tile(np.eye(Nq_list[0]), freq_ratio_list[0]), np.zeros((Nq_list[0],Nq_list[0]*(p_list[0]-(freq_ratio_list[0]-1)))))))))
-    
+        
     
     LAMBDAz_list.append(np.vstack((np.transpose(phi_mm_list[0]), np.zeros((Nq_list[0], p_list[0]*Nm_list[0])))))
     LAMBDAc_list.append(np.vstack((np.transpose(phi_mc_list[0]), np.zeros((Nq_list[0],1)))))
@@ -304,11 +305,7 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
     
     Ym_list.append(YM_list[0][T0_list[0]:nobs_list[0]+T0_list[0],:])
     
-    if self.temp_agg == "sum":
-        Yq_list.append(1/freq_ratio_list[0]*YQ_list[0][T0_list[0]:nobs_list[0]+T0_list[0],:])
-    if self.temp_agg == "mean":    
-        Yq_list.append(YQ_list[0][T0_list[0]:nobs_list[0]+T0_list[0],:])
-    
+    Yq_list.append(YQ_list[0][T0_list[0]:nobs_list[0]+T0_list[0],:])
     
     # Estimation
     #################
@@ -362,7 +359,6 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
                         Phat = GAMMAs_list[m] @ Pt1 @ GAMMAs_list[m].T + GAMMAu_list[m] @ sig_qq_list[m] @ GAMMAu_list[m].T
                         Phat = 0.5*(Phat + Phat.T)
                         yhat = LAMBDAs_t_list[m] @ alphahat + LAMBDAz_t_list[m] @ Zm_list[m][t,:] + LAMBDAc_t_list[m][:,0]
-                    
                         nut = Ym_list[m][t,:] - yhat
                         Ft = (LAMBDAs_t_list[m] @ Phat @ LAMBDAs_t_list[m].T + LAMBDAu_t_list[m] @ sig_mm_list[m] @ LAMBDAu_t_list[m].T
                             + LAMBDAs_t_list[m] @ GAMMAu_list[m] @ sig_qm_list[m] @ LAMBDAu_t_list[m].T
@@ -689,7 +685,7 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
                 LAMBDAs_list[m] = np.vstack((np.hstack((np.zeros((Nm_list[m],Nq_list[m])), np.transpose(phi_mq))),1/freq_ratio_list[m]*np.hstack((np.tile(np.eye(Nq_list[m]), freq_ratio_list[m]), np.zeros((Nq_list[m],Nq_list[m]*(p-(freq_ratio_list[m]-1))))))))
             if self.temp_agg == "sum":
                 LAMBDAs_list[m] = np.vstack((np.hstack((np.zeros((Nm_list[m],Nq_list[m])), np.transpose(phi_mq))),np.hstack((np.tile(np.eye(Nq_list[m]), freq_ratio_list[m]), np.zeros((Nq_list[m],Nq_list[m]*(p-(freq_ratio_list[m]-1))))))))
-        
+                
             LAMBDAz_list[m] = np.vstack((np.transpose(phi_mm), np.zeros((Nq_list[m], p*Nm_list[m]))))
             LAMBDAc_list[m] = np.vstack((phi_mc, np.zeros((Nq_list[m],1))))
             LAMBDAu_list[m] = np.vstack((np.eye(Nm_list[m]), np.zeros((Nq_list[m],Nm_list[m]))))
@@ -787,8 +783,8 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
                         LAMBDAs_list.append(np.vstack((np.hstack((np.zeros((Nm_list[m+1],Nq_list[m+1])), np.transpose(phi_mq_list[m+1]))),1/freq_ratio_list[m+1]*np.hstack((np.tile(np.eye(Nq_list[m+1]), freq_ratio_list[m+1]), np.zeros((Nq_list[m+1],Nq_list[m+1]*(p_list[m+1]-(freq_ratio_list[m+1]-1)))))))))
                     if self.temp_agg == "sum":
                         LAMBDAs_list.append(np.vstack((np.hstack((np.zeros((Nm_list[m+1],Nq_list[m+1])), np.transpose(phi_mq_list[m+1]))),np.hstack((np.tile(np.eye(Nq_list[m+1]), freq_ratio_list[m+1]), np.zeros((Nq_list[m+1],Nq_list[m+1]*(p_list[m+1]-(freq_ratio_list[m+1]-1)))))))))
-                    
-                    
+                        
+                            
                     LAMBDAz_list.append(np.vstack((np.transpose(phi_mm_list[m+1]), np.zeros((Nq_list[m+1], p_list[m+1]*Nm_list[m+1])))))
                     LAMBDAc_list.append(np.vstack((np.transpose(phi_mc_list[m+1]), np.zeros((Nq_list[m+1],1)))))
                     LAMBDAu_list.append(np.vstack((np.eye(Nm_list[m+1]), np.zeros((Nq_list[m+1],Nm_list[m+1])))))
@@ -822,14 +818,7 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
                     # Observations in Monthly Freq
                     
                     Ym_list.append(YM_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
-                    #Ym_list.append(YM_list[m+1][:nobs_list[m+1]+T0_list[m+1],:])    
-                    #Yq_list.append(YQ_list[m+1])#
-                    
-                    if self.temp_agg == "sum":
-                        Yq_list.append(1/freq_ratio_list[m+1]*YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
-                    if self.temp_agg == "mean":    
-                        Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
-                    
+                    Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
                     
                     
                 else:
@@ -837,16 +826,16 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
                     YQ0_list[m+1] = YYact
                     YQ_list[m+1] = np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.product(np.array(nlags_list_[:(m+2)])):,:]
                     
-                    if self.temp_agg == "sum":
-                        Yq_list[m+1] = 1/freq_ratio_list[m+1]*YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]#YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
-                    if self.temp_agg == "mean":    
-                        Yq_list[m+1] = YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]#YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
-                    
+                    Yq_list[m+1] = YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]#YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
                     
                     
                     T_list[m+1] = YQ_list[m+1].shape[0]
                     Tnew_list[m+1] = Tstar_list[m+1]-T_list[m+1]
                     
+                #if self.temp_agg == "mean":    
+                #    YDATA_list[m+1][:T_list[m+1],Nm_list[m+1]:] = YQ_list[m+1]
+                #if sself.temp_agg == "sum":    
+                #    YDATA_list[m+1][:T_list[m+1],Nm_list[m+1]:] = 1/freq_ratio_list[m+1]* YQ_list[m+1]
                 YDATA_list[m+1][:T_list[m+1],Nm_list[m+1]:] = YQ_list[m+1]    
             
             if j == 0:
