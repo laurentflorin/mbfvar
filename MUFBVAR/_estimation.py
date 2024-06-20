@@ -47,7 +47,7 @@ from .mfbvar_funcs import calc_yyact
 
 
 
-def fit(self, mufbvar_data, hyp):
+def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
     
     '''
     Estimates the model using the model parameter specified in the initialization. \n
@@ -64,11 +64,16 @@ def fit(self, mufbvar_data, hyp):
         3. number of observations used for obtaining the prior for the covariance matrix of error terms\n
         4. tuning parameter for coefficients for constant\n
         5. tuning parameter for the covariance between coefficients\n
+    temp_agg : str
+        `mean` or `sum` defines the measurement equation
 
     '''
     
     self.nex = 1
     self.hyp = hyp
+    self.temp_agg = temp_agg
+    
+    assert self.temp_agg in ("mean", "sum"), f"Invalid temp_agg: {self.temp_agg}. Choose 'mean' or 'sum'."
     
     # data from mufbvar_data
     
@@ -100,6 +105,7 @@ def fit(self, mufbvar_data, hyp):
     YM_list = copy.deepcopy(mufbvar_data.YM_list)
     input_data = copy.deepcopy(mufbvar_data.input_data)
     self.input_data = input_data
+    
     
     nburn = round((self.nburn_perc)*self.nsim)
     self.nburn = nburn
@@ -256,7 +262,12 @@ def fit(self, mufbvar_data, hyp):
     GAMMAc_list.append(np.zeros((Nq_list[0]*(p_list[0]+1), 1)))
     GAMMAu_list.append(np.vstack((np.eye(Nq_list[0]), np.zeros((p_list[0]*Nq_list[0],Nq_list[0])))))
 
-    LAMBDAs_list.append(np.vstack((np.hstack((np.zeros((Nm_list[0],Nq_list[0])), np.transpose(phi_mq_list[0]))),1/freq_ratio_list[0]*np.hstack((np.tile(np.eye(Nq_list[0]), freq_ratio_list[0]), np.zeros((Nq_list[0],Nq_list[0]*(p_list[0]-(freq_ratio_list[0]-1)))))))))
+    if self.temp_agg == "mean":
+        LAMBDAs_list.append(np.vstack((np.hstack((np.zeros((Nm_list[0],Nq_list[0])), np.transpose(phi_mq_list[0]))),1/freq_ratio_list[0]*np.hstack((np.tile(np.eye(Nq_list[0]), freq_ratio_list[0]), np.zeros((Nq_list[0],Nq_list[0]*(p_list[0]-(freq_ratio_list[0]-1)))))))))
+    
+    if self.temp_agg == "sum":
+        LAMBDAs_list.append(np.vstack((np.hstack((np.zeros((Nm_list[0],Nq_list[0])), np.transpose(phi_mq_list[0]))),np.hstack((np.tile(np.eye(Nq_list[0]), freq_ratio_list[0]), np.zeros((Nq_list[0],Nq_list[0]*(p_list[0]-(freq_ratio_list[0]-1)))))))))
+        
     
     LAMBDAz_list.append(np.vstack((np.transpose(phi_mm_list[0]), np.zeros((Nq_list[0], p_list[0]*Nm_list[0])))))
     LAMBDAc_list.append(np.vstack((np.transpose(phi_mc_list[0]), np.zeros((Nq_list[0],1)))))
@@ -290,12 +301,11 @@ def fit(self, mufbvar_data, hyp):
         for j in range(p_list[0]):
             Zm_list[0][:, j * Nm_list[0]:(j+1)*Nm_list[0]] = YM_list[0][T0_list[0]-(j+1):T0_list[0]+nobs_list[0]-(j+1),:]
             
-    # Observations in Monthly Freq
+    # Observations in HF
     
     Ym_list.append(YM_list[0][T0_list[0]:nobs_list[0]+T0_list[0],:])
-        
-    Yq_list.append(YQ_list[0][T0_list[0]:nobs_list[0]+T0_list[0],:])
     
+    Yq_list.append(YQ_list[0][T0_list[0]:nobs_list[0]+T0_list[0],:])
     
     # Estimation
     #################
@@ -349,7 +359,6 @@ def fit(self, mufbvar_data, hyp):
                         Phat = GAMMAs_list[m] @ Pt1 @ GAMMAs_list[m].T + GAMMAu_list[m] @ sig_qq_list[m] @ GAMMAu_list[m].T
                         Phat = 0.5*(Phat + Phat.T)
                         yhat = LAMBDAs_t_list[m] @ alphahat + LAMBDAz_t_list[m] @ Zm_list[m][t,:] + LAMBDAc_t_list[m][:,0]
-                    
                         nut = Ym_list[m][t,:] - yhat
                         Ft = (LAMBDAs_t_list[m] @ Phat @ LAMBDAs_t_list[m].T + LAMBDAu_t_list[m] @ sig_mm_list[m] @ LAMBDAu_t_list[m].T
                             + LAMBDAs_t_list[m] @ GAMMAu_list[m] @ sig_qm_list[m] @ LAMBDAu_t_list[m].T
@@ -414,7 +423,10 @@ def fit(self, mufbvar_data, hyp):
             
             for bb in range(Nq_list[m]):
                 for ll in range(freq_ratio_list[m]):
-                    Z2[bb, (ll+1)*Nm_list[m]+ll*Nq_list[m]+bb] = 1/freq_ratio_list[m]
+                    if self.temp_agg == "mean":
+                        Z2[bb, (ll+1)*Nm_list[m]+ll*Nq_list[m]+bb] = 1/freq_ratio_list[m]
+                    if self.temp_agg == "sum":
+                        Z2[bb, (ll+1)*Nm_list[m]+ll*Nq_list[m]+bb] = 1
             
             ZZ = np.vstack((Z1,Z2))
             
@@ -669,9 +681,11 @@ def fit(self, mufbvar_data, hyp):
             GAMMAu_list[m] = np.vstack((np.eye(Nq_list[m]), np.zeros((p*Nq_list[m],Nq_list[m]))))
             
             # Define Measurment equation Matrices
-            LAMBDAs_list[m] = np.vstack((np.hstack((np.zeros((Nm_list[m],Nq_list[m])), np.transpose(phi_mq))),1/freq_ratio_list[m]*np.hstack((np.tile(np.eye(Nq_list[m]), freq_ratio_list[m]), np.zeros((Nq_list[m],Nq_list[m]*(p-(freq_ratio_list[m]-1))))))))
-            
-        
+            if self.temp_agg == "mean":
+                LAMBDAs_list[m] = np.vstack((np.hstack((np.zeros((Nm_list[m],Nq_list[m])), np.transpose(phi_mq))),1/freq_ratio_list[m]*np.hstack((np.tile(np.eye(Nq_list[m]), freq_ratio_list[m]), np.zeros((Nq_list[m],Nq_list[m]*(p-(freq_ratio_list[m]-1))))))))
+            if self.temp_agg == "sum":
+                LAMBDAs_list[m] = np.vstack((np.hstack((np.zeros((Nm_list[m],Nq_list[m])), np.transpose(phi_mq))),np.hstack((np.tile(np.eye(Nq_list[m]), freq_ratio_list[m]), np.zeros((Nq_list[m],Nq_list[m]*(p-(freq_ratio_list[m]-1))))))))
+                
             LAMBDAz_list[m] = np.vstack((np.transpose(phi_mm), np.zeros((Nq_list[m], p*Nm_list[m]))))
             LAMBDAc_list[m] = np.vstack((phi_mc, np.zeros((Nq_list[m],1))))
             LAMBDAu_list[m] = np.vstack((np.eye(Nm_list[m]), np.zeros((Nq_list[m],Nm_list[m]))))
@@ -764,8 +778,13 @@ def fit(self, mufbvar_data, hyp):
                     GAMMAc_list.append(np.zeros((Nq_list[m+1]*(p_list[m+1]+1), 1)))
                     GAMMAu_list.append(np.vstack((np.eye(Nq_list[m+1]), np.zeros((p_list[m+1]*Nq_list[m+1],Nq_list[m+1])))))
 
-                    LAMBDAs_list.append(np.vstack((np.hstack((np.zeros((Nm_list[m+1],Nq_list[m+1])), np.transpose(phi_mq_list[m+1]))),1/freq_ratio_list[m+1]*np.hstack((np.tile(np.eye(Nq_list[m+1]), freq_ratio_list[m+1]), np.zeros((Nq_list[m+1],Nq_list[m+1]*(p_list[m+1]-(freq_ratio_list[m+1]-1)))))))))
                     
+                    if self.temp_agg == "mean":
+                        LAMBDAs_list.append(np.vstack((np.hstack((np.zeros((Nm_list[m+1],Nq_list[m+1])), np.transpose(phi_mq_list[m+1]))),1/freq_ratio_list[m+1]*np.hstack((np.tile(np.eye(Nq_list[m+1]), freq_ratio_list[m+1]), np.zeros((Nq_list[m+1],Nq_list[m+1]*(p_list[m+1]-(freq_ratio_list[m+1]-1)))))))))
+                    if self.temp_agg == "sum":
+                        LAMBDAs_list.append(np.vstack((np.hstack((np.zeros((Nm_list[m+1],Nq_list[m+1])), np.transpose(phi_mq_list[m+1]))),np.hstack((np.tile(np.eye(Nq_list[m+1]), freq_ratio_list[m+1]), np.zeros((Nq_list[m+1],Nq_list[m+1]*(p_list[m+1]-(freq_ratio_list[m+1]-1)))))))))
+                        
+                            
                     LAMBDAz_list.append(np.vstack((np.transpose(phi_mm_list[m+1]), np.zeros((Nq_list[m+1], p_list[m+1]*Nm_list[m+1])))))
                     LAMBDAc_list.append(np.vstack((np.transpose(phi_mc_list[m+1]), np.zeros((Nq_list[m+1],1)))))
                     LAMBDAu_list.append(np.vstack((np.eye(Nm_list[m+1]), np.zeros((Nq_list[m+1],Nm_list[m+1])))))
@@ -799,20 +818,24 @@ def fit(self, mufbvar_data, hyp):
                     # Observations in Monthly Freq
                     
                     Ym_list.append(YM_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
-                    #Ym_list.append(YM_list[m+1][:nobs_list[m+1]+T0_list[m+1],:])    
-                    #Yq_list.append(YQ_list[m+1])#
                     Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
-                    
                     
                     
                 else:
                     #Yq_list[m+1] = (np.kron(lstate, np.ones((1,freq_ratio_list[m+1])))).T
                     YQ0_list[m+1] = YYact
                     YQ_list[m+1] = np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.product(np.array(nlags_list_[:(m+2)])):,:]
+                    
                     Yq_list[m+1] = YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]#YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
+                    
+                    
                     T_list[m+1] = YQ_list[m+1].shape[0]
                     Tnew_list[m+1] = Tstar_list[m+1]-T_list[m+1]
                     
+                #if self.temp_agg == "mean":    
+                #    YDATA_list[m+1][:T_list[m+1],Nm_list[m+1]:] = YQ_list[m+1]
+                #if sself.temp_agg == "sum":    
+                #    YDATA_list[m+1][:T_list[m+1],Nm_list[m+1]:] = 1/freq_ratio_list[m+1]* YQ_list[m+1]
                 YDATA_list[m+1][:T_list[m+1],Nm_list[m+1]:] = YQ_list[m+1]    
             
             if j == 0:
@@ -1327,7 +1350,10 @@ def aggregate(self, frequency, reset_index = True):
     print("Aggregating for each draw")
     for i in tqdm(range(self.nburn, self.nsim)):
         temp = YY_full_list[i].iloc[start:,].groupby(YY_full_list[i].iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
-        temp = temp.groupby(temp.reset_index().index // freq_ratio).mean()
+        if self.temp_agg == "mean":
+            temp = temp.groupby(temp.reset_index().index // freq_ratio).mean()
+        if self.temp_agg == "sum":
+            temp = temp.groupby(temp.reset_index().index // freq_ratio).sum()
         temp.index = YY_full_list[i].iloc[start:,].index[::freq_ratio][:temp.shape[0]]
         temp.index = temp.index.map(lambda x: x.replace(day=1))
         YY_full_list_agg.append(temp)
@@ -1357,7 +1383,10 @@ def aggregate(self, frequency, reset_index = True):
         if self.frequencies.index(m) > self.frequencies.index(frequency) & self.frequencies.index(m) < len(self.frequencies)-1:
             freq_ratio_temp, start_temp = agg_helper(frequency, m, hist[i])
             hist_agg = hist[i].iloc[start_temp:,].groupby(hist[i].iloc[start_temp:,].reset_index().index // freq_ratio_temp).filter(lambda x: len(x) == freq_ratio_temp)
-            hist_agg = hist_agg.groupby(hist_agg.reset_index().index // freq_ratio_temp).mean()
+            if self.temp_agg == 'mean':
+                hist_agg = hist_agg.groupby(hist_agg.reset_index().index // freq_ratio_temp).mean()
+            if self.temp_agg == 'sum':
+                hist_agg = hist_agg.groupby(hist_agg.reset_index().index // freq_ratio_temp).sum()
             hist_agg.index = hist[i].iloc[start_temp:,].index[::freq_ratio_temp][:hist_agg.shape[0]]
             hist_agg.index = hist_agg.index.map(lambda x: x.replace(day=1))
             
