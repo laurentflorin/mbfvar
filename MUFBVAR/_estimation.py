@@ -1350,7 +1350,10 @@ def aggregate(self, frequency, reset_index = True):
     print("Aggregating for each draw")
     for i in tqdm(range(self.nburn, self.nsim)):
         temp = YY_full_list[i].iloc[start:,].groupby(YY_full_list[i].iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
-        temp = temp.groupby(temp.reset_index().index // freq_ratio).mean()
+        if self.temp_agg == "mean":
+            temp = temp.groupby(temp.reset_index().index // freq_ratio).mean()
+        if self.temp_agg == "sum":
+            temp = temp.groupby(temp.reset_index().index // freq_ratio).sum()
         temp.index = YY_full_list[i].iloc[start:,].index[::freq_ratio][:temp.shape[0]]
         temp.index = temp.index.map(lambda x: x.replace(day=1))
         YY_full_list_agg.append(temp)
@@ -1380,7 +1383,10 @@ def aggregate(self, frequency, reset_index = True):
         if self.frequencies.index(m) > self.frequencies.index(frequency) & self.frequencies.index(m) < len(self.frequencies)-1:
             freq_ratio_temp, start_temp = agg_helper(frequency, m, hist[i])
             hist_agg = hist[i].iloc[start_temp:,].groupby(hist[i].iloc[start_temp:,].reset_index().index // freq_ratio_temp).filter(lambda x: len(x) == freq_ratio_temp)
-            hist_agg = hist_agg.groupby(hist_agg.reset_index().index // freq_ratio_temp).mean()
+            if self.temp_agg == 'mean':
+                hist_agg = hist_agg.groupby(hist_agg.reset_index().index // freq_ratio_temp).mean()
+            if self.temp_agg == 'sum':
+                hist_agg = hist_agg.groupby(hist_agg.reset_index().index // freq_ratio_temp).sum()
             hist_agg.index = hist[i].iloc[start_temp:,].index[::freq_ratio_temp][:hist_agg.shape[0]]
             hist_agg.index = hist_agg.index.map(lambda x: x.replace(day=1))
             
