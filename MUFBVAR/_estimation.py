@@ -228,9 +228,9 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
     Sigmap_list.append(np.zeros((round((self.nsim)/self.thining),nv_list[0],nv_list[0])))
     Phip_list.append(np.zeros((round((self.nsim)/self.thining),int(nv_list[0])*int(p_list[0])+1,int(nv_list[0]))))
     Cons_list.append(np.zeros((round((self.nsim)/self.thining),nv_list[0])))
-    lstate_list.append(np.zeros((round((self.nsim)/self.thining),Nq_list[0],int(Tnobs_list[0]))))
-    YYactsim_list.append(np.zeros((round((self.nsim)/self.thining),freq_ratio_list[0]+1,nv_list[0])))
-    XXactsim_list.append(np.zeros((round((self.nsim)/self.thining),int(freq_ratio_list[0])+1,int(nv_list[0])*int(p_list[0])+1)))
+    #lstate_list.append(np.zeros((round((self.nsim)/self.thining),Nq_list[0],int(Tnobs_list[0]))))
+    #YYactsim_list.append(np.zeros((round((self.nsim)/self.thining),freq_ratio_list[0]+1,nv_list[0])))
+    #XXactsim_list.append(np.zeros((round((self.nsim)/self.thining),int(freq_ratio_list[0])+1,int(nv_list[0])*int(p_list[0])+1)))
     
     At_mat_list.append(np.zeros((int(Tnobs_list[0]), Nq_list[0]*(int(p_list[0])+1))))
     Pt_mat_list.append(np.zeros((int(Tnobs_list[0]), (Nq_list[0]*(int(p_list[0])+1))**2)))
@@ -576,10 +576,10 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
             #    lstate[hh, :nobs_list[m]] = At_draw[:, hh]
             #    lstate[hh, nobs_list[m]:] = AT_draw[1:, Nm_list[m]+hh]
         
-            if (j%self.thining == 0):
+            if (j%self.thining == 0 & m == (len(YMh_list)-1)):
                 for hh in range(Nq_list[m]):
-                    lstate_list[m][int(int((j)/self.thining)), hh, :nobs_list[m]] = At_draw[:, hh]
-                    lstate_list[m][int(int((j)/self.thining)), hh, nobs_list[m]:] = AT_draw[1:, Nm_list[m]+hh]
+                    lstate_list[0][int(int((j)/self.thining)), hh, :nobs_list[m]] = At_draw[:, hh]
+                    lstate_list[0][int(int((j)/self.thining)), hh, nobs_list[m]:] = AT_draw[1:, Nm_list[m]+hh]
     
             nobs_ = np.shape(YY)[0] - T0_list[m]
             spec = np.hstack((nlags_list_[m], T0_list[m], self.nex, nv_list[m], nobs_))
@@ -589,9 +589,9 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
             #mdd, YYact, YYdum, XXact, XXdum = mdd_(self.hyp, YY, spec)
             YYact, YYdum, XXact, XXdum = calc_yyact(self.hyp[m], YY, spec)
             
-            if (j%self.thining == 0):
-                YYactsim_list[m][int(int((j)/self.thining)),:,:] = YYact[-(freq_ratio_list[m]+1):,:] #TODO
-                XXactsim_list[m][int(int((j)/self.thining)),:,:] = XXact[-(freq_ratio_list[m]+1):,:]
+            if (j%self.thining == 0 & m == (len(YMh_list)-1)):
+                YYactsim_list[0][int(int((j)/self.thining)),:,:] = YYact[-(freq_ratio_list[m]+1):,:] #TODO
+                XXactsim_list[0][int(int((j)/self.thining)),:,:] = XXact[-(freq_ratio_list[m]+1):,:]
             
             
             # Draws from posterior distribution
@@ -744,9 +744,10 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
                     Sigmap_list.append(np.zeros((round((self.nsim)/self.thining),nv_list[m+1],nv_list[m+1])))
                     Phip_list.append(np.zeros((round((self.nsim)/self.thining),int(nv_list[m+1])*int(p_list[m+1])+1,int(nv_list[m+1]))))
                     Cons_list.append(np.zeros((round((self.nsim)/self.thining),nv_list[m+1])))
-                    lstate_list.append(np.zeros((round((self.nsim)/self.thining),Nq_list[m+1],int(Tnobs_list[m+1]))))
-                    YYactsim_list.append(np.zeros((round((self.nsim)/self.thining),freq_ratio_list[m+1]+1,nv_list[m+1])))
-                    XXactsim_list.append(np.zeros((round((self.nsim)/self.thining),int(freq_ratio_list[m+1])+1,int(nv_list[m+1])*int(p_list[m+1])+1)))
+                    if m == (len(YMh_list)-1):
+                        lstate_list.append(np.zeros((round((self.nsim)/self.thining),Nq_list[m+1],int(Tnobs_list[m+1]))))
+                        YYactsim_list.append(np.zeros((round((self.nsim)/self.thining),freq_ratio_list[m+1]+1,nv_list[m+1])))
+                        XXactsim_list.append(np.zeros((round((self.nsim)/self.thining),int(freq_ratio_list[m+1])+1,int(nv_list[m+1])*int(p_list[m+1])+1)))
                     
                     At_mat_list.append(np.zeros((int(Tnobs_list[m+1]), Nq_list[m+1]*(int(p_list[m+1])+1))))
                     Pt_mat_list.append(np.zeros((int(Tnobs_list[m+1]), (Nq_list[m+1]*(int(p_list[m+1])+1))**2)))
