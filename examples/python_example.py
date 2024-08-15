@@ -11,7 +11,7 @@ io_data = "hist.xlsx"
 
 #Model Specification
 H = 96          # forecast horizon
-nsim = 100      # number of draws from Posterior Density
+nsim = 1000      # number of draws from Posterior Density
 nburn = 0.5     # number of draws to discard
 nlags = [6,4]   # Number of lags
 thining = 1     # Thining 
