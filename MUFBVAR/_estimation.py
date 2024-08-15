@@ -576,7 +576,7 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
             #    lstate[hh, :nobs_list[m]] = At_draw[:, hh]
             #    lstate[hh, nobs_list[m]:] = AT_draw[1:, Nm_list[m]+hh]
         
-            if (j%self.thining == 0 & m == (len(YMh_list)-1)):
+            if (j%self.thining == 0 and m == (len(YMh_list)-1)):
                 for hh in range(Nq_list[m]):
                     lstate_list[0][int(int((j)/self.thining)), hh, :nobs_list[m]] = At_draw[:, hh]
                     lstate_list[0][int(int((j)/self.thining)), hh, nobs_list[m]:] = AT_draw[1:, Nm_list[m]+hh]
@@ -589,7 +589,7 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
             #mdd, YYact, YYdum, XXact, XXdum = mdd_(self.hyp, YY, spec)
             YYact, YYdum, XXact, XXdum = calc_yyact(self.hyp[m], YY, spec)
             
-            if (j%self.thining == 0 & m == (len(YMh_list)-1)):
+            if (j%self.thining == 0 and m == (len(YMh_list)-1)):
                 YYactsim_list[0][int(int((j)/self.thining)),:,:] = YYact[-(freq_ratio_list[m]+1):,:] #TODO
                 XXactsim_list[0][int(int((j)/self.thining)),:,:] = XXact[-(freq_ratio_list[m]+1):,:]
             
@@ -633,7 +633,7 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
             
             if j > 0:
                 Phi_list[m] = Phi
-            elif j == 0 & m == 0:
+            elif j == 0 and m == 0:
                 Phi_list[m] = Phi
             
             if (j % self.thining == 0):
@@ -938,7 +938,7 @@ def forecast(self, H, conditionals = None):
 
         # Function to remove the last day of a month
         def remove_last_day_of_month(month, dti):
-            return dti[~((dti.to_period('M') == month) & (dti.day > 20))]
+            return dti[~((dti.to_period('M') == month) and (dti.day > 20))]
 
         # Check each month in extended_dti
         for month in index.to_period('M').unique():
@@ -958,7 +958,7 @@ def forecast(self, H, conditionals = None):
 
         # Function to remove the last week of a month
         def remove_last_week_of_month(month, dti):
-            return dti[~((dti.to_period('M') == month) & (dti.day > 28))]
+            return dti[~((dti.to_period('M') == month) and (dti.day > 28))]
 
         # Check each month in extended_dti
         for month in index.to_period('M').unique():
@@ -1381,7 +1381,7 @@ def aggregate(self, frequency, reset_index = True):
             self.YY_084_agg.loc[idx, hist[i].columns] = np.nan
             self.YY_016_agg.loc[idx, hist[i].columns] = np.nan
             
-        if self.frequencies.index(m) > self.frequencies.index(frequency) & self.frequencies.index(m) < len(self.frequencies)-1:
+        if self.frequencies.index(m) > self.frequencies.index(frequency) and self.frequencies.index(m) < len(self.frequencies)-1:
             freq_ratio_temp, start_temp = agg_helper(frequency, m, hist[i])
             hist_agg = hist[i].iloc[start_temp:,].groupby(hist[i].iloc[start_temp:,].reset_index().index // freq_ratio_temp).filter(lambda x: len(x) == freq_ratio_temp)
             if self.temp_agg == 'mean':
