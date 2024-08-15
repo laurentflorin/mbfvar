@@ -1381,7 +1381,7 @@ def aggregate(self, frequency, reset_index = True):
             self.YY_084_agg.loc[idx, hist[i].columns] = np.nan
             self.YY_016_agg.loc[idx, hist[i].columns] = np.nan
             
-        if self.frequencies.index(m) > self.frequencies.index(frequency) and self.frequencies.index(m) < len(self.frequencies)-1:
+        if self.frequencies.index(m) > self.frequencies.index(frequency) & self.frequencies.index(m) < len(self.frequencies)-1:
             freq_ratio_temp, start_temp = agg_helper(frequency, m, hist[i])
             hist_agg = hist[i].iloc[start_temp:,].groupby(hist[i].iloc[start_temp:,].reset_index().index // freq_ratio_temp).filter(lambda x: len(x) == freq_ratio_temp)
             if self.temp_agg == 'mean':
