@@ -958,7 +958,7 @@ def forecast(self, H, conditionals = None):
 
         # Function to remove the last week of a month
         def remove_last_week_of_month(month, dti):
-            return dti[~((dti.to_period('M') == month) and (dti.day > 28))]
+            return dti[~((dti.to_period('M') == month) & (dti.day > 28))]
 
         # Check each month in extended_dti
         for month in index.to_period('M').unique():
