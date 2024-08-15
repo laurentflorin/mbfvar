@@ -744,7 +744,7 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
                     Sigmap_list.append(np.zeros((round((self.nsim)/self.thining),nv_list[m+1],nv_list[m+1])))
                     Phip_list.append(np.zeros((round((self.nsim)/self.thining),int(nv_list[m+1])*int(p_list[m+1])+1,int(nv_list[m+1]))))
                     Cons_list.append(np.zeros((round((self.nsim)/self.thining),nv_list[m+1])))
-                    if m == (len(YMh_list)-1):
+                    if m == (len(YMh_list)-2):
                         lstate_list.append(np.zeros((round((self.nsim)/self.thining),Nq_list[m+1],int(Tnobs_list[m+1]))))
                         YYactsim_list.append(np.zeros((round((self.nsim)/self.thining),freq_ratio_list[m+1]+1,nv_list[m+1])))
                         XXactsim_list.append(np.zeros((round((self.nsim)/self.thining),int(freq_ratio_list[m+1])+1,int(nv_list[m+1])*int(p_list[m+1])+1)))
