@@ -853,8 +853,8 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
             #TODO
         
             
-        self.YYactsim = YYactsim_list[-1]
-        self.XXactsim = XXactsim_list[-1]
+        #self.YYactsim = YYactsim_list[-1]
+        #self.XXactsim = XXactsim_list[-1]
         self.Phip = Phip_list[-1]
         self.Sigmap = Sigmap_list[-1]
         self.YDATA = YDATA_list[-1]
