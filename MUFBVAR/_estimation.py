@@ -577,10 +577,16 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
             #    lstate[hh, nobs_list[m]:] = AT_draw[1:, Nm_list[m]+hh]
         
             if (j%self.thining == 0 and m == (len(YMh_list)-1)):
-                for hh in range(Nq_list[m]):
-                    lstate_list[0][int(int((j)/self.thining)), hh, :nobs_list[m]] = At_draw[:, hh]
-                    lstate_list[0][int(int((j)/self.thining)), hh, nobs_list[m]:] = AT_draw[1:, Nm_list[m]+hh]
-    
+                if lstate_list:
+                    for hh in range(Nq_list[m]):
+                        lstate_list[0][int(int((j)/self.thining)), hh, :nobs_list[m]] = At_draw[:, hh]
+                        lstate_list[0][int(int((j)/self.thining)), hh, nobs_list[m]:] = AT_draw[1:, Nm_list[m]+hh]
+                else:
+                    lstate_list.append(np.zeros((round((self.nsim)/self.thining),Nq_list[0],int(Tnobs_list[0]))))
+                    for hh in range(Nq_list[m]):
+                        lstate_list[0][int(int((j)/self.thining)), hh, :nobs_list[m]] = At_draw[:, hh]
+                        lstate_list[0][int(int((j)/self.thining)), hh, nobs_list[m]:] = AT_draw[1:, Nm_list[m]+hh]
+            
             nobs_ = np.shape(YY)[0] - T0_list[m]
             spec = np.hstack((nlags_list_[m], T0_list[m], self.nex, nv_list[m], nobs_))
         
@@ -590,9 +596,9 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
             YYact, YYdum, XXact, XXdum = calc_yyact(self.hyp[m], YY, spec)
             
             if (j%self.thining == 0 and m == (len(YMh_list)-1)):
-                YYactsim_list[0][int(int((j)/self.thining)),:,:] = YYact[-(freq_ratio_list[m]+1):,:] #TODO
+                YYactsim_list[0][int(int((j)/self.thining)),:,:] = YYact[-(freq_ratio_list[m]+1):,:] 
                 XXactsim_list[0][int(int((j)/self.thining)),:,:] = XXact[-(freq_ratio_list[m]+1):,:]
-            
+                
             
             # Draws from posterior distribution
             
