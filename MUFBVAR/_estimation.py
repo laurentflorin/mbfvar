@@ -596,10 +596,14 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
             YYact, YYdum, XXact, XXdum = calc_yyact(self.hyp[m], YY, spec)
             
             if (j%self.thining == 0 and m == (len(YMh_list)-1)):
-                YYactsim_list[0][int(int((j)/self.thining)),:,:] = YYact[-(freq_ratio_list[m]+1):,:] 
-                XXactsim_list[0][int(int((j)/self.thining)),:,:] = XXact[-(freq_ratio_list[m]+1):,:]
-                
-            
+                if YYactsim_list:
+                    YYactsim_list[0][int(int((j)/self.thining)),:,:] = YYact[-(freq_ratio_list[m]+1):,:] 
+                    XXactsim_list[0][int(int((j)/self.thining)),:,:] = XXact[-(freq_ratio_list[m]+1):,:]
+                else:
+                    YYactsim_list.append(np.zeros((round((self.nsim)/self.thining),freq_ratio_list[0]+1,nv_list[0])))
+                    XXactsim_list.append(np.zeros((round((self.nsim)/self.thining),int(freq_ratio_list[0])+1,int(nv_list[0])*int(p_list[0])+1)))
+                    YYactsim_list[0][int(int((j)/self.thining)),:,:] = YYact[-(freq_ratio_list[m]+1):,:] 
+                    XXactsim_list[0][int(int((j)/self.thining)),:,:] = XXact[-(freq_ratio_list[m]+1):,:]
             # Draws from posterior distribution
             
             Tdummy, n = YYdum.shape
