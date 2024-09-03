@@ -82,6 +82,13 @@ class mufbvar_data:
             YMh_list.append(data[i].to_numpy())
             index_list.append(data[i].index)
         
+        if not isinstance(index_list[-1], pd.DatetimeIndex):
+            try:
+                index_list[-1] = pd.to_datetime(index_list[-1])
+            except:
+                print("Index must be of the form 'YYYY-MM-DD'")
+        
+        
         input_data = copy.deepcopy(YMX_list)
         
         # Creating list of low frequency data
