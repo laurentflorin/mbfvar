@@ -184,26 +184,28 @@ def to_excel(self, filename, agg = False):
         else:
             YY_005 = lstate_005,YYftr_005
         
-        index_start = self.YMX_list[-1].index[self.YMX_list[-1][self.YMX_list[-1].columns[0]] == self.YMh_list[-1][YMh_len_correction:,:][0,0]]
+        index_start = self.YMX_list[-1].index[self.YMX_list[-1][self.YMX_list[-1].columns[0]] == self.YMh_list[-1][YMh_len_correction:,:][0,0]][0]
+        
+        index_new = pd.date_range(start = index_start, periods = YY_mean.shape[0], freq = self.frequencies[-1])
         
         YY_mean_pd = pd.DataFrame(YY_mean, columns = self.varlist_list[-1])
-        YY_mean_pd.index = range(index_start[0], YY_mean_pd.shape[0]+index_start[0])
+        YY_mean_pd.index = index_new
         
         
         YY_median_pd = pd.DataFrame(YY_med, columns = self.varlist_list[-1])
-        YY_median_pd.index = range(index_start[0], YY_mean_pd.shape[0]+index_start[0])
+        YY_median_pd.index = index_new
         
         YY_095_pd = pd.DataFrame(YY_095, columns = self.varlist_list[-1])
-        YY_095_pd.index = range(index_start[0], YY_mean_pd.shape[0]+index_start[0])
+        YY_095_pd.index = index_new
         
         YY_005_pd = pd.DataFrame(YY_005, columns = self.varlist_list[-1])
-        YY_005_pd.index = range(index_start[0], YY_mean_pd.shape[0]+index_start[0])
+        YY_005_pd.index = index_new
         
         YY_084_pd = pd.DataFrame(YY_084, columns = self.varlist_list[-1])
-        YY_084_pd.index = range(index_start[0], YY_mean_pd.shape[0]+index_start[0])
+        YY_084_pd.index = index_new
         
         YY_016_pd = pd.DataFrame(YY_016, columns = self.varlist_list[-1])
-        YY_016_pd.index = range(index_start[0], YY_mean_pd.shape[0]+index_start[0])
+        YY_016_pd.index = index_new
         
             
         with pd.ExcelWriter(filename, engine = "xlsxwriter", datetime_format='yyyy-mm-dd') as writer:
@@ -221,8 +223,7 @@ def to_excel(self, filename, agg = False):
             sys.exit("Aggregate first")
         
         if agg == False:
-            
-            with pd.ExcelWriter(filename, engine = "xlsxwriter", datetime_format='yyyy-mm-dd') as writer:
+            with pd.ExcelWriter(filename, engine = "xlsxwriter", datetime_format=  'yyyy-mm-dd') as writer:
             #writer = pd.ExcelWriter("sim_data.xlsx", engine="xlsxwriter")
                 self.YY_mean_pd.to_excel(writer, sheet_name = "mean")
                 self.YY_median_pd.to_excel(writer, sheet_name = "median")
