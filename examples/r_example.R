@@ -1,9 +1,11 @@
 library(reticulate)
 
+use_virtualenv("/home/u80856195/.virtualenvs/venv", required = TRUE)
+
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 mufbvar <- import("MUFBVAR")
-pd <- impoty("pandas")
+pd <- import("pandas")
 np <- import("numpy")
 pickle <- import("pickle")
 
@@ -25,14 +27,13 @@ frequencies <- list("Q", "M", "W")
 
 data <- list()
 for (freq in 1:length(frequencies)) {
-    freq <- frequencies[[freq]]
-    data_temp <- pd$read_excel(io_data, sheet_name = freq, index_col = 0)
-    data <- append(data, list(data_temp))
+        freq <- frequencies[[freq]]
+        data_temp <- pd$read_excel(io_data, sheet_name = freq, index_col = 0)
+        data <- append(data, list(data_temp))
 }
 
 #Transformations
 trans <- list(np$array(1), np$array(1, 1, 1), np$array(1, 1, 1, 1))
-            
 
 #Initialize data class            
 data_in <- mufbvar$mufbvar_data(data, trans, frequencies)
