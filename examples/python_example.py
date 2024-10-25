@@ -49,8 +49,7 @@ model.fit(mufbvar_data, hyp = hyp, var_of_interest = ["q_1"])
 
 # Conditional forecasts
 
-conditionals = pd.DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.05],
-                        'm_2' : [ np.nan, 0.002, 0.01 , 0.01, np.nan, np.nan]})   
+conditionals = pd.DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.05]})   
 
 # Create forecasts in highest frequency
 model.forecast(H, conditionals)

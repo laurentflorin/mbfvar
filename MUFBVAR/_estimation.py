@@ -880,18 +880,6 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean'):
                 Pmean_list[m] = Pmean
                     
                     
-        
-        
-        if not(var_of_interest is None):
-            #update varlist and select_list
-            for m in range(len(frequencies)-1):
-                idx = list(filter(lambda x: varlist_list[m][x] in (YMX_list[m].columns.tolist() + var_of_interest), range(len(varlist_list[m]))))
-                varlist_list[m] = varlist_list[m][idx]
-                select_list[m] = select_list[m][idx]
-                
-            for m in range(1, len(frequencies)-1):
-                idx_q = list(filter(lambda x: (YMX_list[m-1].columns.tolist() + YQX_list[0].columns.tolist())[x] in  var_of_interest, range(len(YMX_list[m-1].columns.tolist() + YQX_list[0].columns.tolist()))))
-                select_q[m] = select_q[m][idx_q]
         #self.YYactsim = YYactsim_list[-1]
         #self.XXactsim = XXactsim_list[-1]
         self.Phip = Phip_list[-1]
@@ -916,7 +904,16 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean'):
         self.T0 = T0_list[-1]
         self.Tnew = Tnew_list[-1]
     
-    
+    if not(var_of_interest is None):
+        #update varlist and select_list
+        for m in range(len(frequencies)-1):
+            idx = list(filter(lambda x: varlist_list[m][x] in (YMX_list[m].columns.tolist() + var_of_interest), range(len(varlist_list[m]))))
+            varlist_list[m] = varlist_list[m][idx]
+            select_list[m] = select_list[m][idx]
+            
+        for m in range(1, len(frequencies)-1):
+            idx_q = list(filter(lambda x: (YMX_list[m-1].columns.tolist() + YQX_list[0].columns.tolist())[x] in  var_of_interest, range(len(YMX_list[m-1].columns.tolist() + YQX_list[0].columns.tolist()))))
+            select_q[m] = select_q[m][idx_q]
     
     
     #save lists to self
