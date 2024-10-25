@@ -45,7 +45,7 @@ mufbvar_data = MUFBVAR.mufbvar_data(data, trans, frequencies)
 model =  MUFBVAR.multifrequency_var(nsim, nburn, nlags, thining)
 
 # Estimate the model
-model.fit(mufbvar_data, hyp = hyp)
+model.fit(mufbvar_data, hyp = hyp, var_of_interest = ["q_1"])
 
 # Conditional forecasts
 
