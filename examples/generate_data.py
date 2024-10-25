@@ -49,7 +49,7 @@ df_sim_q = df_sim.iloc[:,[0,1]]
 df_sim_q = df_sim_q.groupby(df_sim_q.index // 12).mean()
 df_sim_q.columns = ["q_1", "q_2"]
 
-df_sim_m = df_sim.iloc[:,[2,3,4]]
+df_sim_m = df_sim.iloc[:,[2, 3, 4]]
 df_sim_m = df_sim_m.groupby(df_sim_m.index // 4).mean()
 df_sim_m.columns = ["m_1", "m_2", "m_3"]
 

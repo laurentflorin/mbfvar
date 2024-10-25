@@ -726,7 +726,9 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean'):
                     else:
                         idx_vars = np.concatenate((np.array(idx_var_of_interest_m) , (YM_list[m].shape[1]+np.array(idx_var_of_interest))))
                         YQ0_list.append(YYact[:,np.int_(idx_vars)].reshape(-1, len(var_of_interest)))
-                    #TODO
+                        #we also need to update nv_list and Nq_lsit
+                        nv_list[m + 1] = len(idx_vars) + YM0_list[m+1].shape[1]
+                        Nq_list[m + 1] = len(idx_vars)
                     YQ_list.append(np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1))))#[np.product(np.array(nlags_list_[:(m+2)])):,:])
                     #Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
                     if YM_list[m].size:
@@ -878,9 +880,18 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean'):
                 Pmean_list[m] = Pmean
                     
                     
-            #TODO
         
-            
+        
+        if not(var_of_interest is None):
+            #update varlist and select_list
+            for m in range(len(frequencies)-1):
+                idx = list(filter(lambda x: varlist_list[m][x] in (YMX_list[m].columns.tolist() + var_of_interest), range(len(varlist_list[m]))))
+                varlist_list[m] = varlist_list[m][idx]
+                select_list[m] = select_list[m][idx]
+                
+            for m in range(1, len(frequencies)-1):
+                idx_q = list(filter(lambda x: (YMX_list[m-1].columns.tolist() + YQX_list[0].columns.tolist())[x] in  var_of_interest, range(len(YMX_list[m-1].columns.tolist() + YQX_list[0].columns.tolist()))))
+                select_q[m] = select_q[m][idx_q]
         #self.YYactsim = YYactsim_list[-1]
         #self.XXactsim = XXactsim_list[-1]
         self.Phip = Phip_list[-1]
@@ -906,6 +917,8 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean'):
         self.Tnew = Tnew_list[-1]
     
     
+    
+    
     #save lists to self
     self.YMh_list = YMh_list
     self.T0_list = T0_list
@@ -929,7 +942,7 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean'):
     self.varlist_list = varlist_list
     self.YMX_list =YMX_list
     self.index_list = index_list
-        
+    self.select_list = select_list        
         
         
         
@@ -1437,7 +1450,19 @@ def aggregate(self, frequency, reset_index = True):
         self.YY_005_agg.index = index_new
         self.YY_084_agg.index = index_new
         self.YY_016_agg.index = index_new
+        
     
+        
+        if not(var_of_interest is None):
+            idx_var_of_interest = list(filter(lambda x: self.YY_mean_agg.columns.tolist()[x] in self.YMX_list[-1].columns.tolist()+var_of_interest, range(len(self.YY_mean_agg.columns.tolist()))))
+            self.YY_mean_agg = self.YY_mean_agg.iloc[:, idx_var_of_interest]
+            self.YY_median_agg = self.YY_median_agg.iloc[:, idx_var_of_interest]
+            self.YY_095_agg = self.YY_095_agg.iloc[:, idx_var_of_interest]
+            self.YY_005_agg.index = self.YY_005_agg.iloc[:, idx_var_of_interest]
+            self.YY_084_agg.index = self.YY_084_agg.iloc[:, idx_var_of_interest]
+            self.YY_016_agg.index = self.YY_016_agg.iloc[:, idx_var_of_interest]
+            
+            
     self.agg_freq = frequency
 
 def scenario_forecast(self, H, conditionals, names, agg = True):
