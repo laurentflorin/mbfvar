@@ -831,9 +831,6 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                     Pmean_list.append(Pmean)
                 else:
                     Pmean_list[m] = Pmean
-                        
-                        
-            #TODO
         
             
         return mdd_list[-1]

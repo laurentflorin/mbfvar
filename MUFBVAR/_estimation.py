@@ -47,7 +47,7 @@ from .mfbvar_funcs import calc_yyact
 
 
 
-def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
+def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean'):
     
     '''
     Estimates the model using the model parameter specified in the initialization. \n
@@ -64,6 +64,9 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
         3. number of observations used for obtaining the prior for the covariance matrix of error terms\n
         4. tuning parameter for coefficients for constant\n
         5. tuning parameter for the covariance between coefficients\n
+    var_of_interest: list of names of variables that we are interested in or None
+        Only the variables that are in this list get used in every bi frequency var.
+        If None all variables get taken into each higher frequency bi frequency var.
     temp_agg : str
         `mean` or `sum` defines the measurement equation
 
@@ -106,6 +109,8 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
     input_data = copy.deepcopy(mufbvar_data.input_data)
     self.input_data = input_data
     
+    if not(var_of_interest is None):
+        idx_var_of_interest = list(filter(lambda x: YQX_list[0].columns.tolist()[x] in var_of_interest, range(len(YQX_list[0].columns.tolist()))))
     
     nburn = round((self.nburn_perc)*math.ceil(self.nsim/self.thining))
     self.nburn = nburn
@@ -326,8 +331,6 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
                 
             # Kalman Filter Loop
             #########################
-            
-            
             for t in range(nobs_list[m]):  
                 
                 if Ym_list[m].size:
@@ -706,14 +709,24 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
             LAMBDAz_t_list[m] = np.matmul(Wmatrix_list[m], LAMBDAz_list[m])
             LAMBDAc_t_list[m] = np.matmul(Wmatrix_list[m], LAMBDAc_list[m])
             LAMBDAu_t_list[m] = np.matmul(Wmatrix_list[m], LAMBDAu_list[m])
-    
             # now we need to define the new low frequency data as the temporally disaggregated
             # low frequency data of the current iteration
+            
+            #get relevant high frequency variables, so that the get used in the next var
+            
+            if not(var_of_interest is None):
+                idx_var_of_interest_m = list(filter(lambda x: YMX_list[m].columns.tolist()[x] in var_of_interest, range(len(YMX_list[m].columns.tolist()))))
             
             if m < (len(YMh_list)-1):
                 if j == 0:
                     #Yq_list.append((np.kron(lstate, np.ones((1,freq_ratio_list[m+1])))).T)
-                    YQ0_list.append(YYact)#YQ0_list.append(YYact[:,-Nq_list[m+1]:])
+                    #YQ0_list.append(YYact)#YQ0_list.append(YYact[:,-Nq_list[m+1]:])
+                    if var_of_interest is None:
+                        YQ0_list.append(YYact)
+                    else:
+                        idx_vars = np.concatenate((np.array(idx_var_of_interest_m) , (YM_list[m].shape[1]+np.array(idx_var_of_interest))))
+                        YQ0_list.append(YYact[:,idx_vars]).reshape(-1, len(var_of_interest))
+                    #TODO
                     YQ_list.append(np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1))))#[np.product(np.array(nlags_list_[:(m+2)])):,:])
                     #Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
                     if YM_list[m].size:
@@ -834,8 +847,13 @@ def fit(self, mufbvar_data, hyp, temp_agg = 'mean'):
                     
                 else:
                     #Yq_list[m+1] = (np.kron(lstate, np.ones((1,freq_ratio_list[m+1])))).T
-                    YQ0_list[m+1] = YYact
-                    YQ_list[m+1] = np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.product(np.array(nlags_list_[:(m+2)])):,:]
+                    if var_of_interest is None:
+                        YQ0_list[m+1] = YYact
+                    else:
+                        idx_vars = np.concatenate((np.array(idx_var_of_interest_m) , (YM_list[m].shape[1]+np.array(idx_var_of_interest))))
+                        YQ0_list[m+1] = YYact[:,idx_vars]
+                        
+                    YQ_list[m+1] =np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.product(np.array(nlags_list_[:(m+2)])):,:]
                     
                     Yq_list[m+1] = YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]#YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
                     
@@ -1031,7 +1049,7 @@ def forecast(self, H, conditionals = None):
     print("Total Draws: ", self.nsim)
     
     
-    for jj in tqdm(range(round((self.nsim)/self.thining))):
+    for jj in tqdm(range(math.ceil((self.nsim)/self.thining))):
         
         YYact = np.squeeze(self.YYactsim_list[-1][jj, -1, :])
         XXact = np.squeeze(self.XXactsim_list[-1][jj, -1, :])
@@ -1287,7 +1305,7 @@ def aggregate(self, frequency, reset_index = True):
     YMh_len_correction = int(self.YMh_list[-1].shape[0] - lstate[0][:,:-(self.freq_ratio_list[-1])].shape[1])
     
     if self.YMh_list[-1].size:
-        for i in range(self.nsim):
+        for i in range(math.ceil(self.nsim/self.thining)):
             lstate_temp = lstate[i].T
             lstate_temp[:, (self.select_q[-1] == 1)] = 100 * lstate_temp[:, (self.select_q[-1] == 1)]
             lstate_temp[:, (self.select_q[-1] == 0)] = np.exp(lstate_temp[:, (self.select_q[-1]== 0)])
@@ -1303,7 +1321,7 @@ def aggregate(self, frequency, reset_index = True):
             temp.index = self.index_list[-1]
             YY_full_list.append(temp)
     else:
-        for i in range(self.nsim):
+        for i in range(math.ceil(self.nsim/self.thining)):
             temp = np.vstack((lstate[i,:,:],self.forecast_draws_list[i,:,:]))
             temp = pd.DataFrame(temp, columns = self.varlist_list[-1])
             temp.index = self.index_list[-1]
@@ -1359,7 +1377,7 @@ def aggregate(self, frequency, reset_index = True):
     
     freq_ratio, start = agg_helper(freq_lf, freq_hf, YY_full_list[0])
     print("Aggregating for each draw")
-    for i in tqdm(range(self.nburn, self.nsim)):
+    for i in tqdm(range(self.nburn, math.ceil(self.nsim/self.thining))):
         temp = YY_full_list[i].iloc[start:,].groupby(YY_full_list[i].iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
         if self.temp_agg == "mean":
             temp = temp.groupby(temp.reset_index().index // freq_ratio).mean()

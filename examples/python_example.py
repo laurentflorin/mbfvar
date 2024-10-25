@@ -11,7 +11,7 @@ io_data = "hist.xlsx"
 
 #Model Specification
 H = 96          # forecast horizon
-nsim = 100      # number of draws from Posterior Density
+nsim = 40      # number of draws from Posterior Density
 nburn = 0.5     # number of draws to discard
 nlags = [6,4]   # Number of lags
 thining = 3     # Thining 
@@ -31,21 +31,21 @@ for freq in range(len(frequencies)):
         data.append(data_temp)
 
 #Transformations
-trans = [np.array((1)), np.array((1,1,1)), np.array((1,1,1,1))]    
+trans = [np.array((1,1)), np.array((1,1,1)), np.array((1,1,1))]    
 
 
 # Initialize data class            
-data_in = MUFBVAR.mufbvar_data(data, trans, frequencies)
+mufbvar_data = MUFBVAR.mufbvar_data(data, trans, frequencies)
 
 
 # Fit and Forecast
 #--------------------
 
 # Initialize model class    
-model =  MUFBVAR.multifrequency_var(nsim, nburn, nlags ,thining)
+model =  MUFBVAR.multifrequency_var(nsim, nburn, nlags, thining)
 
 # Estimate the model
-model.fit(data_in, hyp = hyp)
+model.fit(mufbvar_data, hyp = hyp)
 
 # Conditional forecasts
 
