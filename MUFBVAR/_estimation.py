@@ -1448,14 +1448,14 @@ def aggregate(self, frequency, reset_index = True):
         
     
         
-        if not(self.var_of_interest is None):
-            idx_var_of_interest = list(filter(lambda x: self.YY_mean_agg.columns.tolist()[x] in self.YMX_list[-1].columns.tolist() + self.var_of_interest, range(len(self.YY_mean_agg.columns.tolist()))))
-            self.YY_mean_agg = self.YY_mean_agg.iloc[:, idx_var_of_interest]
-            self.YY_median_agg = self.YY_median_agg.iloc[:, idx_var_of_interest]
-            self.YY_095_agg = self.YY_095_agg.iloc[:, idx_var_of_interest]
-            self.YY_005_agg.index = self.YY_005_agg.iloc[:, idx_var_of_interest]
-            self.YY_084_agg.index = self.YY_084_agg.iloc[:, idx_var_of_interest]
-            self.YY_016_agg.index = self.YY_016_agg.iloc[:, idx_var_of_interest]
+    if not(self.var_of_interest is None):
+        idx_var_of_interest = list(filter(lambda x: self.YY_mean_agg.columns.tolist()[x] in self.YMX_list[-1].columns.tolist() + self.var_of_interest, range(len(self.YY_mean_agg.columns.tolist()))))
+        self.YY_mean_agg = self.YY_mean_agg.iloc[:, idx_var_of_interest]
+        self.YY_median_agg = self.YY_median_agg.iloc[:, idx_var_of_interest]
+        self.YY_095_agg = self.YY_095_agg.iloc[:, idx_var_of_interest]
+        self.YY_005_agg.index = self.YY_005_agg.iloc[:, idx_var_of_interest]
+        self.YY_084_agg.index = self.YY_084_agg.iloc[:, idx_var_of_interest]
+        self.YY_016_agg.index = self.YY_016_agg.iloc[:, idx_var_of_interest]
             
             
     self.agg_freq = frequency
