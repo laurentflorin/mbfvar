@@ -41,7 +41,7 @@ import copy
 #from MUFBVAR.pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
 from .cholcov.cholcov_module import cholcovOrEigendecomp
 from .inverse.matrix_inversion import invert_matrix
-from .mfbvar_funcs import calc_yyact
+from .mfbvar_funcs import calc_yyact, is_explosive
 # for hyperparameter tuning
 
 
