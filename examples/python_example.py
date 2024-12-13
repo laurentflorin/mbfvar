@@ -14,7 +14,7 @@ H = 96          # forecast horizon
 nsim = 40      # number of draws from Posterior Density
 nburn = 0.5     # number of draws to discard
 nlags = [6,4]   # Number of lags
-thining = 3     # Thining 
+thining = 1     # Thining 
 
 hyp = [[0.09, 4.3, 1, 2.7, 4.3], [0.09, 4.3, 1, 2.7, 4.3]] # Hyperparameters see documentation for details
 
