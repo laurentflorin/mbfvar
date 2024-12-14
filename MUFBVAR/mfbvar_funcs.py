@@ -476,7 +476,7 @@ def is_explosive(Phi, n, p):
     # Calculate the eigenvalues of the companion matrix
     eigenvalues = eig(companion_matrix)[0]
     # Check if any eigenvalue's absolute value is greater than 1
-    return np.any(np.abs(eigenvalues) > 1.05)
+    return np.any(np.abs(eigenvalues) > 1)
 
 
 

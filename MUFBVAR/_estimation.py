@@ -954,7 +954,7 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean'):
     self.select_list = select_list        
     self.var_of_interest = var_of_interest
     self.explosive_counter = explosive_counter
-    self.valid_draws = [draw for draw in valid_draws if draw >= self.nburn]
+    self.valid_draws = [draw for draw in valid_draws if draw >= self.nburn/self.thining]
         
 def forecast(self, H, conditionals = None):
     
@@ -1327,7 +1327,7 @@ def aggregate(self, frequency, reset_index = True):
     YMh_len_correction = int(self.YMh_list[-1].shape[0] - lstate[0][:,:-(self.freq_ratio_list[-1])].shape[1])
     
     if self.YMh_list[-1].size:
-        for i in range(math.ceil(self.nsim-self.explosive_counter/self.thining)):
+        for i in range(len(self.valid_draws)):
             lstate_temp = lstate[i].T
             lstate_temp[:, (self.select_q[-1] == 1)] = 100 * lstate_temp[:, (self.select_q[-1] == 1)]
             lstate_temp[:, (self.select_q[-1] == 0)] = np.exp(lstate_temp[:, (self.select_q[-1]== 0)])
@@ -1343,7 +1343,7 @@ def aggregate(self, frequency, reset_index = True):
             temp.index = self.index_list[-1]
             YY_full_list.append(temp)
     else:
-        for i in range(math.ceil(self.nsim-self.explosive_counter/self.thining)):
+        for i in range(len(self.valid_draws)):
             temp = np.vstack((lstate[i,:,:],self.forecast_draws_list[i,:,:]))
             temp = pd.DataFrame(temp, columns = self.varlist_list[-1])
             temp.index = self.index_list[-1]
@@ -1399,7 +1399,7 @@ def aggregate(self, frequency, reset_index = True):
     
     freq_ratio, start = agg_helper(freq_lf, freq_hf, YY_full_list[0])
     print("Aggregating for each draw")
-    for i in tqdm(range(self.nburn, math.ceil(self.nsim-self.explosive_counter/self.thining))):
+    for i in tqdm(range(len(self.valid_draws))):
         temp = YY_full_list[i].iloc[start:,].groupby(YY_full_list[i].iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
         if self.temp_agg == "mean":
             temp = temp.groupby(temp.reset_index().index // freq_ratio).mean()
