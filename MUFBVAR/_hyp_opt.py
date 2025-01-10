@@ -81,6 +81,10 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
     '''
     
     def estim(mufbvar_data, hyp_list, nsim, var_of_interest, temp_agg):
+        
+        explosive_counter = 0
+        valid_draws = []        
+        
         self.nex = 1
         mdd_list = [np.nan] * (len(mufbvar_data.frequencies)-1)
         self.temp_agg = temp_agg
