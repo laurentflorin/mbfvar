@@ -80,7 +80,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
 
     '''
     
-    def estim(hyp_list, nsim, var_of_interest):
+    def estim(hyp_list, nsim, var_of_interest, temp_agg):
         
         self.nex = 1
         mdd_list = [np.nan] * (len(mufbvar_data.frequencies)-1)
