@@ -84,7 +84,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
         
         self.nex = 1
         mdd_list = [np.nan] * (len(mufbvar_data.frequencies)-1)
-
+        self.temp_agg = temp_agg
         # data from mufbvar_data
 
         YMX_list = copy.deepcopy(mufbvar_data.YMX_list)

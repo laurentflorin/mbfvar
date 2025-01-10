@@ -22,6 +22,7 @@ frequencies = ["Q","M","W"] # Frequencies
 
 
 
+
 # Load the data
 # --------------
 data = []
@@ -80,7 +81,7 @@ init_points = 3 # number of random points
 n_iter = 8 # number of baysian optimization steps
 nsim = 100 # number of simulations 
 
-hyp = model.update_hyperparameters(data_in, pbounds, init_points, n_iter, nsim, save = False, name = "hyp.txt")
+hyp = model.update_hyperparameters(mufbvar_data, pbounds, init_points, n_iter, nsim, var_of_interest = ["q_1"], save = False, name = "hyp.txt")
 
 # Scenario Analysis
 #-------------------------------
