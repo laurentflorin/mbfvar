@@ -57,7 +57,7 @@ class mufbvar_data:
         1: divided by 100
     frequencies : List of the frequencies of the data, in order lowest to highest 
         "Y", "Q", "M", "W", "D" 
-        """
+    """
     
     def __init__(self, data, trans, frequencies):
         

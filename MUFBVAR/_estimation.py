@@ -113,7 +113,9 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean'):
     self.input_data = input_data
     
     if not(var_of_interest is None):
-        idx_var_of_interest = list(filter(lambda x: YQX_list[0].columns.tolist()[x] in var_of_interest, range(len(YQX_list[0].columns.tolist()))))
+        idx_var_of_interest = list(filter(
+            lambda x: YQX_list[0].columns.tolist()[x] in var_of_interest,
+            range(len(YQX_list[0].columns.tolist()))))
     
     nburn = round((self.nburn_perc)*math.ceil(self.nsim/self.thining))
     self.nburn = nburn
