@@ -80,7 +80,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
 
     '''
     
-    def estim(self, hyp_list, nsim, var_of_interest, temp_agg):
+    def estim(mufbvar_data, hyp_list, nsim, var_of_interest, temp_agg):
         
         self.nex = 1
         mdd_list = [np.nan] * (len(mufbvar_data.frequencies)-1)
@@ -903,7 +903,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
     def calc_mdd_1(lambda1_1, lambda2_1, lambda4_1, lambda5_1):
         
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1]]
-        mdd = estim(hyp_list, nsim)
+        mdd = estim(mufbvar_data, hyp_list, nsim, var_of_interest, temp_agg)
         
         return mdd
     
@@ -911,7 +911,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                 lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2):
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
                     [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2]]
-        mdd = estim(hyp_list, nsim)
+        mdd = estim(mufbvar_data, hyp_list, nsim, var_of_interest, temp_agg)
         
         return mdd
     
@@ -922,7 +922,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
                     [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2],
                     [lambda1_3, lambda2_3, 1, lambda4_3, lambda5_3]]
-        mdd = estim(hyp_list, nsim)
+        mdd = estim(mufbvar_data, hyp_list, nsim, var_of_interest, temp_agg)
         
         return mdd
         
@@ -943,7 +943,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
         
     if len(mufbvar_data.frequencies)-1 == 3:
         optimizer = BayesianOptimization(
-        f= calc_mdd_3,
+        f = calc_mdd_3,
         pbounds=pbounds,
         verbose= 2, # verbose = 1 prints only when a maximum is observed, verbose = 0 is silent
         )
