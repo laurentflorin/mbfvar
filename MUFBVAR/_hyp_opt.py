@@ -124,7 +124,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                 lambda x: YQX_list[0].columns.tolist()[x] in var_of_interest,
                 range(len(YQX_list[0].columns.tolist()))))
     
-        nburn = round((self.nburn_perc)*math.ceil(self.nsim/self.thining))
+        nburn = round((self.nburn_perc)*math.ceil(nsim/self.thining))
         self.nburn = nburn
 
         #test if nlags for each step is at least frequency ratio
@@ -242,17 +242,17 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
         
         # Parameter estimation
         # Matrices for collecting draws from Posterior Density
-        Sigmap_list.append(np.zeros((math.ceil((self.nsim)/self.thining),nv_list[0],nv_list[0])))
-        Phip_list.append(np.zeros((math.ceil((self.nsim)/self.thining),int(nv_list[0])*int(p_list[0])+1,int(nv_list[0]))))
-        Cons_list.append(np.zeros((math.ceil((self.nsim)/self.thining),nv_list[0])))
+        Sigmap_list.append(np.zeros((math.ceil((nsim)/self.thining),nv_list[0],nv_list[0])))
+        Phip_list.append(np.zeros((math.ceil((nsim)/self.thining),int(nv_list[0])*int(p_list[0])+1,int(nv_list[0]))))
+        Cons_list.append(np.zeros((math.ceil((nsim)/self.thining),nv_list[0])))
         #lstate_list.append(np.zeros((round((self.nsim)/self.thining),Nq_list[0],int(Tnobs_list[0]))))
         #YYactsim_list.append(np.zeros((round((self.nsim)/self.thining),freq_ratio_list[0]+1,nv_list[0])))
         #XXactsim_list.append(np.zeros((round((self.nsim)/self.thining),int(freq_ratio_list[0])+1,int(nv_list[0])*int(p_list[0])+1)))
         
         At_mat_list.append(np.zeros((int(Tnobs_list[0]), Nq_list[0]*(int(p_list[0])+1))))
         Pt_mat_list.append(np.zeros((int(Tnobs_list[0]), (Nq_list[0]*(int(p_list[0])+1))**2)))
-        Atildemat_list.append(np.zeros((self.nsim, Nq_list[0]*(int(p_list[0])+1))))
-        Ptildemat_list.append(np.zeros((self.nsim, Nq_list[0]*(int(p_list[0])+1),Nq_list[0]*(int(p_list[0])+1))))
+        Atildemat_list.append(np.zeros((nsim, Nq_list[0]*(int(p_list[0])+1))))
+        Ptildemat_list.append(np.zeros((nsim, Nq_list[0]*(int(p_list[0])+1),Nq_list[0]*(int(p_list[0])+1))))
         loglh_list.append(0)
         counter_list.append(0)
         
@@ -333,7 +333,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
 
         #Here we start the sample loop, j is the current sample
         #inside the sample loop we need a loop for the MFBVARS: m
-        for j in tqdm(range(self.nsim)):
+        for j in tqdm(range(nsim)):
             for m in range(len(YMh_list)):
                 
                 # initialization
@@ -597,7 +597,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                             lstate_list[0][int(int((j)/self.thining)), hh, :nobs_list[m]] = At_draw[:, hh]
                             lstate_list[0][int(int((j)/self.thining)), hh, nobs_list[m]:] = AT_draw[1:, Nm_list[m]+hh]
                     else:
-                        lstate_list.append(np.zeros((math.ceil((self.nsim)/self.thining),Nq_list[0],int(Tnobs_list[0]))))
+                        lstate_list.append(np.zeros((math.ceil((nsim)/self.thining),Nq_list[0],int(Tnobs_list[0]))))
                         for hh in range(Nq_list[m]):
                             lstate_list[0][int(int((j)/self.thining)), hh, :nobs_list[m]] = At_draw[:, hh]
                             lstate_list[0][int(int((j)/self.thining)), hh, nobs_list[m]:] = AT_draw[1:, Nm_list[m]+hh]
@@ -615,8 +615,8 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                         YYactsim_list[0][int(int((j)/self.thining)),:,:] = YYact[-(freq_ratio_list[m]+1):,:] 
                         XXactsim_list[0][int(int((j)/self.thining)),:,:] = XXact[-(freq_ratio_list[m]+1):,:]
                     else:
-                        YYactsim_list.append(np.zeros((math.ceil((self.nsim)/self.thining),freq_ratio_list[0]+1,nv_list[0])))
-                        XXactsim_list.append(np.zeros((math.ceil((self.nsim)/self.thining),int(freq_ratio_list[0])+1,int(nv_list[0])*int(p_list[0])+1)))
+                        YYactsim_list.append(np.zeros((math.ceil((nsim)/self.thining),freq_ratio_list[0]+1,nv_list[0])))
+                        XXactsim_list.append(np.zeros((math.ceil((nsim)/self.thining),int(freq_ratio_list[0])+1,int(nv_list[0])*int(p_list[0])+1)))
                         YYactsim_list[0][int(int((j)/self.thining)),:,:] = YYact[-(freq_ratio_list[m]+1):,:] 
                         XXactsim_list[0][int(int((j)/self.thining)),:,:] = XXact[-(freq_ratio_list[m]+1):,:]
                 # Draws from posterior distribution
@@ -787,18 +787,18 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                         
                         # Parameter estimation
                         # Matrices for collecting draws from Posterior Density
-                        Sigmap_list.append(np.zeros((math.ceil((self.nsim)/self.thining),nv_list[m+1],nv_list[m+1])))
-                        Phip_list.append(np.zeros((math.ceil((self.nsim)/self.thining),int(nv_list[m+1])*int(p_list[m+1])+1,int(nv_list[m+1]))))
-                        Cons_list.append(np.zeros((math.ceil((self.nsim)/self.thining),nv_list[m+1])))
+                        Sigmap_list.append(np.zeros((math.ceil((nsim)/self.thining),nv_list[m+1],nv_list[m+1])))
+                        Phip_list.append(np.zeros((math.ceil((nsim)/self.thining),int(nv_list[m+1])*int(p_list[m+1])+1,int(nv_list[m+1]))))
+                        Cons_list.append(np.zeros((math.ceil((nsim)/self.thining),nv_list[m+1])))
                         if m == (len(YMh_list)-2):
-                            lstate_list.append(np.zeros((math.ceil((self.nsim)/self.thining),Nq_list[m+1],int(Tnobs_list[m+1]))))
-                            YYactsim_list.append(np.zeros((math.ceil((self.nsim)/self.thining),freq_ratio_list[m+1]+1,nv_list[m+1])))
-                            XXactsim_list.append(np.zeros((math.ceil((self.nsim)/self.thining),int(freq_ratio_list[m+1])+1,int(nv_list[m+1])*int(p_list[m+1])+1)))
+                            lstate_list.append(np.zeros((math.ceil((nsim)/self.thining),Nq_list[m+1],int(Tnobs_list[m+1]))))
+                            YYactsim_list.append(np.zeros((math.ceil((nsim)/self.thining),freq_ratio_list[m+1]+1,nv_list[m+1])))
+                            XXactsim_list.append(np.zeros((math.ceil((nsim)/self.thining),int(freq_ratio_list[m+1])+1,int(nv_list[m+1])*int(p_list[m+1])+1)))
                         
                         At_mat_list.append(np.zeros((int(Tnobs_list[m+1]), Nq_list[m+1]*(int(p_list[m+1])+1))))
                         Pt_mat_list.append(np.zeros((int(Tnobs_list[m+1]), (Nq_list[m+1]*(int(p_list[m+1])+1))**2)))
-                        Atildemat_list.append(np.zeros((self.nsim, Nq_list[m+1]*(int(p_list[m+1])+1))))
-                        Ptildemat_list.append(np.zeros((self.nsim, Nq_list[m+1]*(int(p_list[m+1])+1),Nq_list[m+1]*(int(p_list[m+1])+1))))
+                        Atildemat_list.append(np.zeros((nsim, Nq_list[m+1]*(int(p_list[m+1])+1))))
+                        Ptildemat_list.append(np.zeros((nsim, Nq_list[m+1]*(int(p_list[m+1])+1),Nq_list[m+1]*(int(p_list[m+1])+1))))
                         loglh_list.append(0)
                         counter_list.append(0)
                         
