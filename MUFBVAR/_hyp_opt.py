@@ -14,7 +14,7 @@ from pandas.tseries.offsets import Week , MonthBegin, QuarterBegin, Day
 
 import itertools
 
-from .mfbvar_funcs import mdd_
+from .mfbvar_funcs import mdd_, is_explosive
 #plotting
 import matplotlib.pyplot as plt
 
