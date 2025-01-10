@@ -604,7 +604,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
             
                 # dummy observations and actual observations
                 #mdd, YYact, YYdum, XXact, XXdum = mdd_(self.hyp, YY, spec)
-                mdd_list[m], YYact, YYdum, XXact, XXdum = mdd_(self.hyp[m], YY, spec)
+                mdd_list[m], YYact, YYdum, XXact, XXdum = mdd_(hyp_list[m], YY, spec)
                 
                 if (j%self.thining == 0 and m == (len(YMh_list)-1)):
                     if YYactsim_list:
