@@ -1840,7 +1840,7 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
                     Pmean_list[m] = Pmean
                     
         return mdd_list[-1]
-        
+    @scheduler.parallel(n_jobs = njobs)   
     def calc_mdd_1(lambda1_1, lambda2_1, lambda4_1, lambda5_1):
         
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1]]
@@ -1848,6 +1848,7 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
         
         return mdd
     
+    @scheduler.parallel(n_jobs = njobs)
     def calc_mdd_2(lambda1_1, lambda2_1, lambda4_1,
                 lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2):
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
@@ -1856,6 +1857,7 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
         
         return mdd
     
+    @scheduler.parallel(n_jobs = njobs)
     def calc_mdd_3(lambda1_1, lambda2_1, lambda4_1,
                 lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2,
                 lambda1_3, lambda2_3, lambda4_3, lambda5_3):
