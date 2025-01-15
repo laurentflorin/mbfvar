@@ -1887,5 +1887,5 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
         with open(name, 'w') as f:
             print(best_params, file=f)
             
-    return hyp
+    return best_params
 
