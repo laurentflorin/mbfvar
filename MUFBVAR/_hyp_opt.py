@@ -551,7 +551,6 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                 At_draw = np.zeros((nobs_list[m], Nq_list[m] * (p_list[m]+1)))
                 for kk in range(p_list[m]+1):
                     At_draw[nobs_list[m]-1, kk * Nq_list[m]:(kk+1)*+Nq_list[m]] = AT_draw[0,(kk+1)*Nm_list[m] + kk*Nq_list[m]:(kk+1)*(Nm_list[m]+Nq_list[m])]
-                    
             
                 # Kalman Smoother
                 #####################
