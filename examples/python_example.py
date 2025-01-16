@@ -84,18 +84,18 @@ nsim = 100 # number of simulations
 hyp = model.update_hyperparameters(mufbvar_data, pbounds, init_points, n_iter, nsim, var_of_interest = ["q_1"], save = False, name = "hyp.txt")
 
 # Using mango
-from mango import scheduler     
+from scipy.stats import uniform
 
 
 
 
-
-param_space = dict(lambda1_1= range(0.001, 20), lambda2_1= range(0.01, 10), lambda4_1= range(0.01, 10), lambda5_1= range(0.01, 10), lambda1_2= range(0.001, 20), lambda2_2= range(0.01, 10), lambda4_2= range(0.01, 10), lambda5_2= range(0.01, 10))
+param_space = dict(lambda1_1 = uniform(0.001, 20), lambda2_1= uniform(0.01, 10), lambda4_1= uniform(0.01, 10), lambda5_1= uniform(0.01, 10), lambda1_2= uniform(0.001, 20), lambda2_2= uniform(0.01, 10), lambda4_2= uniform(0.01, 10), lambda5_2= uniform(0.01, 10))
 init_points = 3 # number of random points
 n_iter = 8 # number of baysian optimization steps
 nsim = 100 # number of simulations 
+njobs = 2 
 
-model.update_hyperparameters_mango(mufbvar_data, param_space, init_points, n_iter, nsim, njobs, var_of_interest = None, temp_agg = 'mean', save = False, name = "hyp.txt")
+model.update_hyperparameters_mango(mufbvar_data, param_space, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
 #-------------------------------
 
 # We can compare different scenarios
