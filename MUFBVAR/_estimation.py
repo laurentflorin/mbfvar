@@ -652,6 +652,8 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean'):
                 explosive_counter += 1
                 print(f"Explosive VAR detected {explosive_counter} times.")
                 m = 0
+                if j == 0:
+                    j -= 1
                 continue
                 
             #while loop bis hier
