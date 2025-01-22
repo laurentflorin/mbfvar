@@ -1002,7 +1002,7 @@ def forecast(self, H, conditionals = None):
                 index = index.append(pd.DatetimeIndex([index[-1] + Day()]))
     
     if self.frequencies[-1] == 'W':
-        index = index.append(pd.date_range(start=index[-1] + Week(), periods=H, freq='W-MON'))
+        index = index.append(pd.date_range(start=index[-1] + Week(), periods=H, freq='W'))
 
         # Function to check if a month has more than 4 weeks
         def has_more_than_4_weeks(month, dti):
