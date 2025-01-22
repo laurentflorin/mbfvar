@@ -58,7 +58,7 @@ model.forecast(H)
 model.to_excel("test.xlsx")
 # Aggregate
 model.aggregate(frequency = "Q")
-
+model.to_excel("test_q.xlsx", agg=True)
 # Save results
 #------------
 #model.to_excel('out_test.xlsx', agg = True)
