@@ -89,9 +89,9 @@ def to_excel(self, filename, agg = False):
         
         YMh_len_correction = int(YMh_list[-1].shape[0] - lstate_m[:-(self.freq_ratio_list[-1]),:].shape[0])
         
-        #if YMh_list[-1].size:
-        #    YMh_list[-1][:, (self.select_m_list[-1] == 1)] = 100 * YMh_list[-1][:, (self.select_m_list[-1] == 1)]
-        #    YMh_list[-1][:, (self.select_m_list[-1] == 0)] =  np.exp(YMh_list[-1][:, (self.select_m_list[-1] == 0)])
+        if YMh_list[-1].size:
+            YMh_list[-1][:, (self.select_m_list[-1] == 1)] = 100 * YMh_list[-1][:, (self.select_m_list[-1] == 1)]
+            YMh_list[-1][:, (self.select_m_list[-1] == 0)] =  np.exp(YMh_list[-1][:, (self.select_m_list[-1] == 0)])
         
         YY_mean = np.vstack((np.hstack((YMh_list[-1][YMh_len_correction:,:], lstate_m[:-(self.freq_ratio_list[-1]),:])), np.hstack((YYnow_m, lstate_m[-self.freq_ratio_list[-1]:,:]))))
         
