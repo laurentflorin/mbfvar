@@ -138,7 +138,10 @@ class mufbvar_data:
                     varlist_list.append(np.hstack((vars_m_list[i], vars_q)))
                 else:
                     select_list.append(select_q[0])
-                    varlist_list.append(np.squeeze(vars_q))
+                    if len(vars_q.shape) > 1:
+                        varlist_list.append(np.squeeze(vars_q))
+                    else:
+                        varlist_list.append(vars_q)
             Nm_list.append(int(np.shape(YM0_list[i])[1]))
             nv_list.append(int(Nm_list[i] + Nq_list[i]))
         
