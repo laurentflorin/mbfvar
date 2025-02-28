@@ -451,6 +451,37 @@ def prior_pdf(hyp,YY,spec,PHI,SIG):
         log2pi     = np.log(2 * np.pi)
         return -0.5 * (rank * log2pi + maha + logdet)
 
+def is_explosive(Phi, n, p):
+    """
+    Given Phi checks wether the VAR is explosive
+    Parameters
+    ----------
+    Phi : TYPE
+        DESCRIPTION.
+    n : TYPE
+        DESCRIPTION.
+    p : TYPE
+        DESCRIPTION.
+    
+
+    Returns
+    -------
+    Boolean.
+    """
+    # Create the companion matrix
+    companion_matrix = np.zeros((n * p, n * p))
+    companion_matrix[:n, :] = Phi[:n*p, :].T
+    if p > 1:
+        companion_matrix[n:, :-n] = np.eye(n * (p - 1))
+    # Calculate the eigenvalues of the companion matrix
+    eigenvalues = eig(companion_matrix)[0]
+    # Check if any eigenvalue's absolute value is greater than 1
+    return np.any(np.abs(eigenvalues) > 1)
+
+
+
+
+
 """
 def mvnpdf(X, mean, cov):
     

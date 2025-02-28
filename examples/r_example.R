@@ -1,9 +1,11 @@
 library(reticulate)
 
+use_virtualenv("/home/u80856195/.virtualenvs/venv", required = TRUE)
+
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 mufbvar <- import("MUFBVAR")
-pd <- impoty("pandas")
+pd <- import("pandas")
 np <- import("numpy")
 pickle <- import("pickle")
 
@@ -25,14 +27,13 @@ frequencies <- list("Q", "M", "W")
 
 data <- list()
 for (freq in 1:length(frequencies)) {
-    freq <- frequencies[[freq]]
-    data_temp <- pd$read_excel(io_data, sheet_name = freq, index_col = 0)
-    data <- append(data, list(data_temp))
+        freq <- frequencies[[freq]]
+        data_temp <- pd$read_excel(io_data, sheet_name = freq, index_col = 0)
+        data <- append(data, list(data_temp))
 }
 
 #Transformations
 trans <- list(np$array(1), np$array(1, 1, 1), np$array(1, 1, 1, 1))
-            
 
 #Initialize data class            
 data_in <- mufbvar$mufbvar_data(data, trans, frequencies)
@@ -74,7 +75,8 @@ model$fanchart(variables = "all", save = False, show = True, agg = True, nhist =
 #------------------------------
 
 # Define boundaries for each hyperparameter, see documentation for details
-pbounds <- {'lambda1_1': (0.001, 20), 'lambda2_1': (0.01, 10), 'lambda4_1': (0.01, 10), 'lambda5_1': (0.01, 10), 'lambda1_2': (0.001, 20), 'lambda2_2': (0.01, 10), 'lambda4_2': (0.01, 10), 'lambda5_2': (0.01, 10)}
+pbounds <- {'lambda1_1': (0.001, 20), 'lambda2_1': (0.01, 10), 'lambda4_1': (0.01, 10),
+        'lambda5_1': (0.01, 10), 'lambda1_2': (0.001, 20), 'lambda2_2': (0.01, 10), 'lambda4_2': (0.01, 10), 'lambda5_2': (0.01, 10)}
 init_points <- 3L # number of random points
 n_iter <- 8L # number of baysian optimization steps
 nsim <- 100L # number of simulations 

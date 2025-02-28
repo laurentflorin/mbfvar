@@ -7,11 +7,11 @@ import pickle
 # Preparations
 #---------------------
 
-io_data = "hist.xlsx"
+io_data = "/home/u80856195/git/MUFBVAR-master/examples/hist.xlsx"
 
 #Model Specification
 H = 96          # forecast horizon
-nsim = 1000      # number of draws from Posterior Density
+nsim = 40      # number of draws from Posterior Density
 nburn = 0.5     # number of draws to discard
 nlags = [6,4]   # Number of lags
 thining = 1     # Thining 
@@ -19,6 +19,7 @@ thining = 1     # Thining
 hyp = [[0.09, 4.3, 1, 2.7, 4.3], [0.09, 4.3, 1, 2.7, 4.3]] # Hyperparameters see documentation for details
 
 frequencies = ["Q","M","W"] # Frequencies
+
 
 
 
@@ -31,33 +32,33 @@ for freq in range(len(frequencies)):
         data.append(data_temp)
 
 #Transformations
-trans = [np.array((1)), np.array((1,1,1)), np.array((1,1,1,1))]    
+trans = [np.array((1,1)), np.array((1,1,1)), np.array((1,1,1))]    
 
 
 # Initialize data class            
-data_in = MUFBVAR.mufbvar_data(data, trans, frequencies)
+mufbvar_data = MUFBVAR.mufbvar_data(data, trans, frequencies)
 
 
 # Fit and Forecast
 #--------------------
 
 # Initialize model class    
-model =  MUFBVAR.multifrequency_var(nsim, nburn, nlags ,thining)
+model =  MUFBVAR.multifrequency_var(nsim, nburn, nlags, thining)
 
 # Estimate the model
-model.fit(data_in, hyp = hyp)
+model.fit(mufbvar_data, hyp = hyp, var_of_interest = ["q_1"])
 
 # Conditional forecasts
 
-conditionals = pd.DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.05],
-                        'm_2' : [ np.nan, 0.002, 0.01 , 0.01, np.nan, np.nan]})   
+conditionals = pd.DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.05]})   
 
 # Create forecasts in highest frequency
-model.forecast(H, conditionals)
+model.forecast(H)
 
+model.to_excel("test.xlsx")
 # Aggregate
 model.aggregate(frequency = "Q")
-
+model.to_excel("test_q.xlsx", agg=True)
 # Save results
 #------------
 #model.to_excel('out_test.xlsx', agg = True)
@@ -81,9 +82,18 @@ init_points = 3 # number of random points
 n_iter = 8 # number of baysian optimization steps
 nsim = 100 # number of simulations 
 
-hyp = model.update_hyperparameters(data_in, pbounds, init_points, n_iter, nsim, save = False, name = "hyp.txt")
+hyp = model.update_hyperparameters(mufbvar_data, pbounds, init_points, n_iter, nsim, var_of_interest = ["q_1"], save = False, name = "hyp.txt")
 
-# Scenario Analysis
+# Using mango
+from scipy.stats import uniform
+
+param_space = dict(lambda1_1 = uniform(0.001, 20), lambda2_1= uniform(0.01, 10), lambda4_1= uniform(0.01, 10), lambda5_1= uniform(0.01, 10), lambda1_2= uniform(0.001, 20), lambda2_2= uniform(0.01, 10), lambda4_2= uniform(0.01, 10), lambda5_2= uniform(0.01, 10))
+init_points = 3 # number of random points
+n_iter = 8 # number of baysian optimization steps
+nsim = 100 # number of simulations 
+njobs = 1
+
+model.update_hyperparameters_mango(mufbvar_data, param_space, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
 #-------------------------------
 
 # We can compare different scenarios

@@ -38,7 +38,7 @@ class multifrequency_var:
     from ._estimation import fit, forecast, aggregate, scenario_forecast
     from ._plots import fanchart, mean_plot, scenario_plot, compare_models
     from ._save import to_excel, save
-    from ._hyp_opt import update_hyperparameters
+    from ._hyp_opt import update_hyperparameters, update_hyperparameters_mango
 
     
 class mufbvar_data:
@@ -57,7 +57,7 @@ class mufbvar_data:
         1: divided by 100
     frequencies : List of the frequencies of the data, in order lowest to highest 
         "Y", "Q", "M", "W", "D" 
-        """
+    """
     
     def __init__(self, data, trans, frequencies):
         
@@ -81,6 +81,13 @@ class mufbvar_data:
             vars_m_list.append(data[i].columns[:])
             YMh_list.append(data[i].to_numpy())
             index_list.append(data[i].index)
+        
+        if not isinstance(index_list[-1], pd.DatetimeIndex):
+            try:
+                index_list[-1] = pd.to_datetime(index_list[-1])
+            except:
+                print("Index must be of the form 'YYYY-MM-DD'")
+        
         
         input_data = copy.deepcopy(YMX_list)
         
