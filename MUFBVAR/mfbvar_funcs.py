@@ -24,9 +24,6 @@ from scipy.linalg import eig
 import copy
 import itertools
 
-from .mufbvar_data import mufbvar_data
-from .multifrequency_var import multifrequency_var
-
 from .pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
 
 
@@ -520,6 +517,10 @@ def calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nla
     mean_rmse : float
         Mean RMSE across all variables of interest.
     """
+    
+    from .mufbvar_data import mufbvar_data
+    from .multifrequency_var import multifrequency_var
+    
     mufbvar_data_temp = copy.deepcopy(mufbvar_data_in)
     horizon_mapping = {f'{mufbvar_data_temp.frequencies[0]}' : H}
     for i, freq  in enumerate(mufbvar_data_temp.frequencies[1:]):
