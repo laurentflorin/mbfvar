@@ -1969,7 +1969,7 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data, param_space, H, init_p
             result_in_sample.append((in_sample))
             result_out_sample.append((out_sample))
             
-        data_in = mufbvar_data(result_in_sample, mufbvar_data.trans, mufbvar_data.frequencies)    
+        data_in = mufbvar_data(result_in_sample, mufbvar_data_temp.trans, mufbvar_data_temp.frequencies)    
         
         model_temp = multifrequency_var(nsim, nburn_perc, nlags, thining)
         model_temp.fit(data_in, hyp = hyp_list, var_of_interest = var_of_interest,  temp_agg = temp_agg)
