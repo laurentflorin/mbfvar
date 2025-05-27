@@ -93,6 +93,9 @@ n_iter = 8 # number of baysian optimization steps
 nsim = 100 # number of simulations 
 njobs = 1
 
+H = 2
+model.update_hyperparameters_mango_rmse(mufbvar_data, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
+
 model.update_hyperparameters_mango(mufbvar_data, param_space, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
 #-------------------------------
 
