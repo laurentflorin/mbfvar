@@ -24,6 +24,9 @@ from scipy.linalg import eig
 import copy
 import itertools
 
+from .mufbvar_data import mufbvar_data
+from .multifrequency_var import multifrequency_var
+
 from .pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
 
 
