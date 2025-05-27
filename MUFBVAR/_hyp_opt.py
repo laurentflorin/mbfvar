@@ -1950,59 +1950,59 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
     
     
 
-def calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining):
-    
-    mufbvar_data_temp = copy.deepcopy(mufbvar_data_in)
-    horizon_mapping = {f'{mufbvar_data_temp.frequencies[0]}' : H}
-    for i, freq  in enumerate(mufbvar_data_temp.frequencies[1:]):
-        horizon_mapping.update({f'{freq}' : math.prod(itertools.islice(mufbvar_data_temp.freq_ratio_list,0 ,i+1))})
-    
-    
-    mufbvar_data_temp.input_data.appendleft(mufbvar_data_temp.input_data_Q)
-    data_list = list(mufbvar_data_temp.input_data)
+    def calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining):
+        
+        mufbvar_data_temp = copy.deepcopy(mufbvar_data_in)
+        horizon_mapping = {f'{mufbvar_data_temp.frequencies[0]}' : H}
+        for i, freq  in enumerate(mufbvar_data_temp.frequencies[1:]):
+            horizon_mapping.update({f'{freq}' : math.prod(itertools.islice(mufbvar_data_temp.freq_ratio_list,0 ,i+1))})
+        
+        
+        mufbvar_data_temp.input_data.appendleft(mufbvar_data_temp.input_data_Q)
+        data_list = list(mufbvar_data_temp.input_data)
 
-    result_in_sample = []
-    result_out_sample = []
-    for df, freq in zip(data_list, mufbvar_data_temp.frequencies):
-        horizon = horizon_mapping.get(freq)
-        if len(df) <= horizon:
-            raise ValueError(f"DataFrame with frequency {freq} has fewer rows than the required horizon")
+        result_in_sample = []
+        result_out_sample = []
+        for df, freq in zip(data_list, mufbvar_data_temp.frequencies):
+            horizon = horizon_mapping.get(freq)
+            if len(df) <= horizon:
+                raise ValueError(f"DataFrame with frequency {freq} has fewer rows than the required horizon")
+            
+            # Split the data
+            in_sample = df.iloc[:-horizon].copy()
+            out_sample = df.iloc[-horizon:].copy()
+            
+            result_in_sample.append((in_sample))
+            result_out_sample.append((out_sample))
+            
+        data_in = mufbvar_data(result_in_sample, mufbvar_data_temp.trans, mufbvar_data_temp.frequencies)    
         
-        # Split the data
-        in_sample = df.iloc[:-horizon].copy()
-        out_sample = df.iloc[-horizon:].copy()
+        model_temp = multifrequency_var(nsim, nburn_perc, nlags, thining)
+        model_temp.fit(data_in, hyp = hyp_list, var_of_interest = var_of_interest,  temp_agg = temp_agg)
+        model_temp.forecast(H)
+        model_temp.aggregate(frequency = mufbvar_data.frequencies[0])
         
-        result_in_sample.append((in_sample))
-        result_out_sample.append((out_sample))
         
-    data_in = mufbvar_data(result_in_sample, mufbvar_data_temp.trans, mufbvar_data_temp.frequencies)    
-    
-    model_temp = multifrequency_var(nsim, nburn_perc, nlags, thining)
-    model_temp.fit(data_in, hyp = hyp_list, var_of_interest = var_of_interest,  temp_agg = temp_agg)
-    model_temp.forecast(H)
-    model_temp.aggregate(frequency = mufbvar_data.frequencies[0])
-    
-    
-    out_sample = result_out_sample[0]
-    if (mufbvar_data.frequencies[0] == "Q"):
-        out_sample = out_sample.assign(Index = pd.DatetimeIndex(out_sample.index).to_period('Q')).set_index('Index')
-        out_sample = out_sample.add_suffix('_out_sample')
-    
-    df = model_temp.YY_mean_agg[var_of_interest].join(out_sample, how = "inner")
-    
-    suffix = '_out_sample'
-    rmse_results = []
+        out_sample = result_out_sample[0]
+        if (mufbvar_data.frequencies[0] == "Q"):
+            out_sample = out_sample.assign(Index = pd.DatetimeIndex(out_sample.index).to_period('Q')).set_index('Index')
+            out_sample = out_sample.add_suffix('_out_sample')
+        
+        df = model_temp.YY_mean_agg[var_of_interest].join(out_sample, how = "inner")
+        
+        suffix = '_out_sample'
+        rmse_results = []
 
-    for col in df.columns:
-        if col.endswith(suffix):
-            pred_col = col.replace(suffix, '')
-            if pred_col in df.columns:
-                rmse = np.sqrt(((df[pred_col] - df[col]) ** 2).mean())
-                rmse_results.append(rmse)
-                
-    mean_rmse = np.mean(rmse_results)
-    
-    return mean_rmse
+        for col in df.columns:
+            if col.endswith(suffix):
+                pred_col = col.replace(suffix, '')
+                if pred_col in df.columns:
+                    rmse = np.sqrt(((df[pred_col] - df[col]) ** 2).mean())
+                    rmse_results.append(rmse)
+                    
+        mean_rmse = np.mean(rmse_results)
+        
+        return mean_rmse
 
     
     @scheduler.parallel(n_jobs = njobs)   
