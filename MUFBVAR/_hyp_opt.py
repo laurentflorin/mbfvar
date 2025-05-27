@@ -29,6 +29,8 @@ from bayes_opt import BayesianOptimization
 
 from mango import scheduler, Tuner
 
+from . import mufbvar_data
+from . import multifrequency_var
 #from MUFBVAR.pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
 from .mfbvar_funcs import mdd_, is_explosive, calc_rmse
 from .cholcov.cholcov_module import cholcovOrEigendecomp
