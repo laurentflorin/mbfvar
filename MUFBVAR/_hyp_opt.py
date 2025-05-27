@@ -1940,31 +1940,107 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data, param_space, H, init_p
 
     '''
     
-    horizon_mapping = {f'{mufbvar_data.frequencies[0]}' : H}
-    for i, freq  in enumerate(mufbvar_data.frequencies[1:]):
-        horizon_mapping.update({f'{freq}' : math.prod(itertools.islice(mufbvar_data.freq_ratio_list,0 ,i+1))})
+    nburn_perc =  self.nburn_perc
+    nlags = self.nlags
+    thining = self.thining
     
-    
-    mufbvar_data.input_data.appendleft(mufbvar_data.input_data_Q)
-    data_list = list(mufbvar_data.input_data)
+    def calc_rmse(hyp_list, mufbvar_data, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining):
+        mufbvar_data_temp = copy.deepcopy(mufbvar_data)
+        horizon_mapping = {f'{mufbvar_data_temp.frequencies[0]}' : H}
+        for i, freq  in enumerate(mufbvar_data_temp.frequencies[1:]):
+            horizon_mapping.update({f'{freq}' : math.prod(itertools.islice(mufbvar_data_temp.freq_ratio_list,0 ,i+1))})
+        
+        
+        mufbvar_data_temp.input_data.appendleft(mufbvar_data_temp.input_data_Q)
+        data_list = list(mufbvar_data_temp.input_data)
 
-    result_in_sample = []
-    result_out_sample = []
-    for df, freq in zip(data_list, mufbvar_data.frequencies):
-        horizon = horizon_mapping.get(freq)
-        if len(df) <= horizon:
-            raise ValueError(f"DataFrame with frequency {freq} has fewer rows than the required horizon")
+        result_in_sample = []
+        result_out_sample = []
+        for df, freq in zip(data_list, mufbvar_data_temp.frequencies):
+            horizon = horizon_mapping.get(freq)
+            if len(df) <= horizon:
+                raise ValueError(f"DataFrame with frequency {freq} has fewer rows than the required horizon")
+            
+            # Split the data
+            in_sample = df.iloc[:-horizon].copy()
+            out_sample = df.iloc[-horizon:].copy()
+            
+            result_in_sample.append((in_sample))
+            result_out_sample.append((out_sample))
+            
+        data_in = MUFBVAR.mufbvar_data(result_in_sample, mufbvar_data.trans, mufbvar_data.frequencies)    
         
-        # Split the data
-        in_sample = df.iloc[:-horizon].copy()
-        out_sample = df.iloc[-horizon:].copy()
+        model_temp = MUFBVAR.multifrequency_var(nsim, nburn_perc, nlags, thining)
+        model_temp.fit(data_in, hyp = hyp_list, var_of_interest = var_of_interest,  temp_agg = temp_agg)
+        model_temp.forecast(H)
+        model_temp.aggregate(frequency = mufbvar_data.frequencies[0])
         
-        result_in_sample.append((in_sample))
-        result_out_sample.append((out_sample))
         
-    data_in = MUFBVAR.mufbvar_data(result_in_sample, mufbvar_data.trans, mufbvar_data.frequencies)    
+        out_sample = result_out_sample[0]
+        if (mufbvar_data.frequencies[0] == "Q"):
+            out_sample = out_sample.assign(Index = pd.DatetimeIndex(out_sample.index).to_period('Q')).set_index('Index')
+            out_sample = out_sample.add_suffix('_out_sample')
+        
+        df = model_temp.YY_mean_agg[var_of_interest].join(out_sample, how = "inner")
+        
+        suffix = '_out_sample'
+        rmse_results = []
+
+        for col in df.columns:
+            if col.endswith(suffix):
+                pred_col = col.replace(suffix, '')
+                if pred_col in df.columns:
+                    rmse = np.sqrt(((df[pred_col] - df[col]) ** 2).mean())
+                    rmse_results.append(rmse)
+                    
+        mean_rmse = np.mean(rmse_results)
+        
+        return mean_rmse
     
-    model_temp = MUFBVAR.multifrequency_var(nsim, self.nburn, self.nlags, self.thining)
-    model_temp.fit(data_in, hyp = hyp, var_of_interest = var_of_interest)
-    model_temp.forecast(H)
-    model_temp.aggregate(frequency = mufbvar_data.frequencies[0])
+    @scheduler.parallel(n_jobs = njobs)   
+    def calc_rmse_1(lambda1_1, lambda2_1, lambda4_1, lambda5_1):
+        
+        hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1]]
+        rmse = calc_rmse(hyp_list, mufbvar_data, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
+        
+        return rmse
+    
+    @scheduler.parallel(n_jobs = njobs)
+    def calc_rmse_2(lambda1_1, lambda2_1, lambda4_1,
+                lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2):
+        hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
+                    [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2]]
+        rmse = calc_rmse(hyp_list, mufbvar_data, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
+        
+        return rmse
+    
+    @scheduler.parallel(n_jobs = njobs)
+    def calc_rmse_3(lambda1_1, lambda2_1, lambda4_1,
+                lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2,
+                lambda1_3, lambda2_3, lambda4_3, lambda5_3):
+        
+        hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
+                    [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2],
+                    [lambda1_3, lambda2_3, 1, lambda4_3, lambda5_3]]
+        rmse = calc_rmse(hyp_list, mufbvar_data, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
+        
+        return rmse
+    
+    conf_dict = dict(num_iteration = n_iter, initial_random = init_points)
+    
+    
+    if len(mufbvar_data.frequencies)-1 == 1:
+        tuner = Tuner(param_space, calc_rmse_1, conf_dict)
+        
+    if len(mufbvar_data.frequencies)-1 == 2:
+        tuner = Tuner(param_space, calc_rmse_2, conf_dict)
+        
+    if len(mufbvar_data.frequencies)-1 == 3:
+        tuner = Tuner(param_space, calc_rmse_3, conf_dict)
+        
+        
+    results = tuner.minimize()
+    best_params = results["best_params"]
+    if save == True:
+        with open(name, 'w') as f:
+            print(best_params, file=f)
