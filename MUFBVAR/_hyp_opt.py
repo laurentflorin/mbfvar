@@ -1944,9 +1944,7 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
     nburn_perc =  self.nburn_perc
     nlags = self.nlags
     thining = self.thining
-    
-    model = self
-    
+        
     
     @scheduler.parallel(n_jobs = njobs)   
     def calc_rmse_1(lambda1_1, lambda2_1, lambda4_1, lambda5_1):
