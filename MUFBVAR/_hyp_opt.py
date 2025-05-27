@@ -1893,7 +1893,7 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
 
 
     
-def update_hyperparameters_mango_rmse(self, mufbvar_data, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = None, temp_agg = 'mean', save = False, name = "hyp.txt"):
+def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = None, temp_agg = 'mean', save = False, name = "hyp.txt"):
     """
     Use Bayesian optimization to select hyperparameters minimizing out-of-sample RMSE for MUFBVAR models.
 
@@ -1945,8 +1945,8 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data, param_space, H, init_p
     nlags = self.nlags
     thining = self.thining
     
-    def calc_rmse(hyp_list, mufbvar_data, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining):
-        mufbvar_data_temp = copy.deepcopy(mufbvar_data)
+    def calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining):
+        mufbvar_data_temp = copy.deepcopy(mufbvar_data_in)
         horizon_mapping = {f'{mufbvar_data_temp.frequencies[0]}' : H}
         for i, freq  in enumerate(mufbvar_data_temp.frequencies[1:]):
             horizon_mapping.update({f'{freq}' : math.prod(itertools.islice(mufbvar_data_temp.freq_ratio_list,0 ,i+1))})
