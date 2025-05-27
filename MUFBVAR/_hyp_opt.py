@@ -2030,13 +2030,13 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
     conf_dict = dict(num_iteration = n_iter, initial_random = init_points)
     
     
-    if len(mufbvar_data.frequencies)-1 == 1:
+    if len(mufbvar_data_in.frequencies)-1 == 1:
         tuner = Tuner(param_space, calc_rmse_1, conf_dict)
         
-    if len(mufbvar_data.frequencies)-1 == 2:
+    if len(mufbvar_data_in.frequencies)-1 == 2:
         tuner = Tuner(param_space, calc_rmse_2, conf_dict)
         
-    if len(mufbvar_data.frequencies)-1 == 3:
+    if len(mufbvar_data_in.frequencies)-1 == 3:
         tuner = Tuner(param_space, calc_rmse_3, conf_dict)
         
         
