@@ -21,6 +21,8 @@ from scipy.linalg import inv
 from scipy.linalg.lapack import dpotri
 from scipy.linalg import eig
 
+import copy
+
 from .pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
 
 
