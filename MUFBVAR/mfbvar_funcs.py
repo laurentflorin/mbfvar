@@ -479,55 +479,89 @@ def is_explosive(Phi, n, p):
     return np.any(np.abs(eigenvalues) > 1)
 
 
-
-
-
-"""
-def mvnpdf(X, mean, cov):
+def calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining):
     
-    n, d = np.shape(X)
-    
-    X0 = X - mean
-    
-    
-def cholcov(SIGMA):
-    
-    # If Sigma is Positive definite we can use np.chol to compute T such that SIGMA = T'*T.
-    # Then T is the square, upper triangular CHolesky factor
-    
-    n, m = np.shape(SIGMA)
-    
-    flag = is_pos_def(SIGMA) # test if SIGMA is positive definite
-    
-    tol = 10*np.spacing(max(abs(np.diagonal(SIGMA))))
-    
-    if (n == m) and ((np.abs(SIGMA - SIGMA.T) < tol).all()):
-        
-        if flag == True:
-            T = np.linalg.cholesky(SIGMA)
-        
-        else:
-            # Can get factors of the form SIGMA = T' * T using the eigenvalue
-            # decomposition of a symmetric matrix, so long as the matrix is
-            # positive semi-definite
-            U, D = eig((SIGMA + SIGMA.T)/2)
-            
-            # Pick eigenvector direction so max abs coordinate is positive
-            ignore, maxind = np.absolute(U).max(axis=0), np.absolute(U).argmax(axis=0)
-            
-            negloc = U[maxind - 1 + range(0,m*n,  n)] 
-            U[,negloc] = -U[,negloc]
-
-def is_pos_def(x):
-    return np.all(np.linalg.eigvals(x) > 0)  
-"""    
-
-
-def split_data(data, h):
-    """function to split data into in and outofsample
-
-    Args:
-        data (list): list of Panda Dataframes
-        h (): forecast horizon in lowest frequency
     """
+    Calculates the mean out-of-sample RMSE for a multifrequency VAR model given a set of hyperparameters.
+
+    The function splits the data into in-sample and out-of-sample partitions for each frequency, fits the model using the provided hyperparameters,
+    forecasts the out-of-sample period, and computes the RMSE between the predicted and true values for each variable of interest.
+    The mean RMSE across all variables is returned.
+
+    Parameters
+    ----------
+    hyp_list : list
+        List of hyperparameter values to use for fitting the model.
+    mufbvar_data_in : object
+        Data object containing input data and metadata for the multifrequency VAR estimation.
+    H : int
+        Forecast horizon in the lowest frequency.
+    nsim : int
+        Number of simulation draws in the VAR estimation.
+    var_of_interest : list of str
+        List of variable names for which forecasts and RMSE are calculated.
+    temp_agg : str
+        Temporal aggregation method, e.g., 'mean' or 'sum'.
+    nlags : int
+        Number of lags in the VAR model.
+    nburn_perc : float
+        Burn-in percentage for the simulation.
+    thining : int
+        Thinning parameter for the simulation.
+
+    Returns
+    -------
+    mean_rmse : float
+        Mean RMSE across all variables of interest.
+    """
+    mufbvar_data_temp = copy.deepcopy(mufbvar_data_in)
+    horizon_mapping = {f'{mufbvar_data_temp.frequencies[0]}' : H}
+    for i, freq  in enumerate(mufbvar_data_temp.frequencies[1:]):
+        horizon_mapping.update({f'{freq}' : math.prod(itertools.islice(mufbvar_data_temp.freq_ratio_list,0 ,i+1))})
     
+    
+    mufbvar_data_temp.input_data.appendleft(mufbvar_data_temp.input_data_Q)
+    data_list = list(mufbvar_data_temp.input_data)
+
+    result_in_sample = []
+    result_out_sample = []
+    for df, freq in zip(data_list, mufbvar_data_temp.frequencies):
+        horizon = horizon_mapping.get(freq)
+        if len(df) <= horizon:
+            raise ValueError(f"DataFrame with frequency {freq} has fewer rows than the required horizon")
+        
+        # Split the data
+        in_sample = df.iloc[:-horizon].copy()
+        out_sample = df.iloc[-horizon:].copy()
+        
+        result_in_sample.append((in_sample))
+        result_out_sample.append((out_sample))
+        
+    data_in = mufbvar_data(result_in_sample, mufbvar_data_temp.trans, mufbvar_data_temp.frequencies)    
+    
+    model_temp = multifrequency_var(nsim, nburn_perc, nlags, thining)
+    model_temp.fit(data_in, hyp = hyp_list, var_of_interest = var_of_interest,  temp_agg = temp_agg)
+    model_temp.forecast(H)
+    model_temp.aggregate(frequency = mufbvar_data.frequencies[0])
+    
+    
+    out_sample = result_out_sample[0]
+    if (mufbvar_data.frequencies[0] == "Q"):
+        out_sample = out_sample.assign(Index = pd.DatetimeIndex(out_sample.index).to_period('Q')).set_index('Index')
+        out_sample = out_sample.add_suffix('_out_sample')
+    
+    df = model_temp.YY_mean_agg[var_of_interest].join(out_sample, how = "inner")
+    
+    suffix = '_out_sample'
+    rmse_results = []
+
+    for col in df.columns:
+        if col.endswith(suffix):
+            pred_col = col.replace(suffix, '')
+            if pred_col in df.columns:
+                rmse = np.sqrt(((df[pred_col] - df[col]) ** 2).mean())
+                rmse_results.append(rmse)
+                
+    mean_rmse = np.mean(rmse_results)
+    
+    return mean_rmse
