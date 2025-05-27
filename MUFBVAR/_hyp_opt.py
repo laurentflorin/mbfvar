@@ -14,8 +14,7 @@ from pandas.tseries.offsets import Week , MonthBegin, QuarterBegin, Day
 
 import itertools
 
-from .mfbvar_funcs import mdd_, is_explosive
-#plotting
+
 import matplotlib.pyplot as plt
 
 #for progressbar
@@ -25,16 +24,17 @@ tqdm = partial(tqdm, position = 0, leave=True) # this line does the magic
 
 import copy
 
-
-
-#from MUFBVAR.pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
-from .cholcov.cholcov_module import cholcovOrEigendecomp
-from .inverse.matrix_inversion import invert_matrix
-
 # for hyperparameter tuning
 from bayes_opt import BayesianOptimization
 
 from mango import scheduler, Tuner
+
+#from MUFBVAR.pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
+from .mfbvar_funcs import mdd_, is_explosive
+from .cholcov.cholcov_module import cholcovOrEigendecomp
+from .inverse.matrix_inversion import invert_matrix
+
+
 
 def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsim, var_of_interest = None, temp_agg = 'mean', save = False, name = "hyp.txt"):
     
@@ -1894,51 +1894,52 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
 
     
 def update_hyperparameters_mango_rmse(self, mufbvar_data, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = None, temp_agg = 'mean', save = False, name = "hyp.txt"):
-    '''
-    This method uses bayesian optimization to find the hyperparameters with the lowest out of sample RMSE\n
-    lambda 1: overall tightness\n
-    lambda 2:  scaling down the variance for the coefficients of a distant lag\n
-    lambda 3:  number of observations used for obtaining the prior for the covariance matrix of error terms, fixed to 1\n
-    lambda 4: . tuning parameter for coefficients for constant\n
-    lambda 5:  tuning parameter for the covariance between coefficients\n
+    """
+    Use Bayesian optimization to select hyperparameters minimizing out-of-sample RMSE for MUFBVAR models.
 
-    
+    This method tunes hyperparameters (lambdas) for the multifrequency VAR (MUFBVAR) model using Bayesian optimization (via Mango).
+    It runs the model over a rolling forecast to evaluate the out-of-sample RMSE for each hyperparameter set, and returns the set with the lowest RMSE.
+
+    Hyperparameters:
+        - lambda1: overall tightness
+        - lambda2: scaling factor for the variance of distant lags
+        - lambda3: number of observations for the prior on the error covariance (fixed to 1)
+        - lambda4: tuning for coefficients of the constant
+        - lambda5: tuning for covariance between coefficients
+
     Parameters
     ----------
-    data : list of pandas DataFrames
-        Data of each frequency stored in a pandas DataFrame, all stored in one list
+    mufbvar_data : MUFBVAR.mufbvar_data object
+        Holds the input data for multifrequency VAR estimation.
     param_space : dict
-        boundaries for each hyperparameter:\n
-        - two frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1\n
-        - three frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2\n
-        - four frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2, lambda1_3, lambda2_3, lambda4_3, lambda5_3
-    h : forecast horizon in lowest frequency
+        Dictionary with bounds for each hyperparameter, structured according to the number of frequencies:
+            - Two frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1
+            - Three frequencies: add lambda1_2, lambda2_2, lambda4_2, lambda5_2
+            - Four frequencies: add lambda1_3, lambda2_3, lambda4_3, lambda5_3
+    H : int
+        Forecast horizon in the lowest frequency.
     init_points : int
-        How many steps of random exploration you want to perform
+        Number of initial random exploration steps for Bayesian optimization.
     n_iter : int
-        How many steps of bayesian optimization you want to perform
+        Number of optimization iterations.
     nsim : int
-        number of draws in each MUFBVAR estimation
+        Number of simulation draws in MUFBVAR estimation.
     njobs : int
-        number of parallel jobs
-    var_of_interest: list of names of variables that we are interested in or None
-        Only the variables that are in this list get used in every bi frequency var.
-        If None all variables get taken into each higher frequency bi frequency var.
-    temp_agg : str
-        `mean` or `sum` defines the measurement equation
-    save : boolean
-        True if you want to save the hyperparameters as a txt
-    name : str
-        path where you want to save the hyperparameters
-        
-    Returns
-    ----------
-    
-    hyp : list
-        list containing the optimized hyperparameters
-        
+        Number of parallel jobs.
+    var_of_interest : list of str or None, default None
+        List of variable names to consider. If None, all variables are used.
+    temp_agg : str, default 'mean'
+        Temporal aggregation method ('mean' or 'sum'), defining the measurement equation.
+    save : bool, default False
+        If True, saves the best hyperparameters to a file.
+    name : str, default "hyp.txt"
+        Path to file for saving hyperparameters if `save` is True.
 
-    '''
+    Returns
+    -------
+    hyp : list
+        List of optimized hyperparameters (best set found).
+    """
     
     nburn_perc =  self.nburn_perc
     nlags = self.nlags
