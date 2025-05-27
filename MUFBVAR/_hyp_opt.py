@@ -2002,7 +2002,7 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
     def calc_rmse_1(lambda1_1, lambda2_1, lambda4_1, lambda5_1):
         
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1]]
-        rmse = calc_rmse(hyp_list, mufbvar_data, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
+        rmse = calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
         
         return rmse
     
@@ -2011,7 +2011,7 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
                 lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2):
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
                     [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2]]
-        rmse = calc_rmse(hyp_list, mufbvar_data, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
+        rmse = calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
         
         return rmse
     
@@ -2023,7 +2023,7 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
                     [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2],
                     [lambda1_3, lambda2_3, 1, lambda4_3, lambda5_3]]
-        rmse = calc_rmse(hyp_list, mufbvar_data, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
+        rmse = calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
         
         return rmse
     
