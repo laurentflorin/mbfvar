@@ -1839,6 +1839,7 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
                     Pmean_list[m] = Pmean
                     
         return mdd_list[-1]
+    
     @scheduler.parallel(n_jobs = njobs)   
     def calc_mdd_1(lambda1_1, lambda2_1, lambda4_1, lambda5_1):
         
@@ -1890,3 +1891,80 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
             
     return best_params
 
+
+    
+def update_hyperparameters_mango_rmse(self, mufbvar_data, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = None, temp_agg = 'mean', save = False, name = "hyp.txt"):
+    '''
+    This method uses bayesian optimization to find the hyperparameters with the lowest out of sample RMSE\n
+    lambda 1: overall tightness\n
+    lambda 2:  scaling down the variance for the coefficients of a distant lag\n
+    lambda 3:  number of observations used for obtaining the prior for the covariance matrix of error terms, fixed to 1\n
+    lambda 4: . tuning parameter for coefficients for constant\n
+    lambda 5:  tuning parameter for the covariance between coefficients\n
+
+    
+    Parameters
+    ----------
+    data : list of pandas DataFrames
+        Data of each frequency stored in a pandas DataFrame, all stored in one list
+    param_space : dict
+        boundaries for each hyperparameter:\n
+        - two frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1\n
+        - three frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2\n
+        - four frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2, lambda1_3, lambda2_3, lambda4_3, lambda5_3
+    h : forecast horizon in lowest frequency
+    init_points : int
+        How many steps of random exploration you want to perform
+    n_iter : int
+        How many steps of bayesian optimization you want to perform
+    nsim : int
+        number of draws in each MUFBVAR estimation
+    njobs : int
+        number of parallel jobs
+    var_of_interest: list of names of variables that we are interested in or None
+        Only the variables that are in this list get used in every bi frequency var.
+        If None all variables get taken into each higher frequency bi frequency var.
+    temp_agg : str
+        `mean` or `sum` defines the measurement equation
+    save : boolean
+        True if you want to save the hyperparameters as a txt
+    name : str
+        path where you want to save the hyperparameters
+        
+    Returns
+    ----------
+    
+    hyp : list
+        list containing the optimized hyperparameters
+        
+
+    '''
+    
+    horizon_mapping = {f'{mufbvar_data.frequencies[0]}' : H}
+    for i, freq  in enumerate(mufbvar_data.frequencies[1:]):
+        horizon_mapping.update({f'{freq}' : math.prod(itertools.islice(mufbvar_data.freq_ratio_list,0 ,i+1))})
+    
+    
+    mufbvar_data.input_data.appendleft(mufbvar_data.input_data_Q)
+    data_list = list(mufbvar_data.input_data)
+
+    result_in_sample = []
+    result_out_sample = []
+    for df, freq in zip(data_list, mufbvar_data.frequencies):
+        horizon = horizon_mapping.get(freq)
+        if len(df) <= horizon:
+            raise ValueError(f"DataFrame with frequency {freq} has fewer rows than the required horizon")
+        
+        # Split the data
+        in_sample = df.iloc[:-horizon].copy()
+        out_sample = df.iloc[-horizon:].copy()
+        
+        result_in_sample.append((in_sample))
+        result_out_sample.append((out_sample))
+        
+    data_in = MUFBVAR.mufbvar_data(result_in_sample, mufbvar_data.trans, mufbvar_data.frequencies)    
+    
+    model_temp = MUFBVAR.multifrequency_var(nsim, self.nburn, self.nlags, self.thining)
+    model_temp.fit(data_in, hyp = hyp, var_of_interest = var_of_interest)
+    model_temp.forecast(H)
+    model_temp.aggregate(frequency = mufbvar_data.frequencies[0])

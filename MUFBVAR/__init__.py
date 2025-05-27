@@ -248,3 +248,4 @@ class mufbvar_data:
         self.YDATA_list = YDATA_list
         self.YM_list = YM_list
         self.input_data = input_data
+        self.trans = trans

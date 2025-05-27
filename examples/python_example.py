@@ -13,7 +13,7 @@ io_data = "/home/u80856195/git/MUFBVAR-master/examples/hist.xlsx"
 H = 96          # forecast horizon
 nsim = 40      # number of draws from Posterior Density
 nburn = 0.5     # number of draws to discard
-nlags = [6,4]   # Number of lags
+nlags = [3,4]   # Number of lags
 thining = 1     # Thining 
 
 hyp = [[0.09, 4.3, 1, 2.7, 4.3], [0.09, 4.3, 1, 2.7, 4.3]] # Hyperparameters see documentation for details
@@ -46,7 +46,7 @@ mufbvar_data = MUFBVAR.mufbvar_data(data, trans, frequencies)
 model =  MUFBVAR.multifrequency_var(nsim, nburn, nlags, thining)
 
 # Estimate the model
-model.fit(mufbvar_data, hyp = hyp, var_of_interest = ["q_1"])
+model.fit(mufbvar_data, hyp = hyp, var_of_interest = None)
 
 # Conditional forecasts
 

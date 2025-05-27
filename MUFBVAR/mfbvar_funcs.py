@@ -521,3 +521,13 @@ def cholcov(SIGMA):
 def is_pos_def(x):
     return np.all(np.linalg.eigvals(x) > 0)  
 """    
+
+
+def split_data(data, h):
+    """function to split data into in and outofsample
+
+    Args:
+        data (list): list of Panda Dataframes
+        h (): forecast horizon in lowest frequency
+    """
+    

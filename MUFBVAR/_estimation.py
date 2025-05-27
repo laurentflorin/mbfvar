@@ -270,7 +270,7 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean'):
     
     GAMMAz_list.append(np.zeros((Nq_list[0]* (int(p_list[0])+1), int(Nm_list[0])*p_list[0])))
     GAMMAc_list.append(np.zeros((Nq_list[0]*(p_list[0]+1), 1)))
-    GAMMAu_list.append(np.vstack((np.eye(Nq_list[0]), np.zeros((p_list[0]*Nq_list[0],Nq_list[0])))))
+    GAMMAu_list.append(np.vstack((np.eye(Nq_list[0]), np.zeros((p_list[0]*Nq_list[0], Nq_list[0])))))
 
     if self.temp_agg == "mean":
         LAMBDAs_list.append(np.vstack((np.hstack((np.zeros((Nm_list[0],Nq_list[0])), np.transpose(phi_mq_list[0]))),1/freq_ratio_list[0]*np.hstack((np.tile(np.eye(Nq_list[0]), freq_ratio_list[0]), np.zeros((Nq_list[0],Nq_list[0]*(p_list[0]-(freq_ratio_list[0]-1)))))))))
