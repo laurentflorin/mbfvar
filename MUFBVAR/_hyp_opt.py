@@ -1976,7 +1976,7 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
             
         data_in = mufbvar_data(result_in_sample, mufbvar_data_temp.trans, mufbvar_data_temp.frequencies)    
         
-        model_temp = copy.deepcopy(self)
+        model_temp = self.__class__(nsim, nburn_perc, nlags, thining)
         model_temp.fit(data_in, hyp = hyp_list, var_of_interest = var_of_interest,  temp_agg = temp_agg)
         model_temp.forecast(H)
         model_temp.aggregate(frequency = mufbvar_data.frequencies[0])
