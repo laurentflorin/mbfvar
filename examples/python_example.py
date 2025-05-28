@@ -36,7 +36,7 @@ trans = [np.array((1,1)), np.array((1,1,1)), np.array((1,1,1))]
 
 
 # Initialize data class            
-mufbvar_data = MUFBVAR.mufbvar_data(data, trans, frequencies)
+mufbvar_data_in = MUFBVAR.mufbvar_data(data, trans, frequencies)
 
 
 # Fit and Forecast
@@ -54,7 +54,7 @@ nsim = 100 # number of simulations
 njobs = 2
 
 H = 2
-model.update_hyperparameters_mango_rmse(mufbvar_data, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
+model.update_hyperparameters_mango_rmse(mufbvar_data_in, parameter_space, H, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
 
 
 

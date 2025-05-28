@@ -2005,16 +2005,26 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
 
 
     #@scheduler.parallel(n_jobs = njobs)   
-    def calc_rmse_1(lambda1_1, lambda2_1, lambda4_1, lambda5_1):
-        
+    def calc_rmse_1(params):
+        lambda1_1 = params['lambda1_1']
+        lambda2_1 = params['lambda2_1']
+        lambda4_1 = params['lambda4_1']
+        lambda5_1 = params['lambda5_1']        
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1]]
         rmse = calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
         
         return rmse
 
     #@scheduler.parallel(n_jobs = njobs)
-    def calc_rmse_2(lambda1_1, lambda2_1, lambda4_1,
-                lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2):
+    def calc_rmse_2(params):
+        lambda1_1 = params['lambda1_1']
+        lambda2_1 = params['lambda2_1']
+        lambda4_1 = params['lambda4_1']
+        lambda5_1 = params['lambda5_1']
+        lambda1_2 = params['lambda1_2']
+        lambda2_2 = params['lambda2_2']
+        lambda4_2 = params['lambda4_2']
+        lambda5_2 = params['lambda5_2']
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
                     [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2]]
         rmse = calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
@@ -2022,10 +2032,19 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
         return rmse
 
     #@scheduler.parallel(n_jobs = njobs)
-    def calc_rmse_3(lambda1_1, lambda2_1, lambda4_1,
-                lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2,
-                lambda1_3, lambda2_3, lambda4_3, lambda5_3):
-        
+    def calc_rmse_3(params):
+        lambda1_1 = params['lambda1_1']
+        lambda2_1 = params['lambda2_1']
+        lambda4_1 = params['lambda4_1']
+        lambda5_1 = params['lambda5_1']
+        lambda1_2 = params['lambda1_2']
+        lambda2_2 = params['lambda2_2']
+        lambda4_2 = params['lambda4_2']
+        lambda5_2 = params['lambda5_2']
+        lambda1_3 = params['lambda1_3']
+        lambda2_3 = params['lambda2_3']
+        lambda4_3 = params['lambda4_3']
+        lambda5_3 = params['lambda5_3']         
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
                     [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2],
                     [lambda1_3, lambda2_3, 1, lambda4_3, lambda5_3]]
