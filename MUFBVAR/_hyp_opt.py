@@ -14,7 +14,6 @@ from pandas.tseries.offsets import Week , MonthBegin, QuarterBegin, Day
 
 import itertools
 
-
 import matplotlib.pyplot as plt
 
 #for progressbar
