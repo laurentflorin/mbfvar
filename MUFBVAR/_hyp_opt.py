@@ -1890,7 +1890,17 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
         with open(name, 'w') as f:
             print(best_params, file=f)
             
-    return best_params
+    sublists = [list(best_params.values())[i:i+4] for i in range(0, len(list(best_params.values())), 4)] 
+    hyp = []
+    for i in sublists:
+        i.insert(2,1)
+        hyp.append(i)
+    
+    if save == True:
+        with open(name, 'w') as f:
+            print(hyp, file=f)
+            
+    return hyp
 
 
     
@@ -2047,6 +2057,15 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
         
     results = tuner.minimize()
     best_params = results["best_params"]
+    
+    sublists = [list(best_params.values())[i:i+4] for i in range(0, len(list(best_params.values())), 4)] 
+    hyp = []
+    for i in sublists:
+        i.insert(2,1)
+        hyp.append(i)
+    
     if save == True:
         with open(name, 'w') as f:
-            print(best_params, file=f)
+            print(hyp, file=f)
+            
+    return hyp
