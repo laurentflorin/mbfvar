@@ -751,10 +751,10 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                             #we also need to update nv_list and Nq_lsit
                             nv_list[m + 1] = len(idx_vars) + YM0_list[m+1].shape[1]
                             Nq_list[m + 1] = len(idx_vars)
-                        YQ_list.append(np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1))))#[np.product(np.array(nlags_list_[:(m+2)])):,:])
+                        YQ_list.append(np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1))))#[np.prod(np.array(nlags_list_[:(m+2)])):,:])
                         #Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
                         if YM_list[m].size:
-                            YM_list[m+1] = YM_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)])):,:]
+                            YM_list[m+1] = YM_list[m+1][2*np.prod(np.array(nlags_list_[:(m+2)])):,:]
                         else:
                             YM_list[m+1] = YM_list[m+1][2*nlags_list_[(m+1)]:,:]
                         
@@ -780,7 +780,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                         #for writing to a forecast w/ history file
                         #YMh_list[m+1] = YMh_list[m+1][int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
                         if YM_list[m].size:
-                            YMh_list[m+1] = YMh_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)]))+int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
+                            YMh_list[m+1] = YMh_list[m+1][2*np.prod(np.array(nlags_list_[:(m+2)]))+int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
                         varstxt_list.append(np.hstack((YMX_list[m+1].columns, YQX_list[0].columns)))
                         smpltxt_list.append(YMX_list[m+1].index[int(T0_list[m+1]):])
                         
@@ -857,7 +857,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                         for kk in range(5):
                             Pt_list[m+1] = GAMMAs_list[m+1] @ Pt_list[m+1] @ GAMMAs_list[m+1].T + GAMMAu_list[m+1] @ sig_qq_list[m+1] @ GAMMAu_list[m+1].T
                         
-                        #YM_short = YM_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)])):,:]
+                        #YM_short = YM_list[m+1][2*np.prod(np.array(nlags_list_[:(m+2)])):,:]
                         
                         # Lagged HF observations
                         Zm_list.append(np.zeros((nobs_list[m+1], Nm_list[m+1]*p_list[m+1])))
@@ -877,7 +877,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                             idx_vars = np.concatenate((np.array(idx_var_of_interest_m) , (YM_list[m].shape[1]+np.array(idx_var_of_interest))))
                             YQ0_list[m+1] = YYact[:,np.int_(idx_vars)].reshape(-1, len(var_of_interest))
                             
-                        YQ_list[m+1] =np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.product(np.array(nlags_list_[:(m+2)])):,:]
+                        YQ_list[m+1] =np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.prod(np.array(nlags_list_[:(m+2)])):,:]
                         
                         Yq_list[m+1] = YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]#YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
                         
@@ -1689,10 +1689,10 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
                             #we also need to update nv_list and Nq_lsit
                             nv_list[m + 1] = len(idx_vars) + YM0_list[m+1].shape[1]
                             Nq_list[m + 1] = len(idx_vars)
-                        YQ_list.append(np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1))))#[np.product(np.array(nlags_list_[:(m+2)])):,:])
+                        YQ_list.append(np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1))))#[np.prod(np.array(nlags_list_[:(m+2)])):,:])
                         #Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
                         if YM_list[m].size:
-                            YM_list[m+1] = YM_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)])):,:]
+                            YM_list[m+1] = YM_list[m+1][2*np.prod(np.array(nlags_list_[:(m+2)])):,:]
                         else:
                             YM_list[m+1] = YM_list[m+1][2*nlags_list_[(m+1)]:,:]
                         
@@ -1718,7 +1718,7 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
                         #for writing to a forecast w/ history file
                         #YMh_list[m+1] = YMh_list[m+1][int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
                         if YM_list[m].size:
-                            YMh_list[m+1] = YMh_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)]))+int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
+                            YMh_list[m+1] = YMh_list[m+1][2*np.prod(np.array(nlags_list_[:(m+2)]))+int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
                         varstxt_list.append(np.hstack((YMX_list[m+1].columns, YQX_list[0].columns)))
                         smpltxt_list.append(YMX_list[m+1].index[int(T0_list[m+1]):])
                         
@@ -1795,7 +1795,7 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
                         for kk in range(5):
                             Pt_list[m+1] = GAMMAs_list[m+1] @ Pt_list[m+1] @ GAMMAs_list[m+1].T + GAMMAu_list[m+1] @ sig_qq_list[m+1] @ GAMMAu_list[m+1].T
                         
-                        #YM_short = YM_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)])):,:]
+                        #YM_short = YM_list[m+1][2*np.prod(np.array(nlags_list_[:(m+2)])):,:]
                         
                         # Lagged HF observations
                         Zm_list.append(np.zeros((nobs_list[m+1], Nm_list[m+1]*p_list[m+1])))
@@ -1815,7 +1815,7 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
                             idx_vars = np.concatenate((np.array(idx_var_of_interest_m) , (YM_list[m].shape[1]+np.array(idx_var_of_interest))))
                             YQ0_list[m+1] = YYact[:,np.int_(idx_vars)].reshape(-1, len(var_of_interest))
                             
-                        YQ_list[m+1] =np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.product(np.array(nlags_list_[:(m+2)])):,:]
+                        YQ_list[m+1] =np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.prod(np.array(nlags_list_[:(m+2)])):,:]
                         
                         Yq_list[m+1] = YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]#YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
                         

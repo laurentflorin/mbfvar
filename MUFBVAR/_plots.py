@@ -418,7 +418,7 @@ def compare_models(self, multifrquency_var_models, model_names, agg = True, vari
     
     if agg == True:
         
-        freq_ratio = np.product(deque(itertools.islice(self.freq_ratio_list, 0, len(self.freq_ratio_list)-self.frequencies.index(self.agg_freq))))
+        freq_ratio = np.prod(deque(itertools.islice(self.freq_ratio_list, 0, len(self.freq_ratio_list)-self.frequencies.index(self.agg_freq))))
         H = int(self.H/freq_ratio)
         
         if not hasattr(self, 'YY_mean_agg'):
