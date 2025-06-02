@@ -1981,7 +1981,6 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
         model_temp.forecast(H)
         model_temp.aggregate(frequency = mufbvar_data_temp.frequencies[0])
         
-        
         out_sample = result_out_sample[0]
         if (mufbvar_data.frequencies[0] == "Q"):
             out_sample = out_sample.assign(Index = pd.DatetimeIndex(out_sample.index).to_period('Q')).set_index('Index')
