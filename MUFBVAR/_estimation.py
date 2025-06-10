@@ -330,10 +330,13 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
     
     #Here we start the sample loop, j is the current sample
     #inside the sample loop we need a loop for the MFBVARS: m
+    tries_at_j0 = 0
     for j in tqdm(range(self.nsim)):
         
         restart_j0 = False
         
+        if tries_at_j0 == 100:
+            raise NameError('No Stable VAR at j=0')
         for m in range(len(YMh_list)):
             
             # initialization
@@ -661,13 +664,8 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                 m = 0
                 if j == 0:
                     restart_j0 = True
-                    break  # Break out of the m loop
-                else:
-                    continue
-            
-            if restart_j0:
-                j = -1  # Will be incremented to 0 at the next iteration of the j loop
-                continue    
+                break
+                
             
             if j > 0:
                 Phi_list[m] = Phi
@@ -906,6 +904,11 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
             else:
                 Pmean_list[m] = Pmean
                     
+        
+        if restart_j0:
+            j = -1  # Will be incremented to 0 at the next iteration of the j loop
+            tries_at_j0 += 1
+            continue
                     
         #self.YYactsim = YYactsim_list[-1]
         #self.XXactsim = XXactsim_list[-1]
