@@ -21,8 +21,6 @@ hyp = [[0.09, 4.3, 1, 2.7, 4.3], [0.09, 4.3, 1, 2.7, 4.3]] # Hyperparameters see
 frequencies = ["Q","M","W"] # Frequencies
 
 
-
-
 # Load the data
 # --------------
 data = []
@@ -51,7 +49,7 @@ param_space = dict(lambda1_1 = uniform(0.001, 20), lambda2_1= uniform(0.01, 10),
 init_points = 3 # number of random points
 n_iter = 8 # number of baysian optimization steps
 nsim = 100 # number of simulations 
-njobs = 2
+njobs = 1
 
 H = 2
 hyp = model.update_hyperparameters_mango_rmse(mufbvar_data_in, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")

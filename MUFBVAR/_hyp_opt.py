@@ -1992,6 +1992,7 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
         model_temp.aggregate(frequency = data_in.frequencies[0])
         
         out_sample = result_out_sample[0]
+        out_sample = out_sample[var_of_interest]
         if (data_in.frequencies[0] == "Q"):
             out_sample = out_sample.assign(Index = pd.DatetimeIndex(out_sample.index).to_period('Q')).set_index('Index')
             out_sample = out_sample.add_suffix('_out_sample')
@@ -1999,16 +2000,18 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
         df = model_temp.YY_mean_agg[var_of_interest].join(out_sample, how = "inner")
         
         suffix = '_out_sample'
+        
         rmse_results = []
 
         for col in df.columns:
             if col.endswith(suffix):
                 pred_col = col.replace(suffix, '')
                 if pred_col in df.columns:
-                    rmse = np.sqrt(((df[pred_col] - df[col]) ** 2).mean())
+                    rmse = np.sqrt(((df[pred_col][H-1] - df[col][H-1] ) ** 2).mean())
                     rmse_results.append(rmse)
                     
         mean_rmse = float(np.mean(rmse_results))
+        
         
         return mean_rmse
 
