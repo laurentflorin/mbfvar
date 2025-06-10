@@ -675,7 +675,10 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                         else:
                             m = -1
                             continue    
-                    
+                else:
+                    sigma_chol = cholcovOrEigendecomp(np.kron(sigma, inv_x))
+                    phi_new = np.squeeze(Phi_tilde.reshape(n*(n*p+1), 1, order="F")) + sigma_chol @ np.random.standard_normal(sigma_chol.shape[0])
+                    Phi = phi_new.reshape(n*p+1, n, order="F") 
                 
                 if j > 0:
                     Phi_list[m] = Phi
