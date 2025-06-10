@@ -331,6 +331,9 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
     #Here we start the sample loop, j is the current sample
     #inside the sample loop we need a loop for the MFBVARS: m
     for j in tqdm(range(self.nsim)):
+        
+        restart_j0 = False
+        
         for m in range(len(YMh_list)):
             
             # initialization
@@ -665,7 +668,6 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
             if restart_j0:
                 j = -1  # Will be incremented to 0 at the next iteration of the j loop
                 continue    
-            #while loop bis hier
             
             if j > 0:
                 Phi_list[m] = Phi
