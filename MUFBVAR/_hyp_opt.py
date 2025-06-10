@@ -2007,7 +2007,7 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
             if col.endswith(suffix):
                 pred_col = col.replace(suffix, '')
                 if pred_col in df.columns:
-                    rmse = np.sqrt(((df[pred_col][H-1] - df[col][H-1] ) ** 2).mean())
+                    rmse = np.sqrt(((df[pred_col][H-1] - df[col][H-1] ) ** 2))
                     rmse_results.append(rmse)
                     
         mean_rmse = float(np.mean(rmse_results))
