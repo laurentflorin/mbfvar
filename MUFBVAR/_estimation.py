@@ -657,9 +657,14 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                 print(f"Explosive VAR detected {explosive_counter} times.")
                 m = 0
                 if j == 0:
-                    j = -1
-                continue
-                
+                    restart_j0 = True
+                    break  # Break out of the m loop
+                else:
+                    continue
+            
+            if restart_j0:
+                j = -1  # Will be incremented to 0 at the next iteration of the j loop
+                continue    
             #while loop bis hier
             
             if j > 0:
