@@ -664,7 +664,10 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                 m = 0
                 if j == 0:
                     restart_j0 = True
-                break
+                    break
+                else:
+                    m = -1
+                    continue    
                 
             
             if j > 0:
