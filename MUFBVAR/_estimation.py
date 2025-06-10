@@ -47,7 +47,7 @@ from .mfbvar_funcs import calc_yyact, is_explosive
 
 
 
-def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_it_explosive = 1000):
+def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_it_explosive = 1000, check_explosive = True):
     
     '''
     Estimates the model using the model parameter specified in the initialization. \n
@@ -656,24 +656,25 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                 
                 sigma = invwishart.rvs(scale = Sigma, df = T-n*p-1)
                 # Draws from the density Sigma | Y 
-                attempts = 0
-                while attempts < max_it_explosive:
-                    sigma_chol = cholcovOrEigendecomp(np.kron(sigma, inv_x))
-                    phi_new = np.squeeze(Phi_tilde.reshape(n*(n*p+1), 1, order="F")) + sigma_chol @ np.random.standard_normal(sigma_chol.shape[0])
-                    Phi = phi_new.reshape(n*p+1, n, order="F")
-                    if not is_explosive(Phi, n, p):
-                        break
-                    attempts += 1
-                if attempts == max_it_explosive:
-                    explosive_counter += 1
-                    print(f"Explosive VAR detected {explosive_counter} times.")
-                    m = 0
-                    if j == 0:
-                        restart_j0 = True
-                        break
-                    else:
-                        m = -1
-                        continue    
+                if check_explosive:
+                    attempts = 0
+                    while attempts < max_it_explosive:
+                        sigma_chol = cholcovOrEigendecomp(np.kron(sigma, inv_x))
+                        phi_new = np.squeeze(Phi_tilde.reshape(n*(n*p+1), 1, order="F")) + sigma_chol @ np.random.standard_normal(sigma_chol.shape[0])
+                        Phi = phi_new.reshape(n*p+1, n, order="F")
+                        if not is_explosive(Phi, n, p):
+                            break
+                        attempts += 1
+                    if attempts == max_it_explosive:
+                        explosive_counter += 1
+                        print(f"Explosive VAR detected {explosive_counter} times.")
+                        m = 0
+                        if j == 0:
+                            restart_j0 = True
+                            break
+                        else:
+                            m = -1
+                            continue    
                     
                 
                 if j > 0:
