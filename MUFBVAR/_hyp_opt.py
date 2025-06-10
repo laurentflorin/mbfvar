@@ -1964,7 +1964,7 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
         mufbvar_data_temp = copy.deepcopy(mufbvar_data_in)
         horizon_mapping = {f'{mufbvar_data_temp.frequencies[0]}' : H}
         for i, freq  in enumerate(mufbvar_data_temp.frequencies[1:]):
-            horizon_mapping.update({f'{freq}' : math.prod(itertools.islice(mufbvar_data_temp.freq_ratio_list,0 ,i+1))})
+            horizon_mapping.update({f'{freq}' : math.prod(itertools.islice(mufbvar_data_temp.freq_ratio_list, 0 ,i+1)) * H})
         
         
         mufbvar_data_temp.input_data.appendleft(mufbvar_data_temp.input_data_Q)
@@ -1988,7 +1988,7 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
         
         model_temp = self.__class__(nsim, nburn_perc, nlags, thining)
         model_temp.fit(data_in, hyp = hyp_list, var_of_interest = var_of_interest,  temp_agg = temp_agg)
-        model_temp.forecast(H)
+        model_temp.forecast(H * math.prod(data_in.freq_ratio_list))
         model_temp.aggregate(frequency = data_in.frequencies[0])
         
         out_sample = result_out_sample[0]

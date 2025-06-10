@@ -81,6 +81,10 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean'):
     
     assert self.temp_agg in ("mean", "sum"), f"Invalid temp_agg: {self.temp_agg}. Choose 'mean' or 'sum'."
     
+    
+    # If we have only two frequencies always the whole set is used
+    if len(mufbvar_data.frequencies) == 2:
+        var_of_interest = None
     # data from mufbvar_data
     
     YMX_list = copy.deepcopy(mufbvar_data.YMX_list)
