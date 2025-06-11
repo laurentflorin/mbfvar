@@ -595,10 +595,6 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                     YY = np.vstack((At_draw[:,:Nq_list[m]], AT_draw[1:,:(Nm_list[m]+Nq_list[m])]))
             
                 
-                #lstate = np.zeros((Nq_list[m], Tnobs_list[m]))
-                #for hh in range(Nq_list[m]):
-                #    lstate[hh, :nobs_list[m]] = At_draw[:, hh]
-                #    lstate[hh, nobs_list[m]:] = AT_draw[1:, Nm_list[m]+hh]
             
                 if (j%self.thining == 0 and m == (len(YMh_list)-1)):
                     if lstate_list:
