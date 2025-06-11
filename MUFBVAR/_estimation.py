@@ -332,6 +332,7 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
     #inside the sample loop we need a loop for the MFBVARS: m
     tries_at_j0 = 0
     should_restart = True
+    
     while should_restart:
         should_restart = False
         if tries_at_j0 == 100:
@@ -340,6 +341,7 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
         for j in tqdm(range(self.nsim)):
             
             restart_j0 = False
+            continue_j = False
             
             if tries_at_j0 == 100:
                 raise NameError('No Stable VAR at j=0')
@@ -669,8 +671,8 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                             restart_j0 = True
                             break
                         else:
-                            m = -1
-                            continue    
+                            continue_j = True
+                            break    
                 else:
                     sigma_chol = cholcovOrEigendecomp(np.kron(sigma, inv_x))
                     phi_new = np.squeeze(Phi_tilde.reshape(n*(n*p+1), 1, order="F")) + sigma_chol @ np.random.standard_normal(sigma_chol.shape[0])
@@ -918,7 +920,8 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                 j = -1  # Will be incremented to 0 at the next iteration of the j loop
                 should_restart = True
                 break
-                        
+            if continue_j:
+                continue         
             #self.YYactsim = YYactsim_list[-1]
             #self.XXactsim = XXactsim_list[-1]
             self.Phip = Phip_list[-1]
