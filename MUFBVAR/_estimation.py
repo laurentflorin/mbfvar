@@ -951,9 +951,9 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
             varlist_list[m] = varlist_list[m][idx]
             #select_list[m] = select_list[m][idx]
             
-        for m in range(1, len(frequencies)-1):
-            idx_q = list(filter(lambda x: (YMX_list[m-1].columns.tolist() + YQX_list[0].columns.tolist())[x] in  var_of_interest, range(len(YMX_list[m-1].columns.tolist() + YQX_list[0].columns.tolist()))))
-            select_q[m] = select_q[m][idx_q]
+        #for m in range(1, len(frequencies)-1):
+            #idx_q = list(filter(lambda x: (YMX_list[m-1].columns.tolist() + YQX_list[0].columns.tolist())[x] in  var_of_interest, range(len(YMX_list[m-1].columns.tolist() + YQX_list[0].columns.tolist()))))
+            #select_q[m] = select_q[m][idx_q]
 
         
     
