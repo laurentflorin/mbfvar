@@ -58,7 +58,7 @@ hyp = model.update_hyperparameters_mango_rmse(mufbvar_data_in, param_space, H, i
 
 
 # Estimate the model
-model.fit(mufbvar_data, hyp = hyp, var_of_interest = None)
+model.fit(mufbvar_data_in, hyp = hyp, var_of_interest = None)
 
 # Conditional forecasts
 

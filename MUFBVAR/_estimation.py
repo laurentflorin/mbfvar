@@ -343,8 +343,6 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
             restart_j0 = False
             continue_j = False
             
-            if tries_at_j0 == 100:
-                raise NameError('No Stable VAR at j=0')
             for m in range(len(YMh_list)):
                 
                 # initialization

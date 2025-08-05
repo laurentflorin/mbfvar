@@ -85,9 +85,15 @@ class mufbvar_data:
         
         Nq_list.append(YQX_list[0].shape[1])
         
+        def safe_len(arr):
+            arr = np.asarray(arr)
+            if arr.shape == ():  # scalar
+                return 0
+            return len(arr)
+
         for i in range(len(YMX_list)-1):
             Nq_list.append(YQX_list[0].shape[1] + YMX_list[i].shape[1]) 
-            if len(select_m_list[i]) == 0:
+            if safe_len(select_m_list[i]) == 0:
                 select_q.append( select_q[0])
             else:
                 select_q.append(np.hstack((select_m_list[i], select_q[0])))
