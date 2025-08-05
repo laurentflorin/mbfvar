@@ -1997,7 +1997,7 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
             out_sample = out_sample.assign(Index = pd.DatetimeIndex(out_sample.index).to_period('Q')).set_index('Index')
             out_sample = out_sample.add_suffix('_out_sample')
         
-        df = model_temp.YY_mean_agg[var_of_interest].join(out_sample, how = "inner")
+        df = model_temp.YY_mean_agg[var_of_interest].join(out_sample, how="inner", lsuffix="_train", rsuffix="_out")
         
         suffix = '_out_sample'
         
