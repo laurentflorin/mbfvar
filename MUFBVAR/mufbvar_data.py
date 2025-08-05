@@ -101,7 +101,7 @@ class mufbvar_data:
                 
         for i in range(len(YMX_list)):
             if i > 0:
-                new_list = [item for item in list(itertools.islice(select_m_list, 0, i+1)) if len(item) > 0]
+                new_list = [item for item in list(itertools.islice(select_m_list, 0, i+1)) if safe_len(item) > 0]
                 select_list.append(np.hstack((np.hstack(list(reversed(new_list))), select_q[0])))
                 rev_vars_m = list(itertools.islice(vars_m_list, 0, i+1))
                 rev_vars_m.reverse()
