@@ -947,9 +947,10 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
         if not(var_of_interest is None):
             #update varlist and select_list
             for m in range(len(frequencies)-1):
-                idx = list(filter(lambda x: varlist_list[m][x] in (YMX_list[m].columns.tolist() + var_of_interest), range(len(varlist_list[m]))))
-                varlist_list[m] = varlist_list[m][idx]
-                select_list[m] = select_list[m][idx]
+                vars_to_keep = set(YMX_list[m].columns.tolist() + var_of_interest)
+                mask = [v in vars_to_keep for v in varlist_list[m]]
+                varlist_list[m] = varlist_list[m][mask]
+                select_list[m] = select_list[m][mask]
                 
             for m in range(1, len(frequencies)-1):
                 idx_q = list(filter(lambda x: (YMX_list[m-1].columns.tolist() + YQX_list[0].columns.tolist())[x] in  var_of_interest, range(len(YMX_list[m-1].columns.tolist() + YQX_list[0].columns.tolist()))))
@@ -978,8 +979,7 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
     self.nlags_list = nlags_list
     self.varlist_list = varlist_list
     self.YMX_list =YMX_list
-    self.index_list = index_list
-    self.select_list = select_list        
+    self.index_list = index_list    
     self.var_of_interest = var_of_interest
     self.explosive_counter = explosive_counter
     self.valid_draws = [draw for draw in valid_draws if draw >= self.nburn/self.thining]
