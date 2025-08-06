@@ -2001,9 +2001,12 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
                         rmse = np.sqrt(((df[pred_col][H-1] - df[col][H-1] ) ** 2))
                         rmse_results.append(rmse)
             mean_rmse = float(np.mean(rmse_results))
+            # Return high error if mean_rmse is nan or inf
+            if np.isnan(mean_rmse) or np.isinf(mean_rmse):
+                print("RMSE is nan or inf, returning high error.")
+                return 1e10
             return mean_rmse
         except Exception as e:
-            # Optionally, print/log the error for debugging
             print(f"Error in calc_rmse: {e}")
             return 1e10  # Return a very high RMSE if any error occurs
 
