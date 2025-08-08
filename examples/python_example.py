@@ -48,7 +48,7 @@ from scipy.stats import uniform
 param_space = dict(lambda1_1 = uniform(0.001, 20), lambda2_1= uniform(0.01, 10), lambda4_1= uniform(0.01, 10), lambda5_1= uniform(0.01, 10), lambda1_2= uniform(0.001, 20), lambda2_2= uniform(0.01, 10), lambda4_2= uniform(0.01, 10), lambda5_2= uniform(0.01, 10))
 init_points = 3 # number of random points
 n_iter = 8 # number of baysian optimization steps
-nsim = 100 # number of simulations 
+nsim = 1000 # number of simulations 
 njobs = 1
 
 H = 2
