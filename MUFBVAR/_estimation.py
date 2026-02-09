@@ -667,6 +667,7 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                         m = 0
                         if j == 0:
                             restart_j0 = True
+                            tries_at_j0 += 1
                             break
                         else:
                             continue_j = True
@@ -1196,7 +1197,7 @@ def forecast(self, H, conditionals = None):
     lstate_med[:, (self.select_q[-1] == 0)] = np.exp(lstate_med[:, (self.select_q[-1]== 0)])
     
     if YMh_list[-1].size:
-        YY_med_list.append(np.vstack((np.vstack((np.hstack((YMh_list[-1][YMh_len_correction:,:], lstate_med[:-self.freq_ratio_list[-1],:])), np.hstack((YYnow_med, lstate_m[-self.freq_ratio_list[-1]:,:])))), YYftr_med)))
+        YY_med_list.append(np.vstack((np.vstack((np.hstack((YMh_list[-1][YMh_len_correction:,:], lstate_med[:-self.freq_ratio_list[-1],:])), np.hstack((YYnow_med, lstate_med[-self.freq_ratio_list[-1]:,:])))), YYftr_med)))
     else:
         YY_med_list.append(np.vstack((lstate_med,YYftr_med)))
         
@@ -1372,7 +1373,7 @@ def aggregate(self, frequency, reset_index = True):
             YY_full_list.append(temp)
     else:
         for i in range(len(self.valid_draws)):
-            temp = np.vstack((lstate[i,:,:],self.forecast_draws_list[i,:,:]))
+            temp = np.vstack((lstate[i,:,:],self.forecast_draws_list[-1][i,:,:]))
             temp = pd.DataFrame(temp, columns = self.varlist_list[-1])
             temp.index = self.index_list[-1]
             YY_full_list.append(temp)
@@ -1426,6 +1427,8 @@ def aggregate(self, frequency, reset_index = True):
     
     
     freq_ratio, start = agg_helper(freq_lf, freq_hf, YY_full_list[0])
+    if start is None:
+        raise ValueError("Cannot align index for aggregation; check that the highest-frequency index has the expected period starts.")
     print("Aggregating for each draw")
     for i in tqdm(range(len(self.valid_draws))):
         temp = YY_full_list[i].iloc[start:,].groupby(YY_full_list[i].iloc[start:,].reset_index().index // freq_ratio).filter(lambda x: len(x) == freq_ratio)
@@ -1459,8 +1462,10 @@ def aggregate(self, frequency, reset_index = True):
             self.YY_084_agg.loc[idx, hist[i].columns] = np.nan
             self.YY_016_agg.loc[idx, hist[i].columns] = np.nan
             
-        if self.frequencies.index(m) > self.frequencies.index(frequency) & self.frequencies.index(m) < len(self.frequencies)-1:
+        if self.frequencies.index(m) > self.frequencies.index(frequency) and self.frequencies.index(m) < len(self.frequencies)-1:
             freq_ratio_temp, start_temp = agg_helper(frequency, m, hist[i])
+            if start_temp is None:
+                raise ValueError("Cannot align index for aggregation of historical data; ensure indices start on expected period boundaries.")
             hist_agg = hist[i].iloc[start_temp:,].groupby(hist[i].iloc[start_temp:,].reset_index().index // freq_ratio_temp).filter(lambda x: len(x) == freq_ratio_temp)
             if self.temp_agg == 'mean':
                 hist_agg = hist_agg.groupby(hist_agg.reset_index().index // freq_ratio_temp).mean()
