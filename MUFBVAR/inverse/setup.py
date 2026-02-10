@@ -1,7 +1,8 @@
 from setuptools import setup, Extension
+from pathlib import Path
 import pybind11
 
-eigen_include = "/home/u80856195/git/eigen"
+eigen_include = Path(__file__).resolve().parents[2] / "third_party" / "eigen-3.4.0"
 
 ext_modules = [
     Extension(
