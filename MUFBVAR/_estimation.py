@@ -78,6 +78,13 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
     self.nex = 1
     self.hyp = hyp
     self.temp_agg = temp_agg
+
+    # normalize var_of_interest to a list so single strings do not get treated as sequences of characters
+    if var_of_interest is not None:
+        if isinstance(var_of_interest, str):
+            var_of_interest = [var_of_interest]
+        else:
+            var_of_interest = list(var_of_interest)
     
     assert self.temp_agg in ("mean", "sum"), f"Invalid temp_agg: {self.temp_agg}. Choose 'mean' or 'sum'."
     
