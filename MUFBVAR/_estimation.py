@@ -47,6 +47,133 @@ from .mfbvar_funcs import calc_yyact, is_explosive
 
 
 
+def _kalman_filter_loglik_block(
+    GAMMAs, GAMMAz, GAMMAc, GAMMAu,
+    LAMBDAs, LAMBDAz, LAMBDAc, LAMBDAu,
+    LAMBDAs_t, LAMBDAz_t, LAMBDAc_t, LAMBDAu_t,
+    sig_qq, sig_mm, sig_mq, sig_qm,
+    At_init, Pt_init,
+    Zm, Ym, Yq,
+    nobs, T0, freq_ratio,
+):
+    """
+    Run the balanced Kalman filter for one frequency block and return the
+    accumulated log-likelihood of the observations.
+
+    The filter mirrors the balanced forward KF inside fit() so that it can be
+    used for the Metropolis-within-Gibbs acceptance ratio.  The only difference
+    from the forward pass is that innovation log-likelihoods are accumulated
+    instead of being discarded.
+
+    Parameters
+    ----------
+    GAMMAs, GAMMAz, GAMMAc, GAMMAu : ndarray
+        Transition-equation matrices for the block.
+    LAMBDAs, LAMBDAz, LAMBDAc, LAMBDAu : ndarray
+        Full measurement matrices (used when both HF and LF are observed).
+    LAMBDAs_t, LAMBDAz_t, LAMBDAc_t, LAMBDAu_t : ndarray
+        HF-only measurement matrices (used when only HF is observed).
+    sig_qq, sig_mm, sig_mq, sig_qm : ndarray
+        Covariance submatrices for the block.
+    At_init, Pt_init : ndarray
+        Initial filter mean and covariance.
+    Zm : ndarray, shape (nobs, p*Nm)
+        Lagged HF observations.
+    Ym : ndarray, shape (nobs, Nm) or empty
+        HF observations.
+    Yq : ndarray, shape (nobs, Nq)
+        LF observations passed in from the upstream block.
+    nobs : int
+        Number of observations in the balanced period.
+    T0 : int
+        Lag burn-in length (used only for the LF-step condition).
+    freq_ratio : int
+        Frequency ratio for this block.
+
+    Returns
+    -------
+    float
+        Sum of Gaussian log-likelihood contributions over the balanced period.
+    """
+    At = At_init.copy()
+    Pt = Pt_init.copy()
+    has_hf = Ym.size > 0
+    ll = 0.0
+
+    for t in range(nobs):
+        at_lf_step = (
+            (t + 1 + T0) / freq_ratio
+            - np.floor((t + T0 + 1) / freq_ratio) == 0
+        )
+
+        alphahat = GAMMAs @ At + GAMMAz @ Zm[t, :] + GAMMAc[:, 0]
+        Phat = GAMMAs @ Pt @ GAMMAs.T + GAMMAu @ sig_qq @ GAMMAu.T
+        Phat = 0.5 * (Phat + Phat.T)
+
+        if has_hf and at_lf_step:
+            # Both HF and LF observed
+            obs = np.concatenate((Ym[t, :], Yq[t, :]))
+            yhat = LAMBDAs @ alphahat + LAMBDAz @ Zm[t, :] + LAMBDAc[:, 0]
+            nut = obs - yhat
+            Ft = (
+                LAMBDAs @ Phat @ LAMBDAs.T
+                + LAMBDAu @ sig_mm @ LAMBDAu.T
+                + LAMBDAs @ GAMMAu @ sig_qm @ LAMBDAu.T
+                + LAMBDAu @ sig_mq @ GAMMAu.T @ LAMBDAs.T
+            )
+            Ft = 0.5 * (Ft + Ft.T)
+            Xit = LAMBDAs @ Phat + LAMBDAu @ sig_mq @ GAMMAu.T
+            sol = Xit.T @ invert_matrix(Ft)
+            At = alphahat + sol @ nut
+            Pt = Phat - sol @ Xit
+        elif has_hf and not at_lf_step:
+            # Only HF observed
+            obs = Ym[t, :]
+            yhat = LAMBDAs_t @ alphahat + LAMBDAz_t @ Zm[t, :] + LAMBDAc_t[:, 0]
+            nut = obs - yhat
+            Ft = (
+                LAMBDAs_t @ Phat @ LAMBDAs_t.T
+                + LAMBDAu_t @ sig_mm @ LAMBDAu_t.T
+                + LAMBDAs_t @ GAMMAu @ sig_qm @ LAMBDAu_t.T
+                + LAMBDAu_t @ sig_mq @ GAMMAu.T @ LAMBDAs_t.T
+            )
+            Ft = 0.5 * (Ft + Ft.T)
+            Xit = LAMBDAs_t @ Phat + LAMBDAu_t @ sig_mq @ GAMMAu.T
+            sol = Xit.T @ invert_matrix(Ft)
+            At = alphahat + sol @ nut
+            Pt = Phat - sol @ Xit
+        elif (not has_hf) and at_lf_step:
+            # Only LF observed (no HF variables in this block)
+            obs = Yq[t, :]
+            yhat = LAMBDAs @ alphahat + LAMBDAz @ Zm[t, :] + LAMBDAc[:, 0]
+            nut = obs - yhat
+            Ft = (
+                LAMBDAs @ Phat @ LAMBDAs.T
+                + LAMBDAu @ sig_mm @ LAMBDAu.T
+                + LAMBDAs @ GAMMAu @ sig_qm @ LAMBDAu.T
+                + LAMBDAu @ sig_mq @ GAMMAu.T @ LAMBDAs.T
+            )
+            Ft = 0.5 * (Ft + Ft.T)
+            Xit = LAMBDAs @ Phat + LAMBDAu @ sig_mq @ GAMMAu.T
+            sol = Xit.T @ invert_matrix(Ft)
+            At = alphahat + sol @ nut
+            Pt = Phat - sol @ Xit
+        else:
+            # No observation at this step
+            At = alphahat
+            Pt = Phat
+            nut = None
+            Ft = None
+
+        if nut is not None and Ft is not None:
+            k = len(nut)
+            sign, logdet = np.linalg.slogdet(Ft)
+            if sign > 0:
+                ll += -0.5 * (logdet + nut @ invert_matrix(Ft) @ nut + k * np.log(2.0 * np.pi))
+
+    return ll
+
+
 def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_it_stable = 1000):
     
     '''
@@ -333,6 +460,14 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
     
     #Here we start the sample loop, j is the current sample
     #inside the sample loop we need a loop for the MFBVARS: m
+
+    # MH backward correction state
+    M_blks = len(YMh_list)
+    mh_accept_counts = [0] * (M_blks - 1)
+    mh_total_counts = [0] * (M_blks - 1)
+    _mh_At_init = [None] * M_blks
+    _mh_Pt_init = [None] * M_blks
+
     for j in tqdm(range(self.nsim)):
         for m in range(len(YMh_list)):
             
@@ -340,7 +475,11 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
             if j > 0:
                 At_list[m] = At_draw_list[m][0,:].T 
                 Pt_list[m] = Pmean_list[m]
-                
+
+            # Save KF initial conditions for the MH backward correction
+            _mh_At_init[m] = At_list[m].copy()
+            _mh_Pt_init[m] = Pt_list[m].copy()
+
             # Kalman Filter Loop
             #########################
             for t in range(nobs_list[m]):  
@@ -901,8 +1040,388 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                 Pmean_list.append(Pmean)
             else:
                 Pmean_list[m] = Pmean
-                    
-                    
+
+        # ----------------------------------------------------------------
+        # Metropolis-within-Gibbs backward correction (Version 2)
+        #
+        # After the full forward sweep, run a backward pass over blocks
+        # m = 0, 1, ..., M_blks-2.  For each block _m we propose fresh
+        # latent-state and parameter draws (from the same forward-pass
+        # prior) and accept/reject based on the log-likelihood of block
+        # _m+1's balanced-period data under the proposed vs current
+        # downstream input Yq.  This introduces the cross-block feedback
+        # that is absent from the plain Gibbs forward sweep.
+        # ----------------------------------------------------------------
+        for _m in range(M_blks - 1):
+            mh_total_counts[_m] += 1
+
+            # Current log-likelihood of block (_m+1) given current Yq_{m+1}
+            _ll_cur = _kalman_filter_loglik_block(
+                GAMMAs_list[_m+1], GAMMAz_list[_m+1], GAMMAc_list[_m+1], GAMMAu_list[_m+1],
+                LAMBDAs_list[_m+1], LAMBDAz_list[_m+1], LAMBDAc_list[_m+1], LAMBDAu_list[_m+1],
+                LAMBDAs_t_list[_m+1], LAMBDAz_t_list[_m+1], LAMBDAc_t_list[_m+1], LAMBDAu_t_list[_m+1],
+                sig_qq_list[_m+1], sig_mm_list[_m+1], sig_mq_list[_m+1], sig_qm_list[_m+1],
+                _mh_At_init[_m+1], _mh_Pt_init[_m+1],
+                Zm_list[_m+1], Ym_list[_m+1], Yq_list[_m+1],
+                nobs_list[_m+1], T0_list[_m+1], freq_ratio_list[_m+1],
+            )
+
+            # ------------------------------------------------------------------
+            # Proposal: re-draw block _m latent states and parameters.
+            # We re-run the same smoother and parameter-draw code used in the
+            # forward pass (with new random draws) to produce a fresh proposal.
+            # ------------------------------------------------------------------
+            _p_m = int(p_list[_m])
+            _kn_m = nv_list[_m] * (_p_m + 1)
+
+            # Reconstruct unbalanced-KF initial state from stored quantities
+            if Ym_list[_m].size:
+                _BAt = np.concatenate((
+                    Ym_list[_m][-1, :],
+                    np.atleast_1d(np.squeeze(Atildemat_list[_m][j, :Nq_list[_m]]))
+                ))
+                for _rr in range(1, _p_m + 1):
+                    _BAt = np.concatenate((_BAt, np.concatenate((
+                        Ym_list[_m][-(1 + _rr), :],
+                        np.atleast_1d(np.squeeze(
+                            Atildemat_list[_m][j, _rr*Nq_list[_m]:(_rr+1)*Nq_list[_m]]
+                        ))
+                    ))))
+            else:
+                _BAt = np.atleast_1d(np.squeeze(
+                    Atildemat_list[_m][j, :Nq_list[_m]]
+                ))
+                for _rr in range(1, _p_m + 1):
+                    _BAt = np.concatenate((_BAt, np.atleast_1d(np.squeeze(
+                        Atildemat_list[_m][j, _rr*Nq_list[_m]:(_rr+1)*Nq_list[_m]]
+                    ))))
+
+            _BPt = np.zeros((_kn_m, _kn_m))
+            for _rr in range(_p_m + 1):
+                for _vv in range(_p_m + 1):
+                    _BPt[
+                        (_rr+1)*Nm_list[_m]+_rr*Nq_list[_m]:(_rr+1)*(Nm_list[_m]+Nq_list[_m]),
+                        (_vv+1)*Nm_list[_m]+_vv*Nq_list[_m]:(_vv+1)*(Nm_list[_m]+Nq_list[_m])
+                    ] = np.squeeze(Ptildemat_list[_m][j,
+                        _rr*Nq_list[_m]:(_rr+1)*Nq_list[_m],
+                        _vv*Nq_list[_m]:(_vv+1)*Nq_list[_m]
+                    ])
+
+            # Build companion-form matrices from current block _m parameters
+            _PHIF_m = np.zeros((_kn_m, _kn_m))
+            _IF_m = np.eye(nv_list[_m])
+            for _i in range(_p_m):
+                _PHIF_m[(_i+1)*nv_list[_m]:(_i+2)*nv_list[_m],
+                         _i*nv_list[_m]:(_i+1)*nv_list[_m]] = _IF_m
+            _PHIF_m[:nv_list[_m], :nv_list[_m]*_p_m] = Phi_list[_m][:-1, :].T
+            _CONF_m = np.hstack((Phi_list[_m][-1, :].T, np.zeros((nv_list[_m] * _p_m,))))
+            _SIGF_m = np.zeros((_kn_m, _kn_m))
+            _SIGF_m[:nv_list[_m], :nv_list[_m]] = sigma_list[_m]
+
+            # Measurement matrix for the unbalanced filter
+            _Z1_m = np.zeros((Nm_list[_m], _kn_m))
+            _Z1_m[:, :Nm_list[_m]] = np.eye(Nm_list[_m])
+            _Z2_m = np.zeros((Nq_list[_m], _kn_m))
+            for _bb in range(Nq_list[_m]):
+                for _lll in range(freq_ratio_list[_m]):
+                    if self.temp_agg == "mean":
+                        _Z2_m[_bb, (_lll+1)*Nm_list[_m]+_lll*Nq_list[_m]+_bb] = (
+                            1.0 / freq_ratio_list[_m]
+                        )
+                    else:
+                        _Z2_m[_bb, (_lll+1)*Nm_list[_m]+_lll*Nq_list[_m]+_bb] = 1.0
+            _ZZ_m = np.vstack((_Z1_m, _Z2_m))
+
+            # Re-run unbalanced forward filter (deterministic given current state)
+            _BAt_mat_m = np.zeros((Tnobs_list[_m], _kn_m))
+            _BPt_mat_m = np.zeros((Tnobs_list[_m], _kn_m ** 2))
+            _BAt_mat_m[nobs_list[_m] - 1, :] = _BAt
+            _BPt_mat_m[nobs_list[_m] - 1, :] = _BPt.reshape((1, _kn_m ** 2), order="F")
+            _BAt_cur = _BAt.copy()
+            _BPt_cur = _BPt.copy()
+            for _t in range(nobs_list[_m], Tnobs_list[_m]):
+                _kkk = _t - nobs_list[_m]
+                _ND_m = YDATA_list[_m][nobs_list[_m]+T0_list[_m]+_kkk, :][
+                    ~np.isnan(YDATA_list[_m][nobs_list[_m]+T0_list[_m]+_kkk, :])
+                ]
+                _NZ_m = _ZZ_m[~index_NY_list[_m][:, _kkk], :]
+                _Balphahat_m = _PHIF_m @ _BAt_cur + _CONF_m
+                _BPhat_m = _PHIF_m @ _BPt_cur @ _PHIF_m.T + _SIGF_m
+                _BPhat_m = 0.5 * (_BPhat_m + _BPhat_m.T)
+                _Byhat_m = _NZ_m @ _Balphahat_m
+                _Bnut_m = _ND_m - _Byhat_m
+                _BFt_m = _NZ_m @ _BPhat_m @ _NZ_m.T
+                _BFt_m = 0.5 * (_BFt_m + _BFt_m.T)
+                _sol_m = (_BPhat_m @ _NZ_m.T) @ invert_matrix(_BFt_m)
+                _BAt_cur = _Balphahat_m + _sol_m @ _Bnut_m
+                _BPt_cur = _BPhat_m - _sol_m @ (_BPhat_m @ _NZ_m.T).T
+                _BAt_mat_m[_t, :] = _BAt_cur
+                _BPt_mat_m[_t, :] = _BPt_cur.reshape((1, _kn_m ** 2), order="F")
+
+            # Draw new unbalanced backward smoother trajectory (proposal)
+            _AT_draw_p = np.zeros((Tnew_list[_m] + 1, _kn_m))
+            _Pchol_p = cholcovOrEigendecomp(
+                _BPt_mat_m[Tnobs_list[_m]-1, :].reshape((_kn_m, _kn_m), order="F")
+            )
+            _AT_draw_p[-1, :] = (
+                _BAt_mat_m[Tnobs_list[_m]-1, :]
+                + np.transpose(_Pchol_p @ np.random.standard_normal(_kn_m))
+            )
+            for _i in range(Tnew_list[_m]):
+                _BAtt_p = _BAt_mat_m[Tnobs_list[_m] - (_i+2), :]
+                _BPtt_p = _BPt_mat_m[Tnobs_list[_m] - (_i+2), :].reshape(
+                    (_kn_m, _kn_m), order="F"
+                )
+                _BPhat_p = _PHIF_m @ _BPtt_p @ _PHIF_m.T + _SIGF_m
+                _BPhat_p = 0.5 * (_BPhat_p + _BPhat_p.T)
+                _inv_BPhat_p = invert_matrix(_BPhat_p)
+                _Bnut_p = _AT_draw_p[-(_i+1), :] - _PHIF_m @ _BAtt_p - _CONF_m
+                _Amean_p = _BAtt_p + (_BPtt_p @ _PHIF_m.T) @ _inv_BPhat_p @ _Bnut_p
+                _Pmean_unb_p = (
+                    _BPtt_p
+                    - (_BPtt_p @ _PHIF_m.T) @ _inv_BPhat_p @ np.transpose(_BPtt_p @ _PHIF_m.T)
+                )
+                _Pmchol_p = cholcovOrEigendecomp(_Pmean_unb_p)
+                _AT_draw_p[-2-_i, :] = np.transpose(
+                    _Amean_p + _Pmchol_p @ np.random.standard_normal(_kn_m)
+                )
+
+            # Terminal draw for balanced period from unbalanced smoother
+            _At_draw_p = np.zeros((nobs_list[_m], Nq_list[_m] * (_p_m + 1)))
+            for _kk in range(_p_m + 1):
+                _At_draw_p[nobs_list[_m]-1, _kk*Nq_list[_m]:(_kk+1)*Nq_list[_m]] = (
+                    _AT_draw_p[0,
+                        (_kk+1)*Nm_list[_m]+_kk*Nq_list[_m]:(_kk+1)*(Nm_list[_m]+Nq_list[_m])
+                    ]
+                )
+
+            # Draw balanced backward smoother (proposal)
+            _Pmean_prop = None
+            for _i in range(nobs_list[_m] - 1):
+                _Att_p = At_mat_list[_m][nobs_list[_m] - (_i+2), :]
+                _Ptt_p = Pt_mat_list[_m][nobs_list[_m] - (_i+2), :].reshape(
+                    Nq_list[_m]*(_p_m+1), Nq_list[_m]*(_p_m+1), order="F"
+                )
+                _Phat_p = (
+                    GAMMAs_list[_m] @ _Ptt_p @ GAMMAs_list[_m].T
+                    + GAMMAu_list[_m] @ sig_qq_list[_m] @ GAMMAu_list[_m].T
+                )
+                _Phat_p = 0.5 * (_Phat_p + _Phat_p.T)
+                _inv_Phat_p = invert_matrix(_Phat_p)
+                _nut_p = (
+                    _At_draw_p[nobs_list[_m]-(_i+1), :]
+                    - GAMMAs_list[_m] @ _Att_p
+                    - GAMMAz_list[_m] @ Zm_list[_m][nobs_list[_m]-1-(_i+1)]
+                    - GAMMAc_list[_m][:, 0]
+                )
+                _temp_p = _Ptt_p @ GAMMAs_list[_m].T
+                _Amean_bal_p = _Att_p + _temp_p @ _inv_Phat_p @ _nut_p
+                _Pmean_prop = _Ptt_p - _temp_p @ _inv_Phat_p @ _temp_p.T
+                _Pmchol_bal_p = cholcovOrEigendecomp(_Pmean_prop)
+                _At_draw_p[nobs_list[_m]-1-(_i+1), :] = np.transpose(
+                    _Amean_bal_p
+                    + _Pmchol_bal_p @ np.random.standard_normal(Nq_list[_m]*(_p_m+1))
+                )
+
+            if _Pmean_prop is None:
+                # nobs == 1: balanced smoother did not run; fall back to filtered covariance
+                _Pmean_prop = Pt_mat_list[_m][0, :].reshape(
+                    Nq_list[_m]*(_p_m+1), Nq_list[_m]*(_p_m+1), order="F"
+                )
+
+            # Draw proposal parameters (Minnesota prior / invwishart + normal)
+            if Ym_list[_m].size:
+                _YY_p = np.vstack((
+                    np.hstack((Ym_list[_m], _At_draw_p[:, :Nq_list[_m]])),
+                    _AT_draw_p[1:, :(Nm_list[_m]+Nq_list[_m])]
+                ))
+            else:
+                _YY_p = np.vstack((
+                    _At_draw_p[:, :Nq_list[_m]],
+                    _AT_draw_p[1:, :(Nm_list[_m]+Nq_list[_m])]
+                ))
+            _nobs_p = np.shape(_YY_p)[0] - T0_list[_m]
+            _spec_p = np.hstack((nlags_list_[_m], T0_list[_m], self.nex,
+                                   nv_list[_m], _nobs_p))
+            _YYact_p, _YYdum_p, _XXact_p, _XXdum_p = calc_yyact(
+                self.hyp[_m], _YY_p, _spec_p
+            )
+            _Tdummy_p = _YYdum_p.shape[0]
+            _Tobs_p = _YYact_p.shape[0]
+            _n_p = int(nv_list[_m])
+            _p_spec = int(_spec_p[0])
+            _X_p = np.vstack((_XXact_p, _XXdum_p))
+            _Y_p = np.vstack((_YYact_p, _YYdum_p))
+            _T_p = _Tobs_p + _Tdummy_p
+            _vl_p, _d_p, _vr_p = np.linalg.svd(_X_p, full_matrices=False)
+            _vr_p = _vr_p.T
+            _di_p = 1.0 / _d_p
+            _B_p = _vl_p.T @ _Y_p
+            _xxi_p = _vr_p * np.tile(_di_p.T, (_n_p*_p_spec+1, 1))
+            _inv_x_p = _xxi_p @ _xxi_p.T
+            _Phi_tilde_p = _xxi_p @ _B_p
+            _Sigma_p = (_Y_p - _X_p @ _Phi_tilde_p).T @ (_Y_p - _X_p @ _Phi_tilde_p)
+            _sigma_prop = invwishart.rvs(scale=_Sigma_p, df=_T_p - _n_p*_p_spec - 1)
+
+            # Draw Phi_prop; auto-reject if explosive
+            _explosive_prop = True
+            _Phi_prop = None
+            for _ in range(max_it_stable):
+                _sigma_chol_p = cholcovOrEigendecomp(np.kron(_sigma_prop, _inv_x_p))
+                _phi_new_p = (
+                    np.squeeze(_Phi_tilde_p.reshape(_n_p*(_n_p*_p_spec+1), 1, order="F"))
+                    + _sigma_chol_p @ np.random.standard_normal(_sigma_chol_p.shape[0])
+                )
+                _Phi_prop = _phi_new_p.reshape(_n_p*_p_spec+1, _n_p, order="F")
+                if not is_explosive(_Phi_prop, _n_p, _p_spec):
+                    _explosive_prop = False
+                    break
+
+            if _explosive_prop:
+                continue  # auto-reject explosive proposals
+
+            # Compute proposed downstream input Yq for block _m+1
+            if var_of_interest is None:
+                _YQ0_prop = _YYact_p
+            else:
+                _idx_voi_m = list(filter(
+                    lambda x: YMX_list[_m].columns.tolist()[x] in var_of_interest,
+                    range(len(YMX_list[_m].columns.tolist()))
+                ))
+                _idx_vars_p = np.concatenate((
+                    np.array(_idx_voi_m),
+                    YM_list[_m].shape[1] + np.array(idx_var_of_interest)
+                ))
+                _YQ0_prop = _YYact_p[:, np.int_(_idx_vars_p)].reshape(
+                    -1, len(var_of_interest)
+                )
+            _YQ_prop = np.kron(_YQ0_prop, np.ones((freq_ratio_list[_m+1], 1)))
+            _Yq_prop = _YQ_prop[T0_list[_m+1]:nobs_list[_m+1]+T0_list[_m+1], :]
+
+            # Proposal log-likelihood using proposed downstream input
+            _ll_prop = _kalman_filter_loglik_block(
+                GAMMAs_list[_m+1], GAMMAz_list[_m+1], GAMMAc_list[_m+1], GAMMAu_list[_m+1],
+                LAMBDAs_list[_m+1], LAMBDAz_list[_m+1], LAMBDAc_list[_m+1], LAMBDAu_list[_m+1],
+                LAMBDAs_t_list[_m+1], LAMBDAz_t_list[_m+1], LAMBDAc_t_list[_m+1], LAMBDAu_t_list[_m+1],
+                sig_qq_list[_m+1], sig_mm_list[_m+1], sig_mq_list[_m+1], sig_qm_list[_m+1],
+                _mh_At_init[_m+1], _mh_Pt_init[_m+1],
+                Zm_list[_m+1], Ym_list[_m+1], _Yq_prop,
+                nobs_list[_m+1], T0_list[_m+1], freq_ratio_list[_m+1],
+            )
+
+            # MH acceptance step
+            _log_alpha = _ll_prop - _ll_cur
+            if np.isnan(_log_alpha) or not np.isfinite(_ll_prop):
+                _log_alpha = -np.inf
+
+            if np.log(np.random.uniform()) < _log_alpha:
+                # ---- Accept proposal ----
+                mh_accept_counts[_m] += 1
+
+                At_draw_list[_m] = _At_draw_p
+                Pmean_list[_m] = _Pmean_prop
+                Phi_list[_m] = _Phi_prop
+
+                # Update covariance sub-blocks
+                if Nm_list[_m]:
+                    sig_mm_list[_m] = _sigma_prop[:Nm_list[_m], :Nm_list[_m]]
+                    sig_mq_list[_m] = 0.5 * (
+                        _sigma_prop[:Nm_list[_m], Nm_list[_m]:]
+                        + np.transpose(_sigma_prop[Nm_list[_m]:, :Nm_list[_m]])
+                    )
+                    sig_qm_list[_m] = 0.5 * (
+                        _sigma_prop[Nm_list[_m]:, :Nm_list[_m]]
+                        + np.transpose(_sigma_prop[:Nm_list[_m], Nm_list[_m]:])
+                    )
+                    sig_qq_list[_m] = _sigma_prop[Nm_list[_m]:, Nm_list[_m]:]
+                else:
+                    sig_qq_list[_m] = np.atleast_2d(_sigma_prop)
+
+                # Recompute KF transition/measurement matrices from _Phi_prop
+                _phi_qq_p = np.zeros((Nq_list[_m]*_p_m, Nq_list[_m]))
+                _phi_qm_p = np.zeros((Nm_list[_m]*_p_m, Nq_list[_m]))
+                _phi_mm_p = np.zeros((Nm_list[_m]*_p_m, Nm_list[_m]))
+                _phi_mq_p = np.zeros((Nq_list[_m]*_p_m, Nm_list[_m]))
+                for _i in range(_p_m):
+                    _phi_qq_p[Nq_list[_m]*_i:Nq_list[_m]*(_i+1), :] = _Phi_prop[
+                        _i*(Nm_list[_m]+Nq_list[_m])+Nm_list[_m]:(_i+1)*(Nm_list[_m]+Nq_list[_m]),
+                        Nm_list[_m]:
+                    ]
+                    _phi_qm_p[Nm_list[_m]*_i:Nm_list[_m]*(_i+1), :] = _Phi_prop[
+                        _i*(Nm_list[_m]+Nq_list[_m]):_i*(Nm_list[_m]+Nq_list[_m])+Nm_list[_m],
+                        Nm_list[_m]:
+                    ]
+                    _phi_mm_p[Nm_list[_m]*_i:Nm_list[_m]*(_i+1), :] = _Phi_prop[
+                        _i*(Nm_list[_m]+Nq_list[_m]):_i*(Nm_list[_m]+Nq_list[_m])+Nm_list[_m],
+                        :Nm_list[_m]
+                    ]
+                    _phi_mq_p[Nq_list[_m]*_i:Nq_list[_m]*(_i+1), :] = _Phi_prop[
+                        _i*(Nm_list[_m]+Nq_list[_m])+Nm_list[_m]:(_i+1)*(Nm_list[_m]+Nq_list[_m]),
+                        :Nm_list[_m]
+                    ]
+                _phi_qc_p = _Phi_prop[-1, Nm_list[_m]:, np.newaxis]
+                _phi_mc_p = _Phi_prop[-1, :Nm_list[_m], np.newaxis]
+
+                GAMMAs_list[_m] = np.vstack((
+                    np.hstack((np.transpose(_phi_qq_p), np.zeros((Nq_list[_m], Nq_list[_m])))),
+                    np.hstack((np.eye(_p_m*Nq_list[_m]), np.zeros((_p_m*Nq_list[_m], Nq_list[_m]))))
+                ))
+                GAMMAz_list[_m] = np.vstack((
+                    np.transpose(_phi_qm_p),
+                    np.zeros((_p_m*Nq_list[_m], _p_m*Nm_list[_m]))
+                ))
+                GAMMAc_list[_m] = np.vstack((_phi_qc_p, np.zeros((_p_m*Nq_list[_m], 1))))
+                GAMMAu_list[_m] = np.vstack((
+                    np.eye(Nq_list[_m]),
+                    np.zeros((_p_m*Nq_list[_m], Nq_list[_m]))
+                ))
+
+                if self.temp_agg == "mean":
+                    LAMBDAs_list[_m] = np.vstack((
+                        np.hstack((np.zeros((Nm_list[_m], Nq_list[_m])), np.transpose(_phi_mq_p))),
+                        1.0/freq_ratio_list[_m] * np.hstack((
+                            np.tile(np.eye(Nq_list[_m]), freq_ratio_list[_m]),
+                            np.zeros((Nq_list[_m], Nq_list[_m]*(_p_m-(freq_ratio_list[_m]-1))))
+                        ))
+                    ))
+                else:
+                    LAMBDAs_list[_m] = np.vstack((
+                        np.hstack((np.zeros((Nm_list[_m], Nq_list[_m])), np.transpose(_phi_mq_p))),
+                        np.hstack((
+                            np.tile(np.eye(Nq_list[_m]), freq_ratio_list[_m]),
+                            np.zeros((Nq_list[_m], Nq_list[_m]*(_p_m-(freq_ratio_list[_m]-1))))
+                        ))
+                    ))
+                LAMBDAz_list[_m] = np.vstack((
+                    np.transpose(_phi_mm_p),
+                    np.zeros((Nq_list[_m], _p_m*Nm_list[_m]))
+                ))
+                LAMBDAc_list[_m] = np.vstack((_phi_mc_p, np.zeros((Nq_list[_m], 1))))
+                LAMBDAu_list[_m] = np.vstack((
+                    np.eye(Nm_list[_m]),
+                    np.zeros((Nq_list[_m], Nm_list[_m]))
+                ))
+                Wmatrix_list[_m] = np.hstack((
+                    np.eye(Nm_list[_m]),
+                    np.zeros((Nm_list[_m], Nq_list[_m]))
+                ))
+                LAMBDAs_t_list[_m] = Wmatrix_list[_m] @ LAMBDAs_list[_m]
+                LAMBDAz_t_list[_m] = Wmatrix_list[_m] @ LAMBDAz_list[_m]
+                LAMBDAc_t_list[_m] = Wmatrix_list[_m] @ LAMBDAc_list[_m]
+                LAMBDAu_t_list[_m] = Wmatrix_list[_m] @ LAMBDAu_list[_m]
+
+                # Update stored thinned draws for block _m if applicable
+                if j % self.thining == 0:
+                    _jt = int(j / self.thining)
+                    Sigmap_list[_m][_jt, :, :] = _sigma_prop
+                    Phip_list[_m][_jt, :, :] = _Phi_prop
+                    Cons_list[_m][_jt, :] = _Phi_prop[-1, :]
+
+                # Update downstream input for block _m+1 (takes effect next sweep)
+                YQ_list[_m+1] = _YQ_prop
+                Yq_list[_m+1] = _Yq_prop
+                YDATA_list[_m+1][:T_list[_m+1], Nm_list[_m+1]:] = _YQ_prop
+
         #self.YYactsim = YYactsim_list[-1]
         #self.XXactsim = XXactsim_list[-1]
         self.Phip = Phip_list[-1]
@@ -966,6 +1485,13 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
     self.var_of_interest = var_of_interest
     self.explosive_counter = explosive_counter
     self.valid_draws = [draw for draw in valid_draws if draw >= self.nburn/self.thining]
+    # MH acceptance rates per block (Version 2)
+    self.mh_accept_counts = mh_accept_counts
+    self.mh_total_counts = mh_total_counts
+    self.mh_accept_rates = [
+        (c / t if t > 0 else float("nan"))
+        for c, t in zip(mh_accept_counts, mh_total_counts)
+    ]
         
 def forecast(self, H, conditionals = None):
     

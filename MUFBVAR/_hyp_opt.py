@@ -23,10 +23,9 @@ tqdm = partial(tqdm, position = 0, leave=True) # this line does the magic
 
 import copy
 
-# for hyperparameter tuning
-from bayes_opt import BayesianOptimization
-
-from mango import scheduler, Tuner
+# for hyperparameter tuning (lazy imports – only needed when calling update_hyperparameters*)
+# from bayes_opt import BayesianOptimization
+# from mango import scheduler, Tuner
 
 from .mufbvar_data import mufbvar_data
 
@@ -81,7 +80,8 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
         
 
     '''
-    
+    from bayes_opt import BayesianOptimization
+
     def estim(mufbvar_data, hyp_list, nsim, var_of_interest, temp_agg):
         
         explosive_counter = 0
@@ -1018,6 +1018,8 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
         
 
     '''
+    from mango import scheduler, Tuner
+
     
     def estim(mufbvar_data, hyp_list, nsim, var_of_interest, temp_agg):
         
@@ -1951,6 +1953,8 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
     hyp : list
         List of optimized hyperparameters (best set found).
     """
+    from mango import scheduler, Tuner
+
     
     nburn_perc =  self.nburn_perc
     nlags = self.nlags
