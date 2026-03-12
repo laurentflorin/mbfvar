@@ -8,3 +8,5 @@ plotly
 fanchart
 openpyxl
 xlsxwriter
+bayesian-optimization
+arm-mango
