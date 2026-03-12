@@ -14,8 +14,6 @@ from pandas.tseries.offsets import Week , MonthBegin, QuarterBegin, Day
 
 import itertools
 
-from .mfbvar_funcs import mdd_, is_explosive
-#plotting
 import matplotlib.pyplot as plt
 
 #for progressbar
@@ -25,16 +23,19 @@ tqdm = partial(tqdm, position = 0, leave=True) # this line does the magic
 
 import copy
 
-
-
-#from MUFBVAR.pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
-from .cholcov.cholcov_module import cholcovOrEigendecomp
-from .inverse.matrix_inversion import invert_matrix
-
 # for hyperparameter tuning
 from bayes_opt import BayesianOptimization
 
 from mango import scheduler, Tuner
+
+from .mufbvar_data import mufbvar_data
+
+#from MUFBVAR.pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
+from .mfbvar_funcs import mdd_, is_explosive
+from .cholcov.cholcov_module import cholcovOrEigendecomp
+from .inverse.matrix_inversion import invert_matrix
+
+
 
 def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsim, var_of_interest = None, temp_agg = 'mean', save = False, name = "hyp.txt"):
     
@@ -750,10 +751,10 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                             #we also need to update nv_list and Nq_lsit
                             nv_list[m + 1] = len(idx_vars) + YM0_list[m+1].shape[1]
                             Nq_list[m + 1] = len(idx_vars)
-                        YQ_list.append(np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1))))#[np.product(np.array(nlags_list_[:(m+2)])):,:])
+                        YQ_list.append(np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1))))#[np.prod(np.array(nlags_list_[:(m+2)])):,:])
                         #Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
                         if YM_list[m].size:
-                            YM_list[m+1] = YM_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)])):,:]
+                            YM_list[m+1] = YM_list[m+1][2*np.prod(np.array(nlags_list_[:(m+2)])):,:]
                         else:
                             YM_list[m+1] = YM_list[m+1][2*nlags_list_[(m+1)]:,:]
                         
@@ -779,7 +780,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                         #for writing to a forecast w/ history file
                         #YMh_list[m+1] = YMh_list[m+1][int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
                         if YM_list[m].size:
-                            YMh_list[m+1] = YMh_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)]))+int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
+                            YMh_list[m+1] = YMh_list[m+1][2*np.prod(np.array(nlags_list_[:(m+2)]))+int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
                         varstxt_list.append(np.hstack((YMX_list[m+1].columns, YQX_list[0].columns)))
                         smpltxt_list.append(YMX_list[m+1].index[int(T0_list[m+1]):])
                         
@@ -856,7 +857,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                         for kk in range(5):
                             Pt_list[m+1] = GAMMAs_list[m+1] @ Pt_list[m+1] @ GAMMAs_list[m+1].T + GAMMAu_list[m+1] @ sig_qq_list[m+1] @ GAMMAu_list[m+1].T
                         
-                        #YM_short = YM_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)])):,:]
+                        #YM_short = YM_list[m+1][2*np.prod(np.array(nlags_list_[:(m+2)])):,:]
                         
                         # Lagged HF observations
                         Zm_list.append(np.zeros((nobs_list[m+1], Nm_list[m+1]*p_list[m+1])))
@@ -876,7 +877,7 @@ def update_hyperparameters(self, mufbvar_data, pbounds, init_points, n_iter, nsi
                             idx_vars = np.concatenate((np.array(idx_var_of_interest_m) , (YM_list[m].shape[1]+np.array(idx_var_of_interest))))
                             YQ0_list[m+1] = YYact[:,np.int_(idx_vars)].reshape(-1, len(var_of_interest))
                             
-                        YQ_list[m+1] =np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.product(np.array(nlags_list_[:(m+2)])):,:]
+                        YQ_list[m+1] =np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.prod(np.array(nlags_list_[:(m+2)])):,:]
                         
                         Yq_list[m+1] = YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]#YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
                         
@@ -1688,10 +1689,10 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
                             #we also need to update nv_list and Nq_lsit
                             nv_list[m + 1] = len(idx_vars) + YM0_list[m+1].shape[1]
                             Nq_list[m + 1] = len(idx_vars)
-                        YQ_list.append(np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1))))#[np.product(np.array(nlags_list_[:(m+2)])):,:])
+                        YQ_list.append(np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1))))#[np.prod(np.array(nlags_list_[:(m+2)])):,:])
                         #Yq_list.append(YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:])
                         if YM_list[m].size:
-                            YM_list[m+1] = YM_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)])):,:]
+                            YM_list[m+1] = YM_list[m+1][2*np.prod(np.array(nlags_list_[:(m+2)])):,:]
                         else:
                             YM_list[m+1] = YM_list[m+1][2*nlags_list_[(m+1)]:,:]
                         
@@ -1717,7 +1718,7 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
                         #for writing to a forecast w/ history file
                         #YMh_list[m+1] = YMh_list[m+1][int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
                         if YM_list[m].size:
-                            YMh_list[m+1] = YMh_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)]))+int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
+                            YMh_list[m+1] = YMh_list[m+1][2*np.prod(np.array(nlags_list_[:(m+2)]))+int(T0_list[m+1]):-int(freq_ratio_list[m+1]),:]
                         varstxt_list.append(np.hstack((YMX_list[m+1].columns, YQX_list[0].columns)))
                         smpltxt_list.append(YMX_list[m+1].index[int(T0_list[m+1]):])
                         
@@ -1794,7 +1795,7 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
                         for kk in range(5):
                             Pt_list[m+1] = GAMMAs_list[m+1] @ Pt_list[m+1] @ GAMMAs_list[m+1].T + GAMMAu_list[m+1] @ sig_qq_list[m+1] @ GAMMAu_list[m+1].T
                         
-                        #YM_short = YM_list[m+1][2*np.product(np.array(nlags_list_[:(m+2)])):,:]
+                        #YM_short = YM_list[m+1][2*np.prod(np.array(nlags_list_[:(m+2)])):,:]
                         
                         # Lagged HF observations
                         Zm_list.append(np.zeros((nobs_list[m+1], Nm_list[m+1]*p_list[m+1])))
@@ -1814,7 +1815,7 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
                             idx_vars = np.concatenate((np.array(idx_var_of_interest_m) , (YM_list[m].shape[1]+np.array(idx_var_of_interest))))
                             YQ0_list[m+1] = YYact[:,np.int_(idx_vars)].reshape(-1, len(var_of_interest))
                             
-                        YQ_list[m+1] =np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.product(np.array(nlags_list_[:(m+2)])):,:]
+                        YQ_list[m+1] =np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.prod(np.array(nlags_list_[:(m+2)])):,:]
                         
                         Yq_list[m+1] = YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]#YQ_list[m+1][T0_list[m+1]:nobs_list[m+1]+T0_list[m+1],:]
                         
@@ -1839,6 +1840,7 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
                     Pmean_list[m] = Pmean
                     
         return mdd_list[-1]
+    
     @scheduler.parallel(n_jobs = njobs)   
     def calc_mdd_1(lambda1_1, lambda2_1, lambda4_1, lambda5_1):
         
@@ -1888,5 +1890,166 @@ def update_hyperparameters_mango(self, mufbvar_data, param_space, init_points, n
         with open(name, 'w') as f:
             print(best_params, file=f)
             
-    return best_params
+    sublists = [list(best_params.values())[i:i+4] for i in range(0, len(list(best_params.values())), 4)] 
+    hyp = []
+    for i in sublists:
+        i.insert(2,1)
+        hyp.append(i)
+    
+    if save == True:
+        with open(name, 'w') as f:
+            print(hyp, file=f)
+            
+    return hyp
 
+
+    
+def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = None, temp_agg = 'mean', save = False, name = "hyp.txt"):
+    """
+    Use Bayesian optimization to select hyperparameters minimizing out-of-sample RMSE for MUFBVAR models.
+
+    This method tunes hyperparameters (lambdas) for the multifrequency VAR (MUFBVAR) model using Bayesian optimization (via Mango).
+    It runs the model over a rolling forecast to evaluate the out-of-sample RMSE for each hyperparameter set, and returns the set with the lowest RMSE.
+
+    Hyperparameters:
+        - lambda1: overall tightness
+        - lambda2: scaling factor for the variance of distant lags
+        - lambda3: number of observations for the prior on the error covariance (fixed to 1)
+        - lambda4: tuning for coefficients of the constant
+        - lambda5: tuning for covariance between coefficients
+
+    Parameters
+    ----------
+    mufbvar_data : MUFBVAR.mufbvar_data object
+        Holds the input data for multifrequency VAR estimation.
+    param_space : dict
+        Dictionary with bounds for each hyperparameter, structured according to the number of frequencies:
+            - Two frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1
+            - Three frequencies: add lambda1_2, lambda2_2, lambda4_2, lambda5_2
+            - Four frequencies: add lambda1_3, lambda2_3, lambda4_3, lambda5_3
+    H : int
+        Forecast horizon in the lowest frequency.
+    init_points : int
+        Number of initial random exploration steps for Bayesian optimization.
+    n_iter : int
+        Number of optimization iterations.
+    nsim : int
+        Number of simulation draws in MUFBVAR estimation.
+    njobs : int
+        Number of parallel jobs.
+    var_of_interest : list of str or None, default None
+        List of variable names to consider. If None, all variables are used.
+    temp_agg : str, default 'mean'
+        Temporal aggregation method ('mean' or 'sum'), defining the measurement equation.
+    save : bool, default False
+        If True, saves the best hyperparameters to a file.
+    name : str, default "hyp.txt"
+        Path to file for saving hyperparameters if `save` is True.
+
+    Returns
+    -------
+    hyp : list
+        List of optimized hyperparameters (best set found).
+    """
+    
+    nburn_perc =  self.nburn_perc
+    nlags = self.nlags
+    thining = self.thining
+
+    def calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining):
+        try:
+            mufbvar_data_temp = copy.deepcopy(mufbvar_data_in)
+            horizon_mapping = {f'{mufbvar_data_temp.frequencies[0]}' : H}
+            for i, freq  in enumerate(mufbvar_data_temp.frequencies[1:]):
+                horizon_mapping.update({f'{freq}' : math.prod(itertools.islice(mufbvar_data_temp.freq_ratio_list, 0 ,i+1)) * H})
+
+            mufbvar_data_temp.input_data.appendleft(mufbvar_data_temp.input_data_Q)
+            data_list = list(mufbvar_data_temp.input_data)
+
+            result_in_sample = []
+            result_out_sample = []
+            for df, freq in zip(data_list, mufbvar_data_temp.frequencies):
+                horizon = horizon_mapping.get(freq)
+                if len(df) <= horizon:
+                    raise ValueError(f"DataFrame with frequency {freq} has fewer rows than the required horizon")
+                in_sample = df.iloc[:-horizon].copy()
+                out_sample = df.iloc[-horizon:].copy()
+                result_in_sample.append((in_sample))
+                result_out_sample.append((out_sample))
+
+            data_in = mufbvar_data(result_in_sample, mufbvar_data_temp.trans, mufbvar_data_temp.frequencies)    
+
+            model_temp = self.__class__(nsim, nburn_perc, nlags, thining)
+            model_temp.fit(data_in, hyp = hyp_list, var_of_interest = var_of_interest,  temp_agg = temp_agg, check_explosive = False)
+            model_temp.forecast(H * math.prod(data_in.freq_ratio_list))
+            model_temp.aggregate(frequency = data_in.frequencies[0])
+
+            out_sample = result_out_sample[0]
+            out_sample = out_sample[var_of_interest]
+            if (data_in.frequencies[0] == "Q"):
+                out_sample = out_sample.assign(Index = pd.DatetimeIndex(out_sample.index).to_period('Q')).set_index('Index')
+                out_sample = out_sample.add_suffix('_out_sample')
+
+            df = model_temp.YY_mean_agg[var_of_interest].join(out_sample, how="inner", lsuffix="_train", rsuffix="_out")
+
+            suffix = '_out_sample'
+            rmse_results = []
+            for col in df.columns:
+                if col.endswith(suffix):
+                    pred_col = col.replace(suffix, '')
+                    if pred_col in df.columns:
+                        rmse = np.sqrt(((df[pred_col][H-1] - df[col][H-1] ) ** 2))
+                        rmse_results.append(rmse)
+            mean_rmse = float(np.mean(rmse_results))
+            # Return high error if mean_rmse is nan or inf
+            if np.isnan(mean_rmse) or np.isinf(mean_rmse):
+                print("RMSE is nan or inf, returning high error.")
+                return 1e10
+            return mean_rmse
+        except Exception as e:
+            print(f"Error in calc_rmse: {e}")
+            return 1e10  # Return a very high RMSE if any error occurs
+
+    @scheduler.parallel(n_jobs = njobs)   
+    def calc_rmse_1(lambda1_1, lambda2_1, lambda4_1, lambda5_1):
+        hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1]]   
+        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
+
+    @scheduler.parallel(n_jobs = njobs)
+    def calc_rmse_2(lambda1_1, lambda2_1, lambda4_1,
+                lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2):
+        hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
+                    [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2]]
+        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
+
+    @scheduler.parallel(n_jobs = njobs)
+    def calc_rmse_3(lambda1_1, lambda2_1, lambda4_1,
+                lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2,
+                lambda1_3, lambda2_3, lambda4_3, lambda5_3):
+        hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
+                    [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2],
+                    [lambda1_3, lambda2_3, 1, lambda4_3, lambda5_3]]
+        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
+
+    conf_dict = dict(num_iteration = n_iter, initial_random = init_points)
+
+    if len(mufbvar_data_in.frequencies)-1 == 1:
+        tuner = Tuner(param_space, calc_rmse_1, conf_dict)
+    if len(mufbvar_data_in.frequencies)-1 == 2:
+        tuner = Tuner(param_space, calc_rmse_2, conf_dict)
+    if len(mufbvar_data_in.frequencies)-1 == 3:
+        tuner = Tuner(param_space, calc_rmse_3, conf_dict)
+
+    results = tuner.minimize()
+    best_params = results["best_params"]
+
+    sublists = [list(best_params.values())[i:i+4] for i in range(0, len(list(best_params.values())), 4)] 
+    hyp = []
+    for i in sublists:
+        i.insert(2,1)
+        hyp.append(i)
+
+    if save == True:
+        with open(name, 'w') as f:
+            print(hyp, file=f)
+    return hyp

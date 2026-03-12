@@ -71,7 +71,7 @@ def mean_plot(self, variables = "all", save = True, name = "Output", show = True
         
         df = pd.DataFrame(self.Phip_list[-1][:,:,idx[0]]).expanding().mean()
         
-        plt.style.use('seaborn-dark-palette')
+        
         idx, = np.where(self.varlist_list[-1] == variable)
 
         fig, ax = plt.subplots(figsize = (14, 8.5))
@@ -182,7 +182,6 @@ def fanchart(self, variables = "all", save = True, name = "Fancharts", show = Tr
             
         for variable in variables:
             
-            plt.style.use('seaborn-dark-palette')
             
             idx, = np.where(self.varlist_list[-1] == variable)
             
@@ -229,7 +228,7 @@ def fanchart(self, variables = "all", save = True, name = "Fancharts", show = Tr
             
         for variable in variables:
             
-            plt.style.use('seaborn-dark-palette')
+            
             
             idx, = np.where(self.varlist_list[-1] == variable)
             
@@ -320,7 +319,7 @@ def scenario_plot(self, scenario_dict, variables = "all", save = True, name = "S
     
     for variable in variables:
         
-        plt.style.use('seaborn-dark-palette')
+        
         
         color = iter(cm.tab10(np.linspace(0, 1, len(scenario_dict))))
         fig, ax = plt.subplots(dpi= 360)
@@ -418,7 +417,7 @@ def compare_models(self, multifrquency_var_models, model_names, agg = True, vari
     
     if agg == True:
         
-        freq_ratio = np.product(deque(itertools.islice(self.freq_ratio_list, 0, len(self.freq_ratio_list)-self.frequencies.index(self.agg_freq))))
+        freq_ratio = np.prod(deque(itertools.islice(self.freq_ratio_list, 0, len(self.freq_ratio_list)-self.frequencies.index(self.agg_freq))))
         H = int(self.H/freq_ratio)
         
         if not hasattr(self, 'YY_mean_agg'):
@@ -427,7 +426,7 @@ def compare_models(self, multifrquency_var_models, model_names, agg = True, vari
             
         for variable in variables:
             
-            plt.style.use('seaborn-dark-palette')
+            
             
             color = iter(cm.tab10(np.linspace(0, 1, len(model_names))))
             fig, ax = plt.subplots(dpi= 360)
@@ -504,7 +503,7 @@ def compare_models(self, multifrquency_var_models, model_names, agg = True, vari
         
         for variable in variables:
             
-            plt.style.use('seaborn-dark-palette')
+            
             
             color = iter(cm.tab10(np.linspace(0, 1, len(model_names))))
             fig, ax = plt.subplots(dpi= 360)

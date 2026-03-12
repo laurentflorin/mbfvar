@@ -1,6 +1,6 @@
 import MUFBVAR
 import pandas as pd
-import numpy as np
+import numpy as np 
 import pickle
 
 
@@ -13,14 +13,12 @@ io_data = "/home/u80856195/git/MUFBVAR-master/examples/hist.xlsx"
 H = 96          # forecast horizon
 nsim = 40      # number of draws from Posterior Density
 nburn = 0.5     # number of draws to discard
-nlags = [6,4]   # Number of lags
+nlags = [3,4]   # Number of lags
 thining = 1     # Thining 
 
 hyp = [[0.09, 4.3, 1, 2.7, 4.3], [0.09, 4.3, 1, 2.7, 4.3]] # Hyperparameters see documentation for details
 
 frequencies = ["Q","M","W"] # Frequencies
-
-
 
 
 # Load the data
@@ -36,7 +34,7 @@ trans = [np.array((1,1)), np.array((1,1,1)), np.array((1,1,1))]
 
 
 # Initialize data class            
-mufbvar_data = MUFBVAR.mufbvar_data(data, trans, frequencies)
+mufbvar_data_in = MUFBVAR.mufbvar_data(data, trans, frequencies)
 
 
 # Fit and Forecast
@@ -45,8 +43,22 @@ mufbvar_data = MUFBVAR.mufbvar_data(data, trans, frequencies)
 # Initialize model class    
 model =  MUFBVAR.multifrequency_var(nsim, nburn, nlags, thining)
 
+from scipy.stats import uniform
+
+param_space = dict(lambda1_1 = uniform(0.001, 20), lambda2_1= uniform(0.01, 10), lambda4_1= uniform(0.01, 10), lambda5_1= uniform(0.01, 10), lambda1_2= uniform(0.001, 20), lambda2_2= uniform(0.01, 10), lambda4_2= uniform(0.01, 10), lambda5_2= uniform(0.01, 10))
+init_points = 3 # number of random points
+n_iter = 8 # number of baysian optimization steps
+nsim = 1000 # number of simulations 
+njobs = 1
+
+H = 2
+hyp = model.update_hyperparameters_mango_rmse(mufbvar_data_in, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
+
+
+
+
 # Estimate the model
-model.fit(mufbvar_data, hyp = hyp, var_of_interest = ["q_1"])
+model.fit(mufbvar_data_in, hyp = hyp, var_of_interest = None)
 
 # Conditional forecasts
 
@@ -92,6 +104,9 @@ init_points = 3 # number of random points
 n_iter = 8 # number of baysian optimization steps
 nsim = 100 # number of simulations 
 njobs = 1
+
+H = 2
+model.update_hyperparameters_mango_rmse(mufbvar_data, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
 
 model.update_hyperparameters_mango(mufbvar_data, param_space, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
 #-------------------------------

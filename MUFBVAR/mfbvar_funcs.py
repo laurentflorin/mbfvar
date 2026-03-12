@@ -21,6 +21,9 @@ from scipy.linalg import inv
 from scipy.linalg.lapack import dpotri
 from scipy.linalg import eig
 
+import copy
+import itertools
+
 from .pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
 
 
@@ -477,47 +480,3 @@ def is_explosive(Phi, n, p):
     eigenvalues = eig(companion_matrix)[0]
     # Check if any eigenvalue's absolute value is greater than 1
     return np.any(np.abs(eigenvalues) > 1)
-
-
-
-
-
-"""
-def mvnpdf(X, mean, cov):
-    
-    n, d = np.shape(X)
-    
-    X0 = X - mean
-    
-    
-def cholcov(SIGMA):
-    
-    # If Sigma is Positive definite we can use np.chol to compute T such that SIGMA = T'*T.
-    # Then T is the square, upper triangular CHolesky factor
-    
-    n, m = np.shape(SIGMA)
-    
-    flag = is_pos_def(SIGMA) # test if SIGMA is positive definite
-    
-    tol = 10*np.spacing(max(abs(np.diagonal(SIGMA))))
-    
-    if (n == m) and ((np.abs(SIGMA - SIGMA.T) < tol).all()):
-        
-        if flag == True:
-            T = np.linalg.cholesky(SIGMA)
-        
-        else:
-            # Can get factors of the form SIGMA = T' * T using the eigenvalue
-            # decomposition of a symmetric matrix, so long as the matrix is
-            # positive semi-definite
-            U, D = eig((SIGMA + SIGMA.T)/2)
-            
-            # Pick eigenvector direction so max abs coordinate is positive
-            ignore, maxind = np.absolute(U).max(axis=0), np.absolute(U).argmax(axis=0)
-            
-            negloc = U[maxind - 1 + range(0,m*n,  n)] 
-            U[,negloc] = -U[,negloc]
-
-def is_pos_def(x):
-    return np.all(np.linalg.eigvals(x) > 0)  
-"""    
