@@ -887,7 +887,7 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                         YQ0_list.append(YYact)
                     else:
                         idx_vars = np.concatenate((np.array(idx_var_of_interest_m) , (YM_list[m].shape[1]+np.array(idx_var_of_interest))))
-                        YQ0_list.append(YYact[:,np.int_(idx_vars)].reshape(-1, len(var_of_interest)))
+                        YQ0_list.append(YYact[:,np.int_(idx_vars)].reshape(-1, len(idx_vars)))
                         #we also need to update nv_list and Nq_lsit
                         nv_list[m + 1] = len(idx_vars) + YM0_list[m+1].shape[1]
                         Nq_list[m + 1] = len(idx_vars)
@@ -1015,7 +1015,7 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                         YQ0_list[m+1] = YYact
                     else:
                         idx_vars = np.concatenate((np.array(idx_var_of_interest_m) , (YM_list[m].shape[1]+np.array(idx_var_of_interest))))
-                        YQ0_list[m+1] = YYact[:,np.int_(idx_vars)].reshape(-1, len(var_of_interest))
+                        YQ0_list[m+1] = YYact[:,np.int_(idx_vars)].reshape(-1, len(idx_vars))
                         
                     YQ_list[m+1] =np.kron(YQ0_list[m+1], np.ones((freq_ratio_list[m+1],1)))#[np.prod(np.array(nlags_list_[:(m+2)])):,:]
                     
@@ -1294,7 +1294,7 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                         YM_list[_m].shape[1] + np.array(idx_var_of_interest)
                     ))
                     _YQ0_prop = _YYact_p[:, np.int_(_idx_vars_p)].reshape(
-                        -1, len(var_of_interest)
+                        -1, len(_idx_vars_p)
                     )
                 _YQ_prop = np.kron(_YQ0_prop, np.ones((freq_ratio_list[_m+1], 1)))
                 _expected_rows = YQ_list[_m+1].shape[0]
