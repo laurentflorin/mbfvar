@@ -1323,7 +1323,6 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                 Phi_list[_m] = _Phi_prop
 
                 # Update covariance sub-blocks
-                sigma_list[_m] = _sigma_prop
                 if Nm_list[_m]:
                     sig_mm_list[_m] = _sigma_prop[:Nm_list[_m], :Nm_list[_m]]
                     sig_mq_list[_m] = 0.5 * (
@@ -1421,12 +1420,7 @@ def fit(self, mufbvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_
                 # Update downstream input for block _m+1 (takes effect next sweep)
                 YQ_list[_m+1] = _YQ_prop
                 Yq_list[_m+1] = _Yq_prop
-                T_list[_m+1] = _YQ_prop.shape[0]
-                Tnew_list[_m+1] = Tstar_list[_m+1] - T_list[_m+1]
-                nobs_list[_m+1] = int(T_list[_m+1]) - int(T0_list[_m+1])
-                Tnobs_list[_m+1] = Tstar_list[_m+1] - T0_list[_m+1]
-                _nrows = min(T_list[_m+1], YDATA_list[_m+1].shape[0])
-                YDATA_list[_m+1][:_nrows, Nm_list[_m+1]:] = _YQ_prop[:_nrows]
+                YDATA_list[_m+1][:T_list[_m+1], Nm_list[_m+1]:] = _YQ_prop
 
         #self.YYactsim = YYactsim_list[-1]
         #self.XXactsim = XXactsim_list[-1]
@@ -1516,13 +1510,6 @@ def forecast(self, H, conditionals = None):
     
     '''
     self.H = H
-
-    if not self.valid_draws:
-        raise ValueError(
-            "No valid posterior draws available for forecasting. "
-            "All MCMC draws were explosive or rejected."
-        )
-
     # First we need to extend the index
     # depending on the highest frequencies the approach differs
     
