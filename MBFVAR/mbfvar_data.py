@@ -53,6 +53,17 @@ class mbfvar_data:
 
         Example: ["Q", "M", "W"]
 
+    freq_offsets : list of int, optional
+        Starting offsets for each frequency in base frequency units.
+        - Length must equal len(frequencies)
+        - First element must be 0 (base frequency has no offset)
+        - Subsequent elements specify how many base frequency periods later
+          each higher frequency starts
+        - Default: None (equivalent to all zeros - all frequencies start together)
+
+        Example: For frequencies=["Q", "M", "W"], freq_offsets=[0, 20, 32]
+                means monthly data starts 20 quarters later, weekly starts 32 quarters later.
+
     Attributes
     ----------
     YMX_list : collections.deque
@@ -67,6 +78,10 @@ class mbfvar_data:
         The frequency identifiers passed during initialization
     freq_ratio_list : collections.deque
         Calculated frequency ratios between consecutive frequency levels
+    freq_offsets : list of int
+        Starting offsets for each frequency in base frequency units
+    freq_offsets_hf : list of int
+        Starting offsets converted to highest frequency units
     varlist_list : collections.deque
         Variable names for each frequency combination
     YDATA_list : collections.deque
@@ -111,10 +126,46 @@ class mbfvar_data:
     VAR. Journal of Business & Economic Statistics, 33(3), 366-380.
     """
     
-    def __init__(self, data, trans, frequencies):
-        
-        
-        
+    def __init__(self, data, trans, frequencies, freq_offsets=None):
+        """
+        Initialize the mbfvar_data object.
+
+        Parameters
+        ----------
+        freq_offsets : list of int, optional
+            Starting offsets for each frequency in base frequency units.
+            - Length must equal len(frequencies)
+            - First element should be 0 (base frequency has no offset)
+            - Subsequent elements specify how many base frequency periods later
+              each higher frequency starts
+            - Default: None (equivalent to all zeros - all frequencies start together)
+
+            Example: For frequencies=["Q", "M", "W"], freq_offsets=[0, 20, 32]
+                    means monthly data starts 20 quarters later, weekly starts 32 quarters later.
+        """
+
+        # Initialize and validate freq_offsets
+        if freq_offsets is None:
+            # Default behavior: all frequencies start at the same time
+            freq_offsets = [0] * len(frequencies)
+        else:
+            # Validate freq_offsets
+            if len(freq_offsets) != len(frequencies):
+                raise ValueError(
+                    f"freq_offsets must have length {len(frequencies)} to match frequencies, "
+                    f"but got length {len(freq_offsets)}"
+                )
+            if freq_offsets[0] != 0:
+                raise ValueError(
+                    "First element of freq_offsets must be 0 (base frequency cannot have offset)"
+                )
+            if any(offset < 0 for offset in freq_offsets):
+                raise ValueError("All offsets in freq_offsets must be non-negative")
+            if not all(isinstance(offset, (int, np.integer)) for offset in freq_offsets):
+                raise ValueError("All offsets in freq_offsets must be integers")
+
+        self.freq_offsets = list(freq_offsets)  # Store as list
+
         # Creating lists of highfrequency data
         
         YMX_list = deque()
@@ -237,8 +288,46 @@ class mbfvar_data:
                 freq_ratio = input("Please enter frequency ratio")
             
             freq_ratio_list.append(freq_ratio)
-        
-        
+
+
+        # Calculate offsets in highest frequency units
+        # freq_offsets are in base frequency (lowest frequency) units
+        # We need to convert them to the highest frequency units
+
+        freq_offsets_hf = [0] * len(frequencies)  # Initialize
+
+        # Calculate cumulative frequency ratios from base to each level
+        cumulative_ratios = [1]  # Base frequency ratio to itself is 1
+        for i in range(len(freq_ratio_list)):
+            cumulative_ratios.append(cumulative_ratios[-1] * freq_ratio_list[i])
+
+        # Convert offsets to highest frequency units
+        # The highest frequency is the last one, so its cumulative ratio is the product of all ratios
+        total_ratio_to_highest = cumulative_ratios[-1]
+
+        for i in range(len(frequencies)):
+            # offset in base frequency units * ratio from base to highest frequency
+            freq_offsets_hf[i] = self.freq_offsets[i] * total_ratio_to_highest
+
+        # Validate that offsets don't exceed data availability
+        for i in range(len(frequencies)):
+            available_obs = data[i].shape[0]
+            # Convert offset from highest frequency back to current frequency
+            offset_in_current_freq = self.freq_offsets[i] * cumulative_ratios[i]
+
+            if offset_in_current_freq >= available_obs:
+                raise ValueError(
+                    f"Offset for frequency {frequencies[i]} (position {i}) requires "
+                    f"{offset_in_current_freq} observations in that frequency, "
+                    f"but only {available_obs} observations are available. "
+                    f"Reduce the offset or provide more data."
+                )
+
+        # Store the calculated values
+        self.freq_offsets_hf = freq_offsets_hf
+        self.cumulative_ratios = cumulative_ratios
+
+
         #performe data transformations
         
         for i in range(len(YM0_list)):
@@ -251,30 +340,57 @@ class mbfvar_data:
         
         
         YM_list = copy.deepcopy(YM0_list)
-        
+
         # Low frequency data in higher frequency
+        # With offsets, we need to handle the case where LF data starts later than HF data
         YQ_list = deque()
-        YQ_list.append(np.kron(YQ0_list[0], np.ones((freq_ratio_list[0],1))))
+
+        # Expand low-frequency data using Kronecker product
+        YQ_expanded = np.kron(YQ0_list[0], np.ones((freq_ratio_list[0], 1)))
+
+        # Apply offset if higher frequency starts later than base frequency
+        # Note: In the typical case, higher frequencies start LATER, so offset_hf[1] > 0
+        # means the first HF data (monthly if base is quarterly) starts offset_hf[1] periods later
+        # in the highest frequency time grid
+
+        if len(freq_offsets_hf) > 1 and freq_offsets_hf[1] > 0:
+            # The first higher frequency (YM_list[0]) starts later
+            # We need to pad the beginning of YQ_expanded with NaN
+            offset_hf = int(freq_offsets_hf[1])
+            padding = np.full((offset_hf, YQ_expanded.shape[1]), np.nan)
+            YQ_list.append(np.vstack((padding, YQ_expanded)))
+        else:
+            YQ_list.append(YQ_expanded)
         
         Tstar_list = deque()
         T_list = deque()
         YDATA_list = deque()
-        
+
+        # Apply offset padding to YM_list if the first higher frequency starts later
+        if len(freq_offsets_hf) > 1 and freq_offsets_hf[1] > 0:
+            offset_hf = int(freq_offsets_hf[1])
+            if YM_list[0].size:
+                # Pad the beginning of YM_list[0] with NaN rows
+                padding = np.full((offset_hf, YM_list[0].shape[1]), np.nan)
+                YM_list[0] = np.vstack((padding, YM_list[0]))
+
         if YM_list[0].size:
             Tstar_list.append(YM_list[0].shape[0])
-            YDATA_list.append(np.full((Tstar_list[0],nv_list[0]), np.nan))
-            YDATA_list[0][:,:Nm_list[0]] = YM_list[0]
+            # YDATA should be the size of the longest series (max of YM and YQ)
+            max_T = max(YM_list[0].shape[0], YQ_list[0].shape[0])
+            YDATA_list.append(np.full((max_T, nv_list[0]), np.nan))
+            # Assign YM data
+            YDATA_list[0][:YM_list[0].shape[0], :Nm_list[0]] = YM_list[0]
         else:
             Tstar_list.append(YQ_list[0].shape[0])
-            YDATA_list.append(np.full((0,nv_list[0]), np.nan))
-            
+            YDATA_list.append(np.full((YQ_list[0].shape[0], nv_list[0]), np.nan))
+
         T_list.append(YQ_list[0].shape[0])
-        #for freq in range(1,len(self.frequencies)-1):
-        #    T_list.append(np.kron(YMX_list[freq-1], np.ones((freq_ratio_list[freq],1))).shape[0])
-        
-        
-        if YDATA_list[0].size:     
-            YDATA_list[0][:T_list[0],Nm_list[0]:] = YQ_list[0]   
+
+        # Assign YQ data - handle different lengths
+        if YDATA_list[0].size:
+            yq_rows = min(YQ_list[0].shape[0], YDATA_list[0].shape[0])
+            YDATA_list[0][:yq_rows, Nm_list[0]:] = YQ_list[0][:yq_rows, :]
         else:
             YDATA_list[0] = YQ_list[0] 
             
