@@ -376,19 +376,21 @@ class mbfvar_data:
 
         if YM_list[0].size:
             Tstar_list.append(YM_list[0].shape[0])
-            YDATA_list.append(np.full((Tstar_list[0],nv_list[0]), np.nan))
-            YDATA_list[0][:,:Nm_list[0]] = YM_list[0]
+            # YDATA should be the size of the longest series (max of YM and YQ)
+            max_T = max(YM_list[0].shape[0], YQ_list[0].shape[0])
+            YDATA_list.append(np.full((max_T, nv_list[0]), np.nan))
+            # Assign YM data
+            YDATA_list[0][:YM_list[0].shape[0], :Nm_list[0]] = YM_list[0]
         else:
             Tstar_list.append(YQ_list[0].shape[0])
-            YDATA_list.append(np.full((0,nv_list[0]), np.nan))
-            
+            YDATA_list.append(np.full((YQ_list[0].shape[0], nv_list[0]), np.nan))
+
         T_list.append(YQ_list[0].shape[0])
-        #for freq in range(1,len(self.frequencies)-1):
-        #    T_list.append(np.kron(YMX_list[freq-1], np.ones((freq_ratio_list[freq],1))).shape[0])
-        
-        
-        if YDATA_list[0].size:     
-            YDATA_list[0][:T_list[0],Nm_list[0]:] = YQ_list[0]   
+
+        # Assign YQ data - handle different lengths
+        if YDATA_list[0].size:
+            yq_rows = min(YQ_list[0].shape[0], YDATA_list[0].shape[0])
+            YDATA_list[0][:yq_rows, Nm_list[0]:] = YQ_list[0][:yq_rows, :]
         else:
             YDATA_list[0] = YQ_list[0] 
             
