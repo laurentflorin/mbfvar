@@ -434,7 +434,13 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
     
     At_list.append(np.zeros((Nq_list[0]*(p_list[0]+1))))
     Pt_list.append(np.zeros((Nq_list[0]*(p_list[0]+1), Nq_list[0]*(p_list[0]+1))))
-    
+
+    # Iterate to compute steady-state covariance for Kalman filter initialization
+    # This solves the discrete Lyapunov equation: Pt = GAMMA_S @ Pt @ GAMMA_S^T + GAMMA_U @ sig_qq @ GAMMA_U^T
+    # Converges to unconditional (steady-state) variance of the latent state.
+    # NOTE: Increasing range(5) would NOT reduce explosive VARs - that's handled separately
+    # by is_explosive() checks (lines 804, 1294). This iteration assumes stationarity already.
+    # Five iterations provides adequate convergence for initialization without excess computation.
     for kk in range(5):
         Pt_list[0] = GAMMAs_list[0] @ Pt_list[0] @ GAMMAs_list[0].T + GAMMAu_list[0] @ sig_qq_list[0] @ GAMMAu_list[0].T
     
@@ -1003,7 +1009,8 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
                     
                     At_list.append(np.zeros((Nq_list[m+1]*(p_list[m+1]+1))))
                     Pt_list.append(np.zeros((Nq_list[m+1]*(p_list[m+1]+1), Nq_list[m+1]*(p_list[m+1]+1))))
-                    
+
+                    # Iterate to compute steady-state covariance (see comment at line 438)
                     for kk in range(5):
                         Pt_list[m+1] = GAMMAs_list[m+1] @ Pt_list[m+1] @ GAMMAs_list[m+1].T + GAMMAu_list[m+1] @ sig_qq_list[m+1] @ GAMMAu_list[m+1].T
                     
