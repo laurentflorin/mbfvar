@@ -251,7 +251,16 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
     YM_list = copy.deepcopy(mbfvar_data.YM_list)
     input_data = copy.deepcopy(mbfvar_data.input_data)
     self.input_data = input_data
-    
+
+    # Copy offset information if available
+    if hasattr(mbfvar_data, 'freq_offsets'):
+        freq_offsets = copy.deepcopy(mbfvar_data.freq_offsets)
+        freq_offsets_hf = copy.deepcopy(mbfvar_data.freq_offsets_hf)
+    else:
+        # Backward compatibility: no offsets
+        freq_offsets = [0] * len(frequencies)
+        freq_offsets_hf = [0] * len(frequencies)
+
     if not(var_of_interest is None):
         idx_var_of_interest = list(filter(
             lambda x: YQX_list[0].columns.tolist()[x] in var_of_interest,
@@ -382,8 +391,8 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
     #YYactsim_list.append(np.zeros((round((self.nsim)/self.thining),freq_ratio_list[0]+1,nv_list[0])))
     #XXactsim_list.append(np.zeros((round((self.nsim)/self.thining),int(freq_ratio_list[0])+1,int(nv_list[0])*int(p_list[0])+1)))
     
-    At_mat_list.append(np.zeros((int(Tnobs_list[0]), Nq_list[0]*(int(p_list[0])+1))))
-    Pt_mat_list.append(np.zeros((int(Tnobs_list[0]), (Nq_list[0]*(int(p_list[0])+1))**2)))
+    At_mat_list.append(np.zeros((int(nobs_list[0]), Nq_list[0]*(int(p_list[0])+1))))
+    Pt_mat_list.append(np.zeros((int(nobs_list[0]), (Nq_list[0]*(int(p_list[0])+1))**2)))
     Atildemat_list.append(np.zeros((self.nsim, Nq_list[0]*(int(p_list[0])+1))))
     Ptildemat_list.append(np.zeros((self.nsim, Nq_list[0]*(int(p_list[0])+1),Nq_list[0]*(int(p_list[0])+1))))
     loglh_list.append(0)
@@ -430,13 +439,27 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
     sig_qm_list.append(sigma_list[0][Nm_list[0]:, :Nm_list[0]])
     sig_qq_list.append(sigma_list[0][Nm_list[0]:,Nm_list[0]:])
     
-    # Define W matrix in eq (15) -- _t for tilde
-    
+    # Define W matrix in eq (15) -- _t for tilde (HF-only measurement)
+
     Wmatrix_list.append(np.hstack((np.eye(Nm_list[0]), np.zeros((Nm_list[0],Nq_list[0])))))
     LAMBDAs_t_list.append(Wmatrix_list[0] @ LAMBDAs_list[0])
     LAMBDAz_t_list.append(Wmatrix_list[0] @ LAMBDAz_list[0])
     LAMBDAc_t_list.append(Wmatrix_list[0] @ LAMBDAc_list[0])
     LAMBDAu_t_list.append(Wmatrix_list[0] @ LAMBDAu_list[0])
+
+    # Define LF-only measurement matrices (for when only LF is observed)
+    # Select only the LF rows from LAMBDAs
+    Wmatrix_q_list = deque()
+    LAMBDAs_q_list = deque()
+    LAMBDAz_q_list = deque()
+    LAMBDAc_q_list = deque()
+    LAMBDAu_q_list = deque()
+
+    Wmatrix_q_list.append(np.hstack((np.zeros((Nq_list[0], Nm_list[0])), np.eye(Nq_list[0]))))
+    LAMBDAs_q_list.append(Wmatrix_q_list[0] @ LAMBDAs_list[0])
+    LAMBDAz_q_list.append(Wmatrix_q_list[0] @ LAMBDAz_list[0])
+    LAMBDAc_q_list.append(Wmatrix_q_list[0] @ LAMBDAc_list[0])
+    LAMBDAu_q_list.append(Wmatrix_q_list[0] @ LAMBDAu_list[0])
     
     At_list.append(np.zeros((Nq_list[0]*(p_list[0]+1))))
     Pt_list.append(np.zeros((Nq_list[0]*(p_list[0]+1), Nq_list[0]*(p_list[0]+1))))
@@ -445,17 +468,66 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
         Pt_list[0] = GAMMAs_list[0] @ Pt_list[0] @ GAMMAs_list[0].T + GAMMAu_list[0] @ sig_qq_list[0] @ GAMMAu_list[0].T
     
     # Lagged HF observations
+    # When offsets are used, YM_list may be padded with NaN at the beginning
+    # We need to handle this carefully to avoid indexing errors
     Zm_list.append(np.zeros((nobs_list[0], Nm_list[0]*p_list[0])))
-    
-    if Zm_list[0].size:
+
+    if Zm_list[0].size and Nm_list[0] > 0:
         for j in range(p_list[0]):
-            Zm_list[0][:, j * Nm_list[0]:(j+1)*Nm_list[0]] = YM_list[0][T0_list[0]-(j+1):T0_list[0]+nobs_list[0]-(j+1),:]
+            # Calculate the indices for lag j+1
+            start_idx = T0_list[0] - (j + 1)
+            end_idx = T0_list[0] + nobs_list[0] - (j + 1)
+
+            # Check if start_idx would be negative or in a region we can't access
+            if start_idx < 0:
+                # Can't construct lags before data starts - fill with NaN
+                Zm_list[0][:, j * Nm_list[0]:(j+1)*Nm_list[0]] = np.nan
+            elif end_idx > YM_list[0].shape[0]:
+                # Would exceed array bounds
+                # This shouldn't normally happen, but handle gracefully
+                available_rows = YM_list[0].shape[0] - start_idx
+                if available_rows > 0:
+                    Zm_list[0][:available_rows, j * Nm_list[0]:(j+1)*Nm_list[0]] = YM_list[0][start_idx:start_idx+available_rows, :]
+                    # Fill remaining with NaN
+                    if available_rows < nobs_list[0]:
+                        Zm_list[0][available_rows:, j * Nm_list[0]:(j+1)*Nm_list[0]] = np.nan
+                else:
+                    Zm_list[0][:, j * Nm_list[0]:(j+1)*Nm_list[0]] = np.nan
+            else:
+                # Normal case: can extract the full lag
+                Zm_list[0][:, j * Nm_list[0]:(j+1)*Nm_list[0]] = YM_list[0][start_idx:end_idx, :]
             
     # Observations in HF
-    
-    Ym_list.append(YM_list[0][T0_list[0]:nobs_list[0]+T0_list[0],:])
-    
-    Yq_list.append(YQ_list[0][T0_list[0]:nobs_list[0]+T0_list[0],:])
+    # Handle potential out-of-bounds when slicing padded arrays
+    if T0_list[0] + nobs_list[0] <= YM_list[0].shape[0]:
+        Ym_list.append(YM_list[0][T0_list[0]:nobs_list[0]+T0_list[0],:])
+    else:
+        # Data doesn't extend far enough - shouldn't normally happen
+        # but handle gracefully
+        available_data = YM_list[0][T0_list[0]:,:]
+        # Pad with NaN if needed
+        missing_rows = nobs_list[0] - available_data.shape[0]
+        if missing_rows > 0 and available_data.shape[0] > 0:
+            padding = np.full((missing_rows, available_data.shape[1]), np.nan)
+            Ym_list.append(np.vstack((available_data, padding)))
+        elif available_data.shape[0] > 0:
+            Ym_list.append(available_data)
+        else:
+            Ym_list.append(np.full((nobs_list[0], Nm_list[0]), np.nan))
+
+    if T0_list[0] + nobs_list[0] <= YQ_list[0].shape[0]:
+        Yq_list.append(YQ_list[0][T0_list[0]:nobs_list[0]+T0_list[0],:])
+    else:
+        # Data doesn't extend far enough
+        available_data = YQ_list[0][T0_list[0]:,:]
+        missing_rows = nobs_list[0] - available_data.shape[0]
+        if missing_rows > 0 and available_data.shape[0] > 0:
+            padding = np.full((missing_rows, available_data.shape[1]), np.nan)
+            Yq_list.append(np.vstack((available_data, padding)))
+        elif available_data.shape[0] > 0:
+            Yq_list.append(available_data)
+        else:
+            Yq_list.append(np.full((nobs_list[0], Nq_list[0]), np.nan))
     
     # Estimation
     #################
@@ -530,13 +602,13 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
 
                 elif not hf_available and lf_available:
                     # Case 3: Only LF observations available (no HF data in this block)
-                    yhat = LAMBDAs_list[m] @ alphahat + LAMBDAz_list[m] @ Zm_list[m][t,:] + LAMBDAc_list[m][:,0]
+                    yhat = LAMBDAs_q_list[m] @ alphahat + LAMBDAz_q_list[m] @ Zm_list[m][t,:] + LAMBDAc_q_list[m][:,0]
                     nut = Yq_list[m][t,:] - yhat
-                    Ft = (LAMBDAs_list[m] @ Phat @ LAMBDAs_list[m].T + LAMBDAu_list[m] @ sig_mm_list[m] @ LAMBDAu_list[m].T
-                        + LAMBDAs_list[m] @ GAMMAu_list[m] @ sig_qm_list[m] @ LAMBDAu_list[m].T
-                        + LAMBDAu_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T @ LAMBDAs_list[m].T)
+                    Ft = (LAMBDAs_q_list[m] @ Phat @ LAMBDAs_q_list[m].T + LAMBDAu_q_list[m] @ sig_mm_list[m] @ LAMBDAu_q_list[m].T
+                        + LAMBDAs_q_list[m] @ GAMMAu_list[m] @ sig_qm_list[m] @ LAMBDAu_q_list[m].T
+                        + LAMBDAu_q_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T @ LAMBDAs_q_list[m].T)
                     Ft = 0.5*(Ft+Ft.T)
-                    Xit = LAMBDAs_list[m] @ Phat + LAMBDAu_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T
+                    Xit = LAMBDAs_q_list[m] @ Phat + LAMBDAu_q_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T
                     sol = Xit.T @ invert_matrix(Ft)
                     At_list[m] = alphahat + sol @ nut
                     Pt_list[m] = Phat - sol @ Xit
@@ -594,8 +666,8 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
                     BPt[(rr+1)*Nm_list[m]+rr*Nq_list[m]:(rr+1)*(Nm_list[m]+Nq_list[m]), (vv+1)*Nm_list[m]+vv*Nq_list[m]:(vv+1)*(Nm_list[m]+Nq_list[m])] = np.squeeze(
                         Ptildemat_list[m][j,rr*Nq_list[m]:(rr+1)*Nq_list[m],vv*Nq_list[m]:(vv+1)*Nq_list[m]])
                     
-            BAt_mat = np.zeros((Tnobs_list[m], kn))
-            BPt_mat = np.zeros((Tnobs_list[m], kn**2))
+            BAt_mat = np.zeros((nobs_list[m], kn))
+            BPt_mat = np.zeros((nobs_list[m], kn**2))
             
             
             BAt_mat[nobs_list[m]-1,:] = BAt
@@ -650,19 +722,30 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
                 BPt_mat[t,:] = BPt.reshape((1,kn**2), order = "F")
                 
                 
-            AT_draw = np.zeros((Tnew_list[m]+1, kn))
-            
+            # AT_draw size needs to be at least 1, handle negative Tnew_list with offsets
+            AT_draw_size = max(1, Tnew_list[m] + 1)
+            AT_draw = np.zeros((AT_draw_size, kn))
+
             # Draw from multivariate normal
-            Pchol = cholcovOrEigendecomp(BPt_mat[Tnobs_list[m]-1,:].reshape((kn, kn), order = "F"))
-            AT_draw[-1, :] = BAt_mat[Tnobs_list[m]-1,:]+np.transpose(Pchol @ np.random.standard_normal(kn))
+            # Use nobs-1 instead of Tnobs-1 if Tnobs exceeds nobs
+            last_idx = min(nobs_list[m] - 1, Tnobs_list[m] - 1)
+            Pchol = cholcovOrEigendecomp(BPt_mat[last_idx,:].reshape((kn, kn), order = "F"))
+            AT_draw[-1, :] = BAt_mat[last_idx,:]+np.transpose(Pchol @ np.random.standard_normal(kn))
             
             # Kalman Smoother
             #####################
-            
-            for i in range(Tnew_list[m]):
-                
-                BAtt = BAt_mat[Tnobs_list[m]-(i+2),:]
-                BPtt = BPt_mat[Tnobs_list[m]-(i+2),:].reshape((kn,kn), order = "F")
+
+            # Only run smoother if we have unbalanced observations
+            if Tnew_list[m] > 0:
+                for i in range(Tnew_list[m]):
+
+                    # Ensure we don't go negative when indexing
+                    idx = Tnobs_list[m] - (i + 2)
+                    if idx < 0 or idx >= nobs_list[m]:
+                        break
+
+                    BAtt = BAt_mat[idx,:]
+                    BPtt = BPt_mat[idx,:].reshape((kn,kn), order = "F")
                 
                 BPhat = PHIF @ BPtt @ PHIF.T + SIGF
                 BPhat = 0.5*(BPhat+BPhat.T)
