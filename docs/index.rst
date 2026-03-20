@@ -1,10 +1,10 @@
-.. MUFBVAR documentation master file, created by
+.. MBFVAR documentation master file, created by
    sphinx-quickstart on Tue May 21 10:38:25 2024.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to MUFBVAR's documentation!
-===================================
+Welcome to MBFVAR's documentation!
+==================================
 
 .. toctree::
    :maxdepth: 2

@@ -80,10 +80,15 @@ model.fanchart(variables="all", save=False, show=True, nhist=10)
 
 ## Documentation
 
-- [Full Documentation](./docs/_build/markdown/index.md)
+For comprehensive documentation, please visit:
+
+**[https://mbfvar.readthedocs.io](https://mbfvar.readthedocs.io)**
+
+Quick links:
+- [Full Documentation](https://mbfvar.readthedocs.io)
 - [Python Examples](./examples/python_example.py)
 - [R Examples](./examples/r_example.R)
-- [API Reference](./docs/_build/markdown/source/MBFVAR.md)
+- [API Reference](https://mbfvar.readthedocs.io/en/latest/source/modules.html)
 
 ## Key Concepts
 

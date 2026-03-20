@@ -380,5 +380,5 @@ See Also
 ********
 
 - :doc:`intro` - Introduction and installation
-- :doc:`MBFVAR` - Complete API reference
+- :doc:`modules` - Complete API reference
 - `GitHub Repository <https://github.com/laurentflorin/MBFVAR>`_ - Source code and latest updates
