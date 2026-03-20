@@ -41,7 +41,7 @@ import copy
 #from MBFVAR.pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
 from .cholcov.cholcov_module import cholcovOrEigendecomp
 from .inverse.matrix_inversion import invert_matrix
-from .mfbvar_funcs import calc_yyact, is_explosive
+from .mfbvar_funcs import calc_yyact, is_explosive, mdd_
 # for hyperparameter tuning
 
 
@@ -174,15 +174,15 @@ def _kalman_filter_loglik_block(
     return ll
 
 
-def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_it_stable = 1000):
-    
+def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_it_stable = 1000, return_mdd = False):
+
     '''
     Estimates the model using the model parameter specified in the initialization. \n
-    And the data provided. 
-    
+    And the data provided.
+
     Parameters
     ----------
-    mbfvar_data : mbfvar_data class object 
+    mbfvar_data : mbfvar_data class object
         data in the form of a mbfvar_data class object
     hyp : list of list
         list containing list of the hyperparameters for each frequency step\n
@@ -196,12 +196,22 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
         If None all variables get taken into each higher frequency bi frequency var.
     temp_agg : str
         `mean` or `sum` defines the measurement equation
+    max_it_stable : int
+        maximum number of attempts to draw non-explosive VAR coefficients
+    return_mdd : bool
+        if True, returns the marginal data density (used for hyperparameter optimization)
 
+    Returns
+    -------
+    float or None
+        If return_mdd is True, returns the MDD for the last frequency block.
+        Otherwise, returns None (standard behavior).
     '''
-    
+
     explosive_counter = 0
     valid_draws = []
-    
+    mdd_list = [np.nan] * (len(mbfvar_data.frequencies)-1) if return_mdd else None
+
     self.nex = 1
     self.hyp = hyp
     self.temp_agg = temp_agg
@@ -434,7 +444,13 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
     
     At_list.append(np.zeros((Nq_list[0]*(p_list[0]+1))))
     Pt_list.append(np.zeros((Nq_list[0]*(p_list[0]+1), Nq_list[0]*(p_list[0]+1))))
-    
+
+    # Iterate to compute steady-state covariance for Kalman filter initialization
+    # This solves the discrete Lyapunov equation: Pt = GAMMA_S @ Pt @ GAMMA_S^T + GAMMA_U @ sig_qq @ GAMMA_U^T
+    # Converges to unconditional (steady-state) variance of the latent state.
+    # NOTE: Increasing range(5) would NOT reduce explosive VARs - that's handled separately
+    # by is_explosive() checks (lines 804, 1294). This iteration assumes stationarity already.
+    # Five iterations provides adequate convergence for initialization without excess computation.
     for kk in range(5):
         Pt_list[0] = GAMMAs_list[0] @ Pt_list[0] @ GAMMAs_list[0].T + GAMMAu_list[0] @ sig_qq_list[0] @ GAMMAu_list[0].T
     
@@ -746,8 +762,10 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
         
         
             # dummy observations and actual observations
-            #mdd, YYact, YYdum, XXact, XXdum = mdd_(self.hyp, YY, spec)
-            YYact, YYdum, XXact, XXdum = calc_yyact(self.hyp[m], YY, spec)
+            if return_mdd:
+                mdd_list[m], YYact, YYdum, XXact, XXdum = mdd_(self.hyp[m], YY, spec)
+            else:
+                YYact, YYdum, XXact, XXdum = calc_yyact(self.hyp[m], YY, spec)
             
             if (j%self.thining == 0 and m == (len(YMh_list)-1)):
                 if YYactsim_list:
@@ -785,7 +803,17 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
             Sigma = (Y - X @ Phi_tilde).T @ (Y - X @ Phi_tilde)
             
             sigma = invwishart.rvs(scale = Sigma, df = T-n*p-1)
-            # Draws from the density Sigma | Y 
+            # Draws from the density Sigma | Y
+
+            # IMPORTANT: Explosive VAR check is necessary and NOT redundant
+            # This implements a stationarity constraint (truncated prior) that excludes
+            # explosive parameter regions. The MH algorithm (backward pass) does NOT
+            # automatically reject explosive VARs because:
+            # 1. MH acceptance uses only the likelihood ratio (ll_prop - ll_cur)
+            # 2. Explosive VARs can have high likelihood on observed data
+            # 3. Without this check, unstable parameters could be accepted
+            # This constraint ensures all sampled parameters satisfy stationarity
+            # conditions required for valid VAR forecasting and inference.
             attempts = 0
             while attempts < max_it_stable:
                 sigma_chol = cholcovOrEigendecomp(np.kron(sigma, inv_x))
@@ -993,7 +1021,8 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
                     
                     At_list.append(np.zeros((Nq_list[m+1]*(p_list[m+1]+1))))
                     Pt_list.append(np.zeros((Nq_list[m+1]*(p_list[m+1]+1), Nq_list[m+1]*(p_list[m+1]+1))))
-                    
+
+                    # Iterate to compute steady-state covariance (see comment at line 438)
                     for kk in range(5):
                         Pt_list[m+1] = GAMMAs_list[m+1] @ Pt_list[m+1] @ GAMMAs_list[m+1].T + GAMMAu_list[m+1] @ sig_qq_list[m+1] @ GAMMAu_list[m+1].T
                     
@@ -1265,6 +1294,13 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
                 _sigma_prop = invwishart.rvs(scale=_Sigma_p, df=_T_p - _n_p*_p_spec - 1)
 
                 # Draw Phi_prop; auto-reject if explosive
+                # IMPORTANT: This explosive VAR check is necessary in the MH backward pass.
+                # Although we use MH acceptance below (line ~1330), the acceptance ratio
+                # is ONLY based on likelihood (log_alpha = ll_prop - ll_cur), NOT the full
+                # posterior. An explosive VAR proposal could have high likelihood and be
+                # accepted by the MH step if we don't enforce this stationarity constraint.
+                # This check ensures the truncated prior (excluding explosive region) is
+                # properly implemented in the Metropolis-within-Gibbs correction step.
                 _explosive_prop = True
                 _Phi_prop = None
                 for _ in range(max_it_stable):
@@ -1503,6 +1539,10 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
         (c / t if t > 0 else float("nan"))
         for c, t in zip(mh_accept_counts, mh_total_counts)
     ]
+
+    # Return MDD if requested (for hyperparameter optimization)
+    if return_mdd:
+        return mdd_list[-1]
         
 def forecast(self, H, conditionals = None):
     
