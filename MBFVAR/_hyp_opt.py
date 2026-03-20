@@ -659,6 +659,10 @@ def update_hyperparameters(self, mbfvar_data, pbounds, init_points, n_iter, nsim
                 if attempts == 1000:
                     explosive_counter += 1
                     print(f"Explosive VAR detected {explosive_counter} times.")
+                    # WARNING: The 'continue' statement here skips the rest of the iteration
+                    # but does not affect the optimization - the MDD will still be computed
+                    # with whatever Phi was last set (potentially explosive)
+                    # Consider returning early with a penalty value instead
                     m = 0
                     continue
                     
@@ -1599,6 +1603,10 @@ def update_hyperparameters_mango(self, mbfvar_data, param_space, init_points, n_
                 if attempts == 1000:
                     explosive_counter += 1
                     print(f"Explosive VAR detected {explosive_counter} times.")
+                    # WARNING: The 'continue' statement here skips the rest of the iteration
+                    # but does not affect the optimization - the MDD will still be computed
+                    # with whatever Phi was last set (potentially explosive)
+                    # Consider returning early with a penalty value instead
                     m = 0
                     continue
                     
@@ -1981,9 +1989,12 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
                 result_in_sample.append((in_sample))
                 result_out_sample.append((out_sample))
 
-            data_in = mbfvar_data(result_in_sample, mufbvar_data_temp.trans, mufbvar_data_temp.frequencies)    
+            data_in = mbfvar_data(result_in_sample, mufbvar_data_temp.trans, mufbvar_data_temp.frequencies)
 
             model_temp = self.__class__(nsim, nburn_perc, nlags, thining)
+            # Note: check_explosive parameter is passed but not implemented in fit()
+            # The fit() method always performs explosive VAR checks regardless
+            # This parameter should be removed or the fit() method should be updated
             model_temp.fit(data_in, hyp = hyp_list, var_of_interest = var_of_interest,  temp_agg = temp_agg, check_explosive = False)
             model_temp.forecast(H * math.prod(data_in.freq_ratio_list))
             model_temp.aggregate(frequency = data_in.frequencies[0])
@@ -2002,7 +2013,10 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
                 if col.endswith(suffix):
                     pred_col = col.replace(suffix, '')
                     if pred_col in df.columns:
-                        rmse = np.sqrt(((df[pred_col][H-1] - df[col][H-1] ) ** 2))
+                        # Calculate RMSE across all H forecast periods (not just last period)
+                        # This provides a more comprehensive measure of forecast quality
+                        errors = df[pred_col][:H] - df[col][:H]
+                        rmse = np.sqrt(np.mean(errors ** 2))
                         rmse_results.append(rmse)
             mean_rmse = float(np.mean(rmse_results))
             # Return high error if mean_rmse is nan or inf
