@@ -1,117 +1,255 @@
+# MBFVAR R Example
+# ===================
+#
+# This example demonstrates how to use MBFVAR in R using the reticulate package.
+# The reticulate package allows R to interface with Python packages.
+#
+# Prerequisites:
+# 1. Install reticulate: install.packages("reticulate")
+# 2. Set up a Python virtual environment with MBFVAR installed
+# 3. Have the hist.xlsx data file in the working directory
+
 library(reticulate)
 
-use_virtualenv("/home/u80856195/.virtualenvs/venv", required = TRUE)
+# Configure Python virtual environment
+# IMPORTANT: Update this path to your actual virtual environment
+# use_virtualenv("/path/to/your/virtualenv", required = TRUE)
+# OR use a conda environment:
+# use_condaenv("your-env-name", required = TRUE)
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+# Set working directory to the location of this script
+# (Uncomment if running in RStudio)
+# setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
-mufbvar <- import("MUFBVAR")
+# ==============================================================================
+# 1. IMPORT PYTHON MODULES
+# ==============================================================================
+cat("Importing MBFVAR and dependencies...\n")
+
+mbfvar <- import("MBFVAR")
 pd <- import("pandas")
 np <- import("numpy")
 pickle <- import("pickle")
 
+# ==============================================================================
+# 2. LOAD DATA
+# ==============================================================================
+cat("\nLoading data from hist.xlsx...\n")
+
 io_data <- "hist.xlsx"
-
-# Preparations
-#---------------------
-
-H <- 96L        # forecast horizon
-nsim <- 20000L  # number of draws from Posterior Density
-nburn <- 0.5  # number of draws to discard
-nlags <- list(6L,4L)
-thining = 1
-
-hyp <- list(list(0.09, 4.3, 1, 2.7, 4.3), list(0.09, 4.3, 1, 2.7, 4.3))
-
 frequencies <- list("Q", "M", "W")
 
-
+# Load data for each frequency
 data <- list()
-for (freq in 1:length(frequencies)) {
-        freq <- frequencies[[freq]]
-        data_temp <- pd$read_excel(io_data, sheet_name = freq, index_col = 0)
-        data <- append(data, list(data_temp))
+for (i in 1:length(frequencies)) {
+    freq <- frequencies[[i]]
+    data_temp <- pd$read_excel(io_data, sheet_name = freq, index_col = 0L)
+    data <- append(data, list(data_temp))
+    cat(sprintf("  Loaded %s data\n", freq))
 }
 
-#Transformations
-trans <- list(np$array(1), np$array(1, 1, 1), np$array(1, 1, 1, 1))
+# ==============================================================================
+# 3. SPECIFY TRANSFORMATIONS
+# ==============================================================================
+cat("\nSpecifying transformations...\n")
 
-#Initialize data class            
-data_in <- mufbvar$mufbvar_data(data, trans, frequencies)
+# Transformations: 0 = log, 1 = divide by 100
+# Note: Use c() to create vectors in R, then convert to numpy arrays
+trans <- list(
+    np$array(c(1L, 1L)),           # Quarterly: 2 variables
+    np$array(c(1L, 1L, 1L)),       # Monthly: 3 variables
+    np$array(c(1L, 1L, 1L))        # Weekly: 3 variables
+)
 
+# ==============================================================================
+# 4. PREPARE DATA
+# ==============================================================================
+cat("\nPreparing data for MBFVAR...\n")
 
-# Fit and Forecast
-#--------------------
+data_in <- mbfvar$mbfvar_data(data, trans, frequencies)
+cat("  Data prepared successfully!\n")
 
-# Initialize model class    
-model <-  MUFBVAR$multifrequency_var(nsim, nburn, nlags ,thining)
+# ==============================================================================
+# 5. MODEL SPECIFICATION
+# ==============================================================================
+cat("\nSetting up model parameters...\n")
 
-# Estimate the model
+H <- 52L               # Forecast horizon (in highest frequency)
+nsim <- 1000L          # Number of posterior draws
+nburn <- 0.5           # Burn-in proportion
+nlags <- list(6L, 4L)  # Number of lags
+thining <- 1L          # Thinning parameter
+
+# Hyperparameters for Minnesota prior
+hyp <- list(
+    list(0.09, 4.3, 1, 2.7, 4.3),
+    list(0.09, 4.3, 1, 2.7, 4.3)
+)
+
+cat(sprintf("  Simulations: %d (burn-in: %d)\n", nsim, as.integer(nsim * nburn)))
+cat(sprintf("  Lags: [%d, %d]\n", nlags[[1]], nlags[[2]]))
+
+# ==============================================================================
+# 6. INITIALIZE AND FIT MODEL
+# ==============================================================================
+cat("\nInitializing model...\n")
+
+model <- mbfvar$multifrequency_var(nsim, nburn, nlags, thining)
+
+cat("Fitting model (this may take a few moments)...\n")
 model$fit(data_in, hyp = hyp)
+cat("  Model fitted successfully!\n")
 
-# Conditional forecasts
+# ==============================================================================
+# 7. GENERATE FORECAST
+# ==============================================================================
+cat("\nGenerating unconditional forecast...\n")
 
-conditionals <- pd$DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.05],
-                        'm_2' : [ np.nan, 0.002, 0.01 , 0.01, np.nan, np.nan]})   
+model$forecast(H)
+cat(sprintf("  Generated %d-period ahead forecast\n", H))
 
-# Create forecasts in highest frequency
+# ==============================================================================
+# 8. AGGREGATE TO QUARTERLY
+# ==============================================================================
+cat("\nAggregating forecasts to quarterly frequency...\n")
+
+model$aggregate(frequency = "Q")
+cat("  Aggregation complete!\n")
+
+# ==============================================================================
+# 9. SAVE RESULTS
+# ==============================================================================
+cat("\nSaving results...\n")
+
+model$to_excel("forecasts_r_weekly.xlsx", agg = FALSE)
+cat("  Saved weekly forecasts to: forecasts_r_weekly.xlsx\n")
+
+model$to_excel("forecasts_r_quarterly.xlsx", agg = TRUE)
+cat("  Saved quarterly forecasts to: forecasts_r_quarterly.xlsx\n")
+
+# ==============================================================================
+# 10. VISUALIZE RESULTS
+# ==============================================================================
+cat("\nGenerating visualizations...\n")
+
+# Fan chart (quarterly)
+cat("  Creating fan chart (quarterly)...\n")
+model$fanchart(
+    variables = "all",
+    save = TRUE,
+    show = FALSE,
+    agg = TRUE,
+    nhist = 10L,
+    name = "fanchart_r_quarterly"
+)
+
+# Mean plot
+cat("  Creating mean forecast plot...\n")
+model$mean_plot(
+    variables = "all",
+    save = TRUE,
+    show = FALSE,
+    name = "mean_forecast_r"
+)
+
+# ==============================================================================
+# CONDITIONAL FORECASTING (OPTIONAL)
+# ==============================================================================
+cat("\n--- CONDITIONAL FORECASTING ---\n")
+
+# Create a DataFrame with conditions (use pd$DataFrame with named list)
+# Note: Use np$nan for unconstrained periods
+conditionals <- pd$DataFrame(list(
+    'w_1' = c(0.018, 0.025, np$nan, np$nan, 0.0228, 0.05),
+    'm_2' = c(np$nan, 0.002, 0.01, 0.01, np$nan, np$nan)
+))
+
+cat("Generating conditional forecast...\n")
 model$forecast(H, conditionals)
 
-# Aggregate
 model$aggregate(frequency = "Q")
+model$to_excel("forecasts_r_conditional.xlsx", agg = TRUE)
+cat("  Saved conditional forecast\n")
 
-# Save results
-#------------
-#model$to_excel('out_test.xlsx', agg = True)
-#model$save("model_2002_Q4")
+# ==============================================================================
+# SCENARIO ANALYSIS (OPTIONAL)
+# ==============================================================================
+cat("\n--- SCENARIO ANALYSIS ---\n")
 
-# Plots
-#---------
+# Define multiple scenarios
+scenario_good <- pd$DataFrame(list(
+    'w_1' = c(0.02, 0.025, rep(np$nan, H-2))
+))
 
-model$mean_plot(variables = "all", save = False, show = True)
+scenario_bad <- pd$DataFrame(list(
+    'w_1' = c(-0.02, -0.025, rep(np$nan, H-2))
+))
 
-model$fanchart(variables = "all", save = False, show = True, agg = True, nhist = 10)
+# NULL for baseline (unconditional forecast)
+conditionals_list <- list(scenario_good, scenario_bad, NULL)
+scenario_names <- list("Optimistic", "Pessimistic", "Baseline")
 
-# Optimizing Hyperparameters
-#------------------------------
+cat("Comparing scenarios...\n")
+scenarios <- model$scenario_forecast(H, conditionals_list, scenario_names, agg = TRUE)
 
-# Define boundaries for each hyperparameter, see documentation for details
-pbounds <- {'lambda1_1': (0.001, 20), 'lambda2_1': (0.01, 10), 'lambda4_1': (0.01, 10),
-        'lambda5_1': (0.01, 10), 'lambda1_2': (0.001, 20), 'lambda2_2': (0.01, 10), 'lambda4_2': (0.01, 10), 'lambda5_2': (0.01, 10)}
-init_points <- 3L # number of random points
-n_iter <- 8L # number of baysian optimization steps
-nsim <- 100L # number of simulations 
+# Plot scenarios
+model$scenario_plot(
+    scenario_dict = scenarios,
+    variables = "all",
+    save = TRUE,
+    name = "scenario_comparison_r",
+    show = FALSE,
+    nhist = 10L
+)
 
-hyp <- model$update_hyperparameters(data_in, pbounds, init_points, n_iter, nsim, save = False, name = "hyp.txt")
+# ==============================================================================
+# HYPERPARAMETER OPTIMIZATION (OPTIONAL - ADVANCED)
+# ==============================================================================
+cat("\n--- HYPERPARAMETER OPTIMIZATION (COMMENTED OUT) ---\n")
+cat("Uncomment the code below to run hyperparameter optimization\n")
 
-# Scenario Analysis
-#-------------------------------
+# # This requires scipy
+# scipy_stats <- import("scipy.stats")
+#
+# # Define parameter space
+# param_space <- list(
+#     lambda1_1 = scipy_stats$uniform(0.001, 20),
+#     lambda2_1 = scipy_stats$uniform(0.01, 10),
+#     lambda4_1 = scipy_stats$uniform(0.01, 10),
+#     lambda5_1 = scipy_stats$uniform(0.01, 10),
+#     lambda1_2 = scipy_stats$uniform(0.001, 20),
+#     lambda2_2 = scipy_stats$uniform(0.01, 10),
+#     lambda4_2 = scipy_stats$uniform(0.01, 10),
+#     lambda5_2 = scipy_stats$uniform(0.01, 10)
+# )
+#
+# cat("Optimizing hyperparameters...\n")
+# hyp_optimal <- model$update_hyperparameters_mango_rmse(
+#     data_in,
+#     param_space,
+#     H = 2L,
+#     init_points = 3L,
+#     n_iter = 8L,
+#     nsim = 500L,
+#     njobs = 1L,
+#     var_of_interest = list("q_1"),
+#     temp_agg = 'mean',
+#     save = FALSE
+# )
 
-# We can compare different scenarios
+# ==============================================================================
+# SUMMARY
+# ==============================================================================
+cat("\n========================================================================\n")
+cat("R EXAMPLE COMPLETED SUCCESSFULLY!\n")
+cat("========================================================================\n")
 
-conditionals <- [pd$DataFrame({'w_1' : [0.018, 0.025, np.nan, np.nan, 0.0228, 0.05],
-                        'm_2' : [ 0.3, 0.002, 0.01 , 0.01, np.nan, np.nan]}),
-                pd$DataFrame({'w_1' : [-0.02, -0.25, np.nan, np.nan, -0.228, 0.1],
-                        'm_2' : [ -0.2, -0.012, 0 , 0.1, np.nan, np.nan]}), 
-                None
-                ]
+cat("\nGenerated files:\n")
+cat("  - forecasts_r_weekly.xlsx\n")
+cat("  - forecasts_r_quarterly.xlsx\n")
+cat("  - forecasts_r_conditional.xlsx\n")
+cat("  - fanchart_r_quarterly.png\n")
+cat("  - mean_forecast_r.png\n")
+cat("  - scenario_comparison_r.png\n")
 
-names <- list("good", "bad", "base")
-
-out_scenarios = model$scenario_forecast(H, conditionals, names, agg = True)
-
-# Scenario Plot
-model$scenario_plot(scenario_dict = out_scenarios, variables = "all", save = False, name = "Scenario", show = True, nhist = 10L)
-
-# Compare with model from last quarter
-#--------------------------------------
-
-#load previous quarter model:
-file <- open("model_2001_Q3.pkl",'rb')
-model_2001_Q3 <- pickle.load(file)
-
-model_names <- list("2001-Q4", "2001-Q3")
-multifrquency_var_models <- list(model_2001_Q3)
-
-model$compare_models(multifrquency_var_models, model_names, agg = True, variables = "all", save = False, name = "Comparison", show = True, nhist = 5L)
-
-model$compare_models(multifrquency_var_models, model_names, agg = False, variables = ["q_1"], save = False, name = "Comparison", show = True, nhist = 20L)
+cat("\n========================================================================\n")

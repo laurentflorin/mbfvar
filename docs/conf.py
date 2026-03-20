@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'MUFBVAR'
+project = 'MBFVAR'
 copyright = '2024, Laurent Florin'
 author = 'Laurent Florin'
 release = '0.5.1'
