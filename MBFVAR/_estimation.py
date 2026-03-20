@@ -41,7 +41,7 @@ import copy
 #from MBFVAR.pseudo_inverse.pseudo_inverse import calculate_pseudo_inverse
 from .cholcov.cholcov_module import cholcovOrEigendecomp
 from .inverse.matrix_inversion import invert_matrix
-from .mfbvar_funcs import calc_yyact, is_explosive
+from .mfbvar_funcs import calc_yyact, is_explosive, mdd_
 # for hyperparameter tuning
 
 
@@ -174,15 +174,15 @@ def _kalman_filter_loglik_block(
     return ll
 
 
-def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_it_stable = 1000):
-    
+def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_it_stable = 1000, return_mdd = False):
+
     '''
     Estimates the model using the model parameter specified in the initialization. \n
-    And the data provided. 
-    
+    And the data provided.
+
     Parameters
     ----------
-    mbfvar_data : mbfvar_data class object 
+    mbfvar_data : mbfvar_data class object
         data in the form of a mbfvar_data class object
     hyp : list of list
         list containing list of the hyperparameters for each frequency step\n
@@ -196,12 +196,22 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
         If None all variables get taken into each higher frequency bi frequency var.
     temp_agg : str
         `mean` or `sum` defines the measurement equation
+    max_it_stable : int
+        maximum number of attempts to draw non-explosive VAR coefficients
+    return_mdd : bool
+        if True, returns the marginal data density (used for hyperparameter optimization)
 
+    Returns
+    -------
+    float or None
+        If return_mdd is True, returns the MDD for the last frequency block.
+        Otherwise, returns None (standard behavior).
     '''
-    
+
     explosive_counter = 0
     valid_draws = []
-    
+    mdd_list = [np.nan] * (len(mbfvar_data.frequencies)-1) if return_mdd else None
+
     self.nex = 1
     self.hyp = hyp
     self.temp_agg = temp_agg
@@ -752,8 +762,10 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
         
         
             # dummy observations and actual observations
-            #mdd, YYact, YYdum, XXact, XXdum = mdd_(self.hyp, YY, spec)
-            YYact, YYdum, XXact, XXdum = calc_yyact(self.hyp[m], YY, spec)
+            if return_mdd:
+                mdd_list[m], YYact, YYdum, XXact, XXdum = mdd_(self.hyp[m], YY, spec)
+            else:
+                YYact, YYdum, XXact, XXdum = calc_yyact(self.hyp[m], YY, spec)
             
             if (j%self.thining == 0 and m == (len(YMh_list)-1)):
                 if YYactsim_list:
@@ -1527,6 +1539,10 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
         (c / t if t > 0 else float("nan"))
         for c, t in zip(mh_accept_counts, mh_total_counts)
     ]
+
+    # Return MDD if requested (for hyperparameter optimization)
+    if return_mdd:
+        return mdd_list[-1]
         
 def forecast(self, H, conditionals = None):
     
