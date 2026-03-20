@@ -65,6 +65,8 @@ def _kalman_filter_loglik_block(
     from the forward pass is that innovation log-likelihoods are accumulated
     instead of being discarded.
 
+    Supports missing observations (NaN values) due to frequency offsets.
+
     Parameters
     ----------
     GAMMAs, GAMMAz, GAMMAc, GAMMAu : ndarray
@@ -106,11 +108,15 @@ def _kalman_filter_loglik_block(
             - np.floor((t + T0 + 1) / freq_ratio) == 0
         )
 
+        # Check data availability (NaN-aware)
+        hf_available = has_hf and not np.any(np.isnan(Ym[t, :]))
+        lf_available = at_lf_step and not np.any(np.isnan(Yq[t, :]))
+
         alphahat = GAMMAs @ At + GAMMAz @ Zm[t, :] + GAMMAc[:, 0]
         Phat = GAMMAs @ Pt @ GAMMAs.T + GAMMAu @ sig_qq @ GAMMAu.T
         Phat = 0.5 * (Phat + Phat.T)
 
-        if has_hf and at_lf_step:
+        if hf_available and lf_available:
             # Both HF and LF observed
             obs = np.concatenate((Ym[t, :], Yq[t, :]))
             yhat = LAMBDAs @ alphahat + LAMBDAz @ Zm[t, :] + LAMBDAc[:, 0]
@@ -126,7 +132,7 @@ def _kalman_filter_loglik_block(
             sol = Xit.T @ invert_matrix(Ft)
             At = alphahat + sol @ nut
             Pt = Phat - sol @ Xit
-        elif has_hf and not at_lf_step:
+        elif hf_available and not lf_available:
             # Only HF observed
             obs = Ym[t, :]
             yhat = LAMBDAs_t @ alphahat + LAMBDAz_t @ Zm[t, :] + LAMBDAc_t[:, 0]
@@ -142,7 +148,7 @@ def _kalman_filter_loglik_block(
             sol = Xit.T @ invert_matrix(Ft)
             At = alphahat + sol @ nut
             Pt = Phat - sol @ Xit
-        elif (not has_hf) and at_lf_step:
+        elif (not hf_available) and lf_available:
             # Only LF observed (no HF variables in this block)
             obs = Yq[t, :]
             yhat = LAMBDAs @ alphahat + LAMBDAz @ Zm[t, :] + LAMBDAc[:, 0]
@@ -482,80 +488,68 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
 
             # Kalman Filter Loop
             #########################
-            for t in range(nobs_list[m]):  
-                
-                if Ym_list[m].size:
-                    
-                    if (t+1+T0_list[m])/freq_ratio_list[m] - np.floor((t+T0_list[m]+1)/freq_ratio_list[m]) == 0:
-                        At1 = At_list[m]
-                        Pt1 = Pt_list[m]
-                        # Forecasting
-                        alphahat = GAMMAs_list[m] @ At1 + GAMMAz_list[m] @ Zm_list[m][t,:] + GAMMAc_list[m][:,0]
-                        Phat = GAMMAs_list[m] @ Pt1 @ GAMMAs_list[m].T + GAMMAu_list[m] @ sig_qq_list[m] @ GAMMAu_list[m].T
-                        Phat = 0.5*(Phat + Phat.T)
-                        yhat = LAMBDAs_list[m] @ alphahat + LAMBDAz_list[m] @ Zm_list[m][t,:] + LAMBDAc_list[m][:,0]
-                        nut = np.concatenate((Ym_list[m][t,:], Yq_list[m][t,:])) - yhat  
-                        Ft = (LAMBDAs_list[m] @ Phat @ LAMBDAs_list[m].T + LAMBDAu_list[m] @ sig_mm_list[m] @ LAMBDAu_list[m].T
-                            + LAMBDAs_list[m] @ GAMMAu_list[m] @ sig_qm_list[m] @ LAMBDAu_list[m].T
-                            + LAMBDAu_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T @ LAMBDAs_list[m].T)
-                        Ft = 0.5*(Ft+Ft.T)
-                        Xit = LAMBDAs_list[m] @ Phat + LAMBDAu_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T
-                        sol = Xit.T @ invert_matrix(Ft)
-                        At_list[m] = alphahat + sol @ nut
-                        Pt_list[m] = Phat - sol @ Xit
-                        At_mat_list[m][t,:] = At_list[m].T
-                        Pt_mat_list[m][t,:] = Pt_list[m].reshape((1, (Nq_list[m]*(p_list[m]+1))**2), order = "F")
-                    else:
-                        At1 = At_list[m]
-                        Pt1 = Pt_list[m]
-                        # Forecasting
-                        alphahat = GAMMAs_list[m] @ At1 + GAMMAz_list[m] @ Zm_list[m][t,:] + GAMMAc_list[m][:,0]
-                        Phat = GAMMAs_list[m] @ Pt1 @ GAMMAs_list[m].T + GAMMAu_list[m] @ sig_qq_list[m] @ GAMMAu_list[m].T
-                        Phat = 0.5*(Phat + Phat.T)
-                        yhat = LAMBDAs_t_list[m] @ alphahat + LAMBDAz_t_list[m] @ Zm_list[m][t,:] + LAMBDAc_t_list[m][:,0]
-                        nut = Ym_list[m][t,:] - yhat
-                        Ft = (LAMBDAs_t_list[m] @ Phat @ LAMBDAs_t_list[m].T + LAMBDAu_t_list[m] @ sig_mm_list[m] @ LAMBDAu_t_list[m].T
-                            + LAMBDAs_t_list[m] @ GAMMAu_list[m] @ sig_qm_list[m] @ LAMBDAu_t_list[m].T
-                            + LAMBDAu_t_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T @ LAMBDAs_t_list[m].T)
-                        Ft = 0.5*(Ft+Ft.T)
-                        Xit = LAMBDAs_t_list[m] @ Phat + LAMBDAu_t_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T
-                        sol = Xit.T @ invert_matrix(Ft)
-                        At_list[m] = alphahat + sol @ nut 
-                        Pt_list[m] = Phat - sol @ Xit
-                    
-                        At_mat_list[m][t,:] = At_list[m].T
-                        Pt_mat_list[m][t,:] = Pt_list[m].reshape((1, (Nq_list[m]*(p_list[m]+1))**2), order = "F")
+            for t in range(nobs_list[m]):
+
+                # Check data availability (with NaN support for offsets)
+                at_lf_step = (t+1+T0_list[m])/freq_ratio_list[m] - np.floor((t+T0_list[m]+1)/freq_ratio_list[m]) == 0
+                hf_available = Ym_list[m].size > 0 and not np.any(np.isnan(Ym_list[m][t,:]))
+                lf_available = at_lf_step and not np.any(np.isnan(Yq_list[m][t,:]))
+
+                # Always compute prediction step
+                At1 = At_list[m]
+                Pt1 = Pt_list[m]
+                alphahat = GAMMAs_list[m] @ At1 + GAMMAz_list[m] @ Zm_list[m][t,:] + GAMMAc_list[m][:,0]
+                Phat = GAMMAs_list[m] @ Pt1 @ GAMMAs_list[m].T + GAMMAu_list[m] @ sig_qq_list[m] @ GAMMAu_list[m].T
+                Phat = 0.5*(Phat + Phat.T)
+
+                if hf_available and lf_available:
+                    # Case 1: Both HF and LF observations available
+                    yhat = LAMBDAs_list[m] @ alphahat + LAMBDAz_list[m] @ Zm_list[m][t,:] + LAMBDAc_list[m][:,0]
+                    nut = np.concatenate((Ym_list[m][t,:], Yq_list[m][t,:])) - yhat
+                    Ft = (LAMBDAs_list[m] @ Phat @ LAMBDAs_list[m].T + LAMBDAu_list[m] @ sig_mm_list[m] @ LAMBDAu_list[m].T
+                        + LAMBDAs_list[m] @ GAMMAu_list[m] @ sig_qm_list[m] @ LAMBDAu_list[m].T
+                        + LAMBDAu_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T @ LAMBDAs_list[m].T)
+                    Ft = 0.5*(Ft+Ft.T)
+                    Xit = LAMBDAs_list[m] @ Phat + LAMBDAu_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T
+                    sol = Xit.T @ invert_matrix(Ft)
+                    At_list[m] = alphahat + sol @ nut
+                    Pt_list[m] = Phat - sol @ Xit
+
+                elif hf_available and not lf_available:
+                    # Case 2: Only HF observations available (HF-only measurement)
+                    yhat = LAMBDAs_t_list[m] @ alphahat + LAMBDAz_t_list[m] @ Zm_list[m][t,:] + LAMBDAc_t_list[m][:,0]
+                    nut = Ym_list[m][t,:] - yhat
+                    Ft = (LAMBDAs_t_list[m] @ Phat @ LAMBDAs_t_list[m].T + LAMBDAu_t_list[m] @ sig_mm_list[m] @ LAMBDAu_t_list[m].T
+                        + LAMBDAs_t_list[m] @ GAMMAu_list[m] @ sig_qm_list[m] @ LAMBDAu_t_list[m].T
+                        + LAMBDAu_t_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T @ LAMBDAs_t_list[m].T)
+                    Ft = 0.5*(Ft+Ft.T)
+                    Xit = LAMBDAs_t_list[m] @ Phat + LAMBDAu_t_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T
+                    sol = Xit.T @ invert_matrix(Ft)
+                    At_list[m] = alphahat + sol @ nut
+                    Pt_list[m] = Phat - sol @ Xit
+
+                elif not hf_available and lf_available:
+                    # Case 3: Only LF observations available (no HF data in this block)
+                    yhat = LAMBDAs_list[m] @ alphahat + LAMBDAz_list[m] @ Zm_list[m][t,:] + LAMBDAc_list[m][:,0]
+                    nut = Yq_list[m][t,:] - yhat
+                    Ft = (LAMBDAs_list[m] @ Phat @ LAMBDAs_list[m].T + LAMBDAu_list[m] @ sig_mm_list[m] @ LAMBDAu_list[m].T
+                        + LAMBDAs_list[m] @ GAMMAu_list[m] @ sig_qm_list[m] @ LAMBDAu_list[m].T
+                        + LAMBDAu_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T @ LAMBDAs_list[m].T)
+                    Ft = 0.5*(Ft+Ft.T)
+                    Xit = LAMBDAs_list[m] @ Phat + LAMBDAu_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T
+                    sol = Xit.T @ invert_matrix(Ft)
+                    At_list[m] = alphahat + sol @ nut
+                    Pt_list[m] = Phat - sol @ Xit
+
                 else:
-                    if (t+1+T0_list[m])/freq_ratio_list[m] - np.floor((t+T0_list[m]+1)/freq_ratio_list[m]) == 0:
-                        At1 = At_list[m]
-                        Pt1 = Pt_list[m]
-                        # Forecasting
-                        alphahat = GAMMAs_list[m] @ At1 + GAMMAz_list[m] @ Zm_list[m][t,:] + GAMMAc_list[m][:,0]
-                        Phat = GAMMAs_list[m] @ Pt1 @ GAMMAs_list[m].T + GAMMAu_list[m] @ sig_qq_list[m] @ GAMMAu_list[m].T
-                        Phat = 0.5*(Phat + Phat.T)
-                        yhat = LAMBDAs_list[m] @ alphahat + LAMBDAz_list[m] @ Zm_list[m][t,:] + LAMBDAc_list[m][:,0]
-                        nut = Yq_list[m][t,:] - yhat  
-                        Ft = (LAMBDAs_list[m] @ Phat @ LAMBDAs_list[m].T + LAMBDAu_list[m] @ sig_mm_list[m] @ LAMBDAu_list[m].T
-                            + LAMBDAs_list[m] @ GAMMAu_list[m] @ sig_qm_list[m] @ LAMBDAu_list[m].T
-                            + LAMBDAu_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T @ LAMBDAs_list[m].T)
-                        Ft = 0.5*(Ft+Ft.T)
-                        Xit = LAMBDAs_list[m] @ Phat + LAMBDAu_list[m] @ sig_mq_list[m] @ GAMMAu_list[m].T
-                        sol = Xit.T @ invert_matrix(Ft)
-                        At_list[m] = alphahat + sol @ nut
-                        Pt_list[m] = Phat - sol @ Xit
-                        At_mat_list[m][t,:] = At_list[m].T
-                        Pt_mat_list[m][t,:] = Pt_list[m].reshape((1, (Nq_list[m]*(p_list[m]+1))**2), order = "F")
-                    else:
-                        At1 = At_list[m]
-                        Pt1 = Pt_list[m]
-                        # Forecasting
-                        alphahat = GAMMAs_list[m] @ At1 + GAMMAz_list[m] @ Zm_list[m][t,:] + GAMMAc_list[m][:,0]
-                        Phat = GAMMAs_list[m] @ Pt1 @ GAMMAs_list[m].T + GAMMAu_list[m] @ sig_qq_list[m] @ GAMMAu_list[m].T
-                        Phat = 0.5*(Phat + Phat.T)
-                        At_list[m] = alphahat 
-                        Pt_list[m] = Phat 
-                        At_mat_list[m][t,:] = At_list[m].T
-                        Pt_mat_list[m][t,:] = Pt_list[m].reshape((1, (Nq_list[m]*(p_list[m]+1))**2), order = "F")
+                    # Case 4: No observations available (missing data due to offsets)
+                    # State-only prediction: no update, just use prediction
+                    At_list[m] = alphahat
+                    Pt_list[m] = Phat
+
+                # Store filtered state and covariance
+                At_mat_list[m][t,:] = At_list[m].T
+                Pt_mat_list[m][t,:] = Pt_list[m].reshape((1, (Nq_list[m]*(p_list[m]+1))**2), order = "F")
             Atildemat_list[m][j,:] = At_mat_list[m][nobs_list[m]-1,:]
             
             if j == 0:
