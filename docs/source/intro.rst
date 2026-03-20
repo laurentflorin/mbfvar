@@ -136,7 +136,7 @@ Getting Help
 ************
 
 - **Examples**: See the ``examples/`` directory for comprehensive tutorials
-- **API Documentation**: Full reference at :doc:`MBFVAR`
+- **API Documentation**: Full reference at :doc:`modules`
 - **Examples Guide**: Detailed examples at :doc:`examples`
 - **Issues**: Report bugs at `GitHub Issues <https://github.com/laurentflorin/MBFVAR/issues>`_
 

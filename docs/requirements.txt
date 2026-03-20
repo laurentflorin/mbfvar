@@ -1,0 +1,6 @@
+# Documentation dependencies for Sphinx on Read the Docs
+sphinx>=5.0
+sphinx-rtd-theme
+furo
+sphinx-markdown-builder
+sphinx-simplepdf
