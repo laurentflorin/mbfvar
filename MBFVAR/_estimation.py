@@ -785,7 +785,17 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
             Sigma = (Y - X @ Phi_tilde).T @ (Y - X @ Phi_tilde)
             
             sigma = invwishart.rvs(scale = Sigma, df = T-n*p-1)
-            # Draws from the density Sigma | Y 
+            # Draws from the density Sigma | Y
+
+            # IMPORTANT: Explosive VAR check is necessary and NOT redundant
+            # This implements a stationarity constraint (truncated prior) that excludes
+            # explosive parameter regions. The MH algorithm (backward pass) does NOT
+            # automatically reject explosive VARs because:
+            # 1. MH acceptance uses only the likelihood ratio (ll_prop - ll_cur)
+            # 2. Explosive VARs can have high likelihood on observed data
+            # 3. Without this check, unstable parameters could be accepted
+            # This constraint ensures all sampled parameters satisfy stationarity
+            # conditions required for valid VAR forecasting and inference.
             attempts = 0
             while attempts < max_it_stable:
                 sigma_chol = cholcovOrEigendecomp(np.kron(sigma, inv_x))
@@ -1265,6 +1275,13 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
                 _sigma_prop = invwishart.rvs(scale=_Sigma_p, df=_T_p - _n_p*_p_spec - 1)
 
                 # Draw Phi_prop; auto-reject if explosive
+                # IMPORTANT: This explosive VAR check is necessary in the MH backward pass.
+                # Although we use MH acceptance below (line ~1330), the acceptance ratio
+                # is ONLY based on likelihood (log_alpha = ll_prop - ll_cur), NOT the full
+                # posterior. An explosive VAR proposal could have high likelihood and be
+                # accepted by the MH step if we don't enforce this stationarity constraint.
+                # This check ensures the truncated prior (excluding explosive region) is
+                # properly implemented in the Metropolis-within-Gibbs correction step.
                 _explosive_prop = True
                 _Phi_prop = None
                 for _ in range(max_it_stable):
