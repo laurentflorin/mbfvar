@@ -10,21 +10,105 @@ import itertools
 
     
 class mufbvar_data:
-    
     """
-    Class to prepare the data that will be used in the MUFBVAR
-    ...
+    Prepare multi-frequency time series data for MUFBVAR estimation.
+
+    This class handles the preprocessing and organization of time series data at
+    different frequencies (e.g., quarterly, monthly, weekly) into a format suitable
+    for the multi-frequency Bayesian VAR model.
 
     Parameters
     ----------
-    data : list of pandas DataFrames
-        Data of each frequency stored in a pandas DataFrame, all stored in one list
-    trans : list of numpy arrays
-        A separate numpy array for each frequency all stored in a list. /n
-        0: log is taken 
-        1: divided by 100
-    frequencies : List of the frequencies of the data, in order lowest to highest 
-        "Y", "Q", "M", "W", "D" 
+    data : list of pandas.DataFrame
+        List of DataFrames, one for each frequency level, ordered from lowest to
+        highest frequency. Each DataFrame should have:
+        - Time series data with variables as columns
+        - A datetime index or index that can be converted to datetime
+        - Variables named consistently for identification
+
+        Example: [quarterly_df, monthly_df, weekly_df]
+
+    trans : list of numpy.ndarray
+        List of transformation arrays, one for each frequency level. Each array
+        specifies the transformation for each variable in that frequency:
+        - 0: Take natural logarithm of the variable
+        - 1: Divide the variable by 100 (for percentages/rates)
+
+        Length of each array must match the number of variables in the corresponding
+        DataFrame in `data`.
+
+        Example: [np.array([1, 1]), np.array([1, 1, 1]), np.array([1, 1, 1])]
+
+    frequencies : list of str
+        List of frequency identifiers ordered from lowest to highest.
+        Supported frequencies:
+        - "Y": Yearly
+        - "Q": Quarterly
+        - "M": Monthly
+        - "W": Weekly
+        - "D": Daily
+
+        The frequency ratios are automatically calculated based on standard
+        calendar conventions (e.g., Q to M is 3, M to W is 4).
+
+        Example: ["Q", "M", "W"]
+
+    Attributes
+    ----------
+    YMX_list : collections.deque
+        Original high-frequency data (all except lowest frequency)
+    YM0_list : collections.deque
+        Transformed high-frequency data as numpy arrays
+    YQX_list : collections.deque
+        Original low-frequency data (lowest frequency only)
+    YQ0_list : collections.deque
+        Transformed low-frequency data as numpy arrays
+    frequencies : list of str
+        The frequency identifiers passed during initialization
+    freq_ratio_list : collections.deque
+        Calculated frequency ratios between consecutive frequency levels
+    varlist_list : collections.deque
+        Variable names for each frequency combination
+    YDATA_list : collections.deque
+        Combined data matrices ready for model estimation
+
+    Notes
+    -----
+    - The data transformations are applied automatically during initialization
+    - For unsupported frequency combinations, you will be prompted to enter the
+      frequency ratio manually
+    - The class prepares the data for disaggregation from low to high frequency
+      following the methodology in Schorfheide and Song (2015)
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> import MUFBVAR
+    >>>
+    >>> # Load data at different frequencies
+    >>> data_q = pd.read_excel("data.xlsx", sheet_name="Q", index_col=0)
+    >>> data_m = pd.read_excel("data.xlsx", sheet_name="M", index_col=0)
+    >>> data_w = pd.read_excel("data.xlsx", sheet_name="W", index_col=0)
+    >>>
+    >>> # Specify transformations (1 = divide by 100 for all variables)
+    >>> trans = [
+    ...     np.array([1, 1]),       # 2 quarterly variables
+    ...     np.array([1, 1, 1]),    # 3 monthly variables
+    ...     np.array([1, 1, 1])     # 3 weekly variables
+    ... ]
+    >>>
+    >>> # Create data object
+    >>> data_in = MUFBVAR.mufbvar_data(
+    ...     data=[data_q, data_m, data_w],
+    ...     trans=trans,
+    ...     frequencies=["Q", "M", "W"]
+    ... )
+
+    References
+    ----------
+    Schorfheide, F., & Song, D. (2015). Real-time forecasting with a mixed-frequency
+    VAR. Journal of Business & Economic Statistics, 33(3), 366-380.
     """
     
     def __init__(self, data, trans, frequencies):
