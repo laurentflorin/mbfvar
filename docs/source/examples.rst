@@ -1,7 +1,7 @@
 Examples
 =============
 
-MUFBVAR provides comprehensive examples for both Python and R users. The examples demonstrate the core functionality of the package including data preparation, model fitting, forecasting, and visualization.
+MBFVAR provides comprehensive examples for both Python and R users. The examples demonstrate the core functionality of the package including data preparation, model fitting, forecasting, and visualization.
 
 Quick Start
 ***********
@@ -10,7 +10,7 @@ The quickest way to get started is with the basic example:
 
 .. code-block:: python
 
-    import MUFBVAR
+    import MBFVAR
     import pandas as pd
     import numpy as np
 
@@ -24,10 +24,10 @@ The quickest way to get started is with the basic example:
     trans = [np.array([1, 1]), np.array([1, 1, 1]), np.array([1, 1, 1])]
     frequencies = ["Q", "M", "W"]
 
-    data_in = MUFBVAR.mufbvar_data(data, trans, frequencies)
+    data_in = MBFVAR.mbfvar_data(data, trans, frequencies)
 
     # Initialize and fit model
-    model = MUFBVAR.multifrequency_var(nsim=1000, nburn=0.5, nlags=[6, 4], thining=1)
+    model = MBFVAR.MixedFrequencyBVAR(nsim=1000, nburn=0.5, nlags=[6, 4], thining=1)
     hyp = [[0.09, 4.3, 1, 2.7, 4.3], [0.09, 4.3, 1, 2.7, 4.3]]
     model.fit(data_in, hyp=hyp)
 
@@ -42,7 +42,7 @@ Below is a comprehensive example demonstrating all major features:
 
 .. code-block:: python
 
-    import MUFBVAR
+    import MBFVAR
     import pandas as pd
     import numpy as np
 
@@ -68,7 +68,7 @@ Below is a comprehensive example demonstrating all major features:
     ]
 
     # Initialize data object
-    data_in = MUFBVAR.mufbvar_data(data, trans, frequencies)
+    data_in = MBFVAR.mbfvar_data(data, trans, frequencies)
 
     # ==========================================
     # 2. MODEL SPECIFICATION
@@ -89,7 +89,7 @@ Below is a comprehensive example demonstrating all major features:
     # 3. FIT MODEL
     # ==========================================
 
-    model = MUFBVAR.multifrequency_var(nsim, nburn, nlags, thining)
+    model = MBFVAR.MixedFrequencyBVAR(nsim, nburn, nlags, thining)
     model.fit(data_in, hyp=hyp)
 
     # ==========================================
@@ -205,8 +205,8 @@ The module can be used in R through the reticulate package:
 
     library(reticulate)
 
-    # Import MUFBVAR and dependencies
-    mufbvar <- import("MUFBVAR")
+    # Import MBFVAR and dependencies
+    mufbvar <- import("MBFVAR")
     pd <- import("pandas")
     np <- import("numpy")
 
@@ -232,7 +232,7 @@ The module can be used in R through the reticulate package:
     )
 
     # Initialize data object
-    data_in <- mufbvar$mufbvar_data(data, trans, frequencies)
+    data_in <- mufbvar$mbfvar_data(data, trans, frequencies)
 
     # ==========================================
     # 2. MODEL SPECIFICATION AND FITTING
@@ -248,7 +248,7 @@ The module can be used in R through the reticulate package:
         list(0.09, 4.3, 1, 2.7, 4.3)
     )
 
-    model <- mufbvar$multifrequency_var(nsim, nburn, nlags, thining)
+    model <- mufbvar$MixedFrequencyBVAR(nsim, nburn, nlags, thining)
     model$fit(data_in, hyp=hyp)
 
     # ==========================================
@@ -380,5 +380,5 @@ See Also
 ********
 
 - :doc:`intro` - Introduction and installation
-- :doc:`MUFBVAR` - Complete API reference
+- :doc:`MBFVAR` - Complete API reference
 - `GitHub Repository <https://github.com/laurentflorin/MBFVAR>`_ - Source code and latest updates

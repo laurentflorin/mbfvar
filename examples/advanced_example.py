@@ -11,7 +11,7 @@ This example demonstrates advanced features:
 Prerequisites: Run basic_example.py first to understand the fundamentals.
 """
 
-import MUFBVAR
+import MBFVAR
 import pandas as pd
 import numpy as np
 import os
@@ -40,7 +40,7 @@ for freq in frequencies:
 trans = [np.array([1, 1]), np.array([1, 1, 1]), np.array([1, 1, 1])]
 
 # Prepare data
-data_in = MUFBVAR.mufbvar_data(data, trans, frequencies)
+data_in = MBFVAR.mbfvar_data(data, trans, frequencies)
 
 # Model parameters
 nsim = 500  # Fewer simulations for speed in this example
@@ -49,7 +49,7 @@ nlags = [6, 4]
 thining = 1
 
 # Initialize model
-model = MUFBVAR.multifrequency_var(nsim, nburn, nlags, thining)
+model = MBFVAR.MixedFrequencyBVAR(nsim, nburn, nlags, thining)
 
 # ============================================================================
 # 2. HYPERPARAMETER OPTIMIZATION
@@ -188,7 +188,7 @@ print("="*70)
 print("\nRe-fitting model with focus on specific variables...")
 
 # Fit model focusing on quarterly variable q_1
-model_focused = MUFBVAR.multifrequency_var(nsim, nburn, nlags, thining)
+model_focused = MBFVAR.MixedFrequencyBVAR(nsim, nburn, nlags, thining)
 model_focused.fit(data_in, hyp=hyp_optimal, var_of_interest=["q_1"])
 print("Focused model fitted!")
 

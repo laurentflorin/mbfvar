@@ -15,7 +15,7 @@ The example uses the sample dataset hist.xlsx which contains:
 - Weekly data (W): 3 variables
 """
 
-import MUFBVAR
+import MBFVAR
 import pandas as pd
 import numpy as np
 import os
@@ -57,9 +57,9 @@ trans = [
 # ============================================================================
 # 3. PREPARE DATA
 # ============================================================================
-print("\nPreparing data for MUFBVAR...")
+print("\nPreparing data for MBFVAR...")
 
-data_in = MUFBVAR.mufbvar_data(data, trans, frequencies)
+data_in = MBFVAR.mbfvar_data(data, trans, frequencies)
 print("  Data prepared successfully!")
 
 # ============================================================================
@@ -94,7 +94,7 @@ print(f"  Hyperparameters: {hyp}")
 # ============================================================================
 print("\nInitializing model...")
 
-model = MUFBVAR.multifrequency_var(nsim, nburn, nlags, thining)
+model = MBFVAR.MixedFrequencyBVAR(nsim, nburn, nlags, thining)
 
 print("Fitting model (this may take a few moments)...")
 model.fit(data_in, hyp=hyp)

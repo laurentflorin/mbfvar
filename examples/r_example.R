@@ -1,12 +1,12 @@
-# MUFBVAR R Example
+# MBFVAR R Example
 # ===================
 #
-# This example demonstrates how to use MUFBVAR in R using the reticulate package.
+# This example demonstrates how to use MBFVAR in R using the reticulate package.
 # The reticulate package allows R to interface with Python packages.
 #
 # Prerequisites:
 # 1. Install reticulate: install.packages("reticulate")
-# 2. Set up a Python virtual environment with MUFBVAR installed
+# 2. Set up a Python virtual environment with MBFVAR installed
 # 3. Have the hist.xlsx data file in the working directory
 
 library(reticulate)
@@ -24,9 +24,9 @@ library(reticulate)
 # ==============================================================================
 # 1. IMPORT PYTHON MODULES
 # ==============================================================================
-cat("Importing MUFBVAR and dependencies...\n")
+cat("Importing MBFVAR and dependencies...\n")
 
-mufbvar <- import("MUFBVAR")
+mbfvar <- import("MBFVAR")
 pd <- import("pandas")
 np <- import("numpy")
 pickle <- import("pickle")
@@ -64,9 +64,9 @@ trans <- list(
 # ==============================================================================
 # 4. PREPARE DATA
 # ==============================================================================
-cat("\nPreparing data for MUFBVAR...\n")
+cat("\nPreparing data for MBFVAR...\n")
 
-data_in <- mufbvar$mufbvar_data(data, trans, frequencies)
+data_in <- mbfvar$mbfvar_data(data, trans, frequencies)
 cat("  Data prepared successfully!\n")
 
 # ==============================================================================
@@ -94,7 +94,7 @@ cat(sprintf("  Lags: [%d, %d]\n", nlags[[1]], nlags[[2]]))
 # ==============================================================================
 cat("\nInitializing model...\n")
 
-model <- mufbvar$multifrequency_var(nsim, nburn, nlags, thining)
+model <- mbfvar$multifrequency_var(nsim, nburn, nlags, thining)
 
 cat("Fitting model (this may take a few moments)...\n")
 model$fit(data_in, hyp = hyp)

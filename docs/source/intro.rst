@@ -1,7 +1,7 @@
 Introduction
 ============
 
-``MUFBVAR`` (Multi-Frequency Bayesian Vector Autoregression) is a Python package for handling, disaggregating, and forecasting time series data at multiple frequencies using Bayesian VAR models.
+``MBFVAR`` (Multi-Frequency Bayesian Vector Autoregression) is a Python package for handling, disaggregating, and forecasting time series data at multiple frequencies using Bayesian VAR models.
 
 Overview
 ********
@@ -12,7 +12,7 @@ Modern economic and financial data is often available at different frequencies:
 - Financial data: Stock prices (daily), Interest rates (daily/weekly)
 - Survey data: Consumer confidence (monthly), Business surveys (quarterly)
 
-MUFBVAR allows you to:
+MBFVAR allows you to:
 
 - **Model jointly** variables observed at different frequencies
 - **Disaggregate** lower-frequency data to match higher-frequency observations
@@ -68,7 +68,7 @@ R Integration
 
 Full compatibility with R through ``reticulate``:
 
-- Call MUFBVAR functions directly from R scripts
+- Call MBFVAR functions directly from R scripts
 - Seamless data exchange between R and Python
 - Leverage R's data manipulation with Python's modeling
 
@@ -107,7 +107,7 @@ Here's a minimal working example:
 
 .. code-block:: python
 
-    import MUFBVAR
+    import MBFVAR
     import pandas as pd
     import numpy as np
 
@@ -121,10 +121,10 @@ Here's a minimal working example:
     trans = [np.array([1, 1]), np.array([1, 1, 1]), np.array([1, 1, 1])]
     frequencies = ["Q", "M", "W"]
 
-    data_in = MUFBVAR.mufbvar_data(data, trans, frequencies)
+    data_in = MBFVAR.mbfvar_data(data, trans, frequencies)
 
     # 3. Fit model
-    model = MUFBVAR.multifrequency_var(nsim=1000, nburn=0.5, nlags=[6, 4], thining=1)
+    model = MBFVAR.MixedFrequencyBVAR(nsim=1000, nburn=0.5, nlags=[6, 4], thining=1)
     hyp = [[0.09, 4.3, 1, 2.7, 4.3], [0.09, 4.3, 1, 2.7, 4.3]]
     model.fit(data_in, hyp=hyp)
 
@@ -136,14 +136,14 @@ Getting Help
 ************
 
 - **Examples**: See the ``examples/`` directory for comprehensive tutorials
-- **API Documentation**: Full reference at :doc:`MUFBVAR`
+- **API Documentation**: Full reference at :doc:`MBFVAR`
 - **Examples Guide**: Detailed examples at :doc:`examples`
 - **Issues**: Report bugs at `GitHub Issues <https://github.com/laurentflorin/MBFVAR/issues>`_
 
 Methodology
 ***********
 
-The MUFBVAR package implements the mixed-frequency VAR framework developed by
+The MBFVAR package implements the mixed-frequency VAR framework developed by
 Schorfheide and Song (2015). Key methodological features:
 
 State-Space Representation
@@ -180,11 +180,11 @@ Posterior inference via MCMC:
 Citation
 ********
 
-If you use MUFBVAR in your research, please cite:
+If you use MBFVAR in your research, please cite:
 
 .. code-block:: text
 
-    Florin, Laurent. (2024). MUFBVAR: Multi-Frequency Bayesian Vector Autoregression.
+    Florin, Laurent. (2024). MBFVAR: Multi-Frequency Bayesian Vector Autoregression.
     GitHub repository, https://github.com/laurentflorin/MBFVAR
 
 References

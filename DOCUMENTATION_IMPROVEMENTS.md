@@ -107,7 +107,7 @@ All requested improvements have been completed. The package now has:
 
 ### 5. Comprehensive Docstrings ✅
 
-#### mufbvar_data class
+#### mbfvar_data class
 - Full NumPy-style docstring
 - Detailed parameter descriptions
 - Attributes documentation
@@ -115,7 +115,7 @@ All requested improvements have been completed. The package now has:
 - Academic references
 - ~100 lines of documentation
 
-#### multifrequency_var class
+#### MixedFrequencyBVAR class
 - Comprehensive NumPy-style docstring
 - All parameters explained
 - Complete methods list
@@ -158,8 +158,8 @@ All requested improvements have been completed. The package now has:
 2. `/examples/r_example.R` - Complete rewrite
 3. `/docs/source/examples.rst` - Major enhancement
 4. `/docs/source/intro.rst` - Complete rewrite
-5. `/MUFBVAR/mufbvar_data.py` - Added comprehensive docstring
-6. `/MUFBVAR/multifrequency_var.py` - Added comprehensive docstring
+5. `/MBFVAR/mbfvar_data.py` - Added comprehensive docstring
+6. `/MBFVAR/MixedFrequencyBVAR.py` - Added comprehensive docstring
 
 ## Quality Standards Met
 

@@ -3,10 +3,10 @@ requires = ["setuptools", "pybind11", "numpy"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["MUFBVAR*"]
+include = ["MBFVAR*"]
 
 [project]
-name = "MUFBVAR"
+name = "MBFVAR"
 version = "0.5.2"
 dependencies = [
 "numpy",
@@ -25,7 +25,7 @@ dependencies = [
 requires-python = ">= 3.8"
 authors = [
   {name = "Laurent Florin", email = "laurent.florin@efv.admin.ch"}]
-description = "Multifrequency Bayesian VAR Model"
+description = "Mixed-Frequency Bayesian VAR Model"
 readme = "README.md"
 classifiers = [
   "Development Status :: 3 - Alpha",

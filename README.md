@@ -1,8 +1,8 @@
-# MUFBVAR
+# MBFVAR
 
 **Multi-Frequency Bayesian Vector Autoregression**
 
-A Python package for handling, disaggregating, and forecasting multi-frequency time series data using Bayesian VAR models. MUFBVAR allows you to work with data at different frequencies (e.g., quarterly, monthly, weekly) in a unified framework.
+A Python package for handling, disaggregating, and forecasting multi-frequency time series data using Bayesian VAR models. MBFVAR allows you to work with data at different frequencies (e.g., quarterly, monthly, weekly) in a unified framework.
 
 ## Features
 
@@ -36,7 +36,7 @@ pip install -e .
 Here's a minimal example to get you started:
 
 ```python
-import MUFBVAR
+import MBFVAR
 import pandas as pd
 import numpy as np
 
@@ -55,7 +55,7 @@ data = [data_quarterly, data_monthly, data_weekly]
 trans = [trans_q, trans_m, trans_w]
 frequencies = ["Q", "M", "W"]
 
-data_in = MUFBVAR.mufbvar_data(data, trans, frequencies)
+data_in = MBFVAR.mbfvar_data(data, trans, frequencies)
 
 # Initialize and fit model
 nsim = 1000  # Number of posterior draws
@@ -63,7 +63,7 @@ nburn = 0.5  # Burn-in proportion
 nlags = [6, 4]  # Lags for each frequency level
 thining = 1  # Keep every nth draw
 
-model = MUFBVAR.multifrequency_var(nsim, nburn, nlags, thining)
+model = MBFVAR.MixedFrequencyBVAR(nsim, nburn, nlags, thining)
 
 # Hyperparameters for Minnesota prior
 hyp = [[0.09, 4.3, 1, 2.7, 4.3], [0.09, 4.3, 1, 2.7, 4.3]]
@@ -83,13 +83,13 @@ model.fanchart(variables="all", save=False, show=True, nhist=10)
 - [Full Documentation](./docs/_build/markdown/index.md)
 - [Python Examples](./examples/python_example.py)
 - [R Examples](./examples/r_example.R)
-- [API Reference](./docs/_build/markdown/source/MUFBVAR.md)
+- [API Reference](./docs/_build/markdown/source/MBFVAR.md)
 
 ## Key Concepts
 
 ### Data Structure
 
-MUFBVAR expects data organized by frequency:
+MBFVAR expects data organized by frequency:
 - Each frequency level has its own pandas DataFrame
 - Data should have a datetime index
 - Variables are organized in columns
@@ -195,15 +195,15 @@ model.aggregate(frequency="Q")
 model.to_excel("forecasts_quarterly.xlsx", agg=True)
 ```
 
-## Using MUFBVAR in R
+## Using MBFVAR in R
 
-MUFBVAR can be used in R through the `reticulate` package:
+MBFVAR can be used in R through the `reticulate` package:
 
 ```r
 library(reticulate)
 
 # Import the package
-mufbvar <- import("MUFBVAR")
+mufbvar <- import("MBFVAR")
 pd <- import("pandas")
 np <- import("numpy")
 
@@ -221,10 +221,10 @@ for (freq in frequencies) {
 trans <- list(np$array(c(1, 1)), np$array(c(1, 1, 1)), np$array(c(1, 1, 1)))
 
 # Initialize data
-data_in <- mufbvar$mufbvar_data(data, trans, frequencies)
+data_in <- mufbvar$mbfvar_data(data, trans, frequencies)
 
 # Initialize and fit model
-model <- mufbvar$multifrequency_var(1000L, 0.5, list(6L, 4L), 1L)
+model <- mufbvar$MixedFrequencyBVAR(1000L, 0.5, list(6L, 4L), 1L)
 hyp <- list(list(0.09, 4.3, 1, 2.7, 4.3), list(0.09, 4.3, 1, 2.7, 4.3))
 model$fit(data_in, hyp=hyp)
 
@@ -235,13 +235,13 @@ model$fanchart(variables="all", show=TRUE)
 
 ### Setting up R Environment
 
-To use MUFBVAR in RStudio, you need to configure a Python virtual environment:
+To use MBFVAR in RStudio, you need to configure a Python virtual environment:
 
 1. In RStudio, go to **Tools → Global Options**
 2. Select **Python** from the left sidebar
 3. Click **Select...** to choose your Python interpreter
 4. Under the **Virtual Environments** tab, select a virtual environment with Python 3.8+
-5. Install MUFBVAR in that environment
+5. Install MBFVAR in that environment
 
 See [R Example](./examples/r_example.R) for a complete working example.
 
@@ -271,10 +271,10 @@ The `examples/` directory contains:
 
 ## Citation
 
-If you use MUFBVAR in your research, please cite:
+If you use MBFVAR in your research, please cite:
 
 ```
-Florin, Laurent. (2024). MUFBVAR: Multi-Frequency Bayesian Vector Autoregression.
+Florin, Laurent. (2024). MBFVAR: Multi-Frequency Bayesian Vector Autoregression.
 https://github.com/laurentflorin/MBFVAR
 ```
 

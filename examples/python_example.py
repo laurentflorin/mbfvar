@@ -1,4 +1,4 @@
-import MUFBVAR
+import MBFVAR
 import pandas as pd
 import numpy as np 
 import pickle
@@ -34,14 +34,14 @@ trans = [np.array((1,1)), np.array((1,1,1)), np.array((1,1,1))]
 
 
 # Initialize data class            
-mufbvar_data_in = MUFBVAR.mufbvar_data(data, trans, frequencies)
+mbfvar_data_in = MBFVAR.mbfvar_data(data, trans, frequencies)
 
 
 # Fit and Forecast
 #--------------------
 
 # Initialize model class    
-model =  MUFBVAR.multifrequency_var(nsim, nburn, nlags, thining)
+model =  MBFVAR.MixedFrequencyBVAR(nsim, nburn, nlags, thining)
 
 from scipy.stats import uniform
 
@@ -52,13 +52,13 @@ nsim = 1000 # number of simulations
 njobs = 1
 
 H = 2
-hyp = model.update_hyperparameters_mango_rmse(mufbvar_data_in, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
+hyp = model.update_hyperparameters_mango_rmse(mbfvar_data_in, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
 
 
 
 
 # Estimate the model
-model.fit(mufbvar_data_in, hyp = hyp, var_of_interest = None)
+model.fit(mbfvar_data_in, hyp = hyp, var_of_interest = None)
 
 # Conditional forecasts
 
@@ -94,7 +94,7 @@ init_points = 3 # number of random points
 n_iter = 8 # number of baysian optimization steps
 nsim = 100 # number of simulations 
 
-hyp = model.update_hyperparameters(mufbvar_data, pbounds, init_points, n_iter, nsim, var_of_interest = ["q_1"], save = False, name = "hyp.txt")
+hyp = model.update_hyperparameters(mbfvar_data, pbounds, init_points, n_iter, nsim, var_of_interest = ["q_1"], save = False, name = "hyp.txt")
 
 # Using mango
 from scipy.stats import uniform
@@ -106,9 +106,9 @@ nsim = 100 # number of simulations
 njobs = 1
 
 H = 2
-model.update_hyperparameters_mango_rmse(mufbvar_data, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
+model.update_hyperparameters_mango_rmse(mbfvar_data, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
 
-model.update_hyperparameters_mango(mufbvar_data, param_space, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
+model.update_hyperparameters_mango(mbfvar_data, param_space, init_points, n_iter, nsim, njobs, var_of_interest = ["q_1"], temp_agg = 'mean', save = False, name = "hyp.txt")
 #-------------------------------
 
 # We can compare different scenarios

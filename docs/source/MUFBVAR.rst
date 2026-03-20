@@ -1,10 +1,10 @@
-MUFBVAR package
+MBFVAR package
 ===============
 
 Module contents
 ---------------
 
-.. automodule:: MUFBVAR
+.. automodule:: MBFVAR
    :members:
    :undoc-members:
    :show-inheritance:

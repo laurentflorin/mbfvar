@@ -1,7 +1,7 @@
-MUFBVAR
+MBFVAR
 =======
 
 .. toctree::
    :maxdepth: 4
 
-   MUFBVAR
+   MBFVAR
