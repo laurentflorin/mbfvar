@@ -46,10 +46,16 @@ def update_hyperparameters(self, mbfvar_data, pbounds, init_points, n_iter, nsim
     lambda 4: . tuning parameter for coefficients for constant\n
     lambda 5:  tuning parameter for the covariance between coefficients\n
 
-    
+    IMPORTANT: The model used during hyperparameter optimization (estim() function below)
+    is NOT identical to the main fit() function in _estimation.py. Key differences:
+    - This uses FORWARD-ONLY Gibbs sampling (no MH backward correction)
+    - Main fit() includes Metropolis-within-Gibbs backward correction for cross-block feedback
+    - Hyperparameters optimized here may not be optimal for the full model
+    - Consider this simplified model when interpreting optimization results
+
     Parameters
     ----------
-    mbfvar_data : mbfvar_data class object 
+    mbfvar_data : mbfvar_data class object
         data in the form of a mbfvar_data class object
     pbound : dict
         boundaries for each hyperparameter:\n
@@ -71,13 +77,13 @@ def update_hyperparameters(self, mbfvar_data, pbounds, init_points, n_iter, nsim
         True if you want to save the hyperparameters as a txt
     name : str
         path where you want to save the hyperparameters
-        
+
     Returns
     ----------
-    
+
     hyp : list
         list containing the optimized hyperparameters
-        
+
 
     '''
     from bayes_opt import BayesianOptimization
@@ -986,10 +992,16 @@ def update_hyperparameters_mango(self, mbfvar_data, param_space, init_points, n_
     lambda 4: . tuning parameter for coefficients for constant\n
     lambda 5:  tuning parameter for the covariance between coefficients\n
 
-    
+    IMPORTANT: The model used during hyperparameter optimization (estim() function below)
+    is NOT identical to the main fit() function in _estimation.py. Key differences:
+    - This uses FORWARD-ONLY Gibbs sampling (no MH backward correction)
+    - Main fit() includes Metropolis-within-Gibbs backward correction for cross-block feedback
+    - Hyperparameters optimized here may not be optimal for the full model
+    - Consider this simplified model when interpreting optimization results
+
     Parameters
     ----------
-    mbfvar_data : mbfvar_data class object 
+    mbfvar_data : mbfvar_data class object
         data in the form of a mbfvar_data class object
     param_space : dict
         boundaries for each hyperparameter:\n
@@ -1013,7 +1025,7 @@ def update_hyperparameters_mango(self, mbfvar_data, param_space, init_points, n_
         True if you want to save the hyperparameters as a txt
     name : str
         path where you want to save the hyperparameters
-        
+
     Returns
     ----------
     
@@ -1920,6 +1932,13 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
 
     This method tunes hyperparameters (lambdas) for the multifrequency VAR (MUFBVAR) model using Bayesian optimization (via Mango).
     It runs the model over a rolling forecast to evaluate the out-of-sample RMSE for each hyperparameter set, and returns the set with the lowest RMSE.
+
+    IMPORTANT: The model used during hyperparameter optimization is NOT identical to the main fit() function
+    in _estimation.py. Key differences:
+    - This uses FORWARD-ONLY Gibbs sampling (no MH backward correction)
+    - Main fit() includes Metropolis-within-Gibbs backward correction for cross-block feedback
+    - Hyperparameters optimized here may not be optimal for the full model
+    - Consider this simplified model when interpreting optimization results
 
     Hyperparameters:
         - lambda1: overall tightness
