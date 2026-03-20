@@ -253,12 +253,28 @@ def mdd_(hyp, YY, spec):
     nobs    = int(spec[4])      # number of observations
             
     # Dummy observations
-    
+
     #Obtain mean and standard deviation from expanded pre-sample data
-    
+
     YY0 = YY[:int(T0+16),:]
-    ybar    =   np.mean(YY0, axis = 0)[:,np.newaxis]
-    sbar    =   np.std(YY0, axis = 0, ddof = 1)[:,np.newaxis] 
+    # Use nanmean and nanstd to handle NaN values from frequency offsets
+    ybar    =   np.nanmean(YY0, axis = 0)[:,np.newaxis]
+    sbar    =   np.nanstd(YY0, axis = 0, ddof = 1)[:,np.newaxis]
+
+    # Handle columns that are entirely NaN in the pre-sample (due to large offsets)
+    # For these, use statistics from the full available data
+    all_nan_cols = np.isnan(ybar).flatten()
+    if np.any(all_nan_cols):
+        # For columns with all NaN in pre-sample, use full data statistics
+        full_ybar = np.nanmean(YY, axis=0)[:,np.newaxis]
+        full_sbar = np.nanstd(YY, axis=0, ddof=1)[:,np.newaxis]
+        ybar[all_nan_cols] = full_ybar[all_nan_cols]
+        sbar[all_nan_cols] = full_sbar[all_nan_cols]
+
+    # Handle any remaining NaN (shouldn't happen, but safety check)
+    ybar = np.nan_to_num(ybar, nan=0.0)
+    sbar = np.nan_to_num(sbar, nan=1.0)
+
     premom = np.hstack((ybar, sbar))
     
     
@@ -348,12 +364,28 @@ def calc_yyact(hyp, YY, spec):
     nobs    = int(spec[4])      # number of observations
             
     # Dummy observations
-    
+
     #Obtain mean and standard deviation from expanded pre-sample data
-    
+
     YY0 = YY[:int(T0+16),:]
-    ybar    =   np.mean(YY0, axis = 0)[:,np.newaxis]
-    sbar    =   np.std(YY0, axis = 0, ddof = 1)[:,np.newaxis] 
+    # Use nanmean and nanstd to handle NaN values from frequency offsets
+    ybar    =   np.nanmean(YY0, axis = 0)[:,np.newaxis]
+    sbar    =   np.nanstd(YY0, axis = 0, ddof = 1)[:,np.newaxis]
+
+    # Handle columns that are entirely NaN in the pre-sample (due to large offsets)
+    # For these, use statistics from the full available data
+    all_nan_cols = np.isnan(ybar).flatten()
+    if np.any(all_nan_cols):
+        # For columns with all NaN in pre-sample, use full data statistics
+        full_ybar = np.nanmean(YY, axis=0)[:,np.newaxis]
+        full_sbar = np.nanstd(YY, axis=0, ddof=1)[:,np.newaxis]
+        ybar[all_nan_cols] = full_ybar[all_nan_cols]
+        sbar[all_nan_cols] = full_sbar[all_nan_cols]
+
+    # Handle any remaining NaN (shouldn't happen, but safety check)
+    ybar = np.nan_to_num(ybar, nan=0.0)
+    sbar = np.nan_to_num(sbar, nan=1.0)
+
     premom = np.hstack((ybar, sbar))
     
     
