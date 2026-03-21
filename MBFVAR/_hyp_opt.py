@@ -312,7 +312,7 @@ def update_hyperparameters_mango(self, mbfvar_data, param_space, init_points, n_
 
 
     
-def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = None, temp_agg = 'mean', save = False, name = "hyp.txt"):
+def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = None, temp_agg = 'mean', h_eval = None, save = False, name = "hyp.txt"):
     """
     Use Bayesian optimization to select hyperparameters minimizing out-of-sample RMSE for MUFBVAR models.
 
@@ -353,6 +353,10 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
         List of variable names to consider. If None, all variables are used.
     temp_agg : str, default 'mean'
         Temporal aggregation method ('mean' or 'sum'), defining the measurement equation.
+    h_eval : int or None, default None
+        Specific forecast horizon (1-indexed) at which to evaluate RMSE.
+        If None, RMSE is calculated across all H forecast periods (original behavior).
+        Must be between 1 and H (inclusive).
     save : bool, default False
         If True, saves the best hyperparameters to a file.
     name : str, default "hyp.txt"
@@ -365,12 +369,14 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
     """
     from mango import scheduler, Tuner
 
-    
+    if h_eval is not None and (not isinstance(h_eval, int) or h_eval < 1 or h_eval > H):
+        raise ValueError(f"h_eval must be an integer between 1 and H ({H}) inclusive, got {h_eval}.")
+
     nburn_perc =  self.nburn_perc
     nlags = self.nlags
     thining = self.thining
 
-    def calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining):
+    def calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval):
         try:
             mufbvar_data_temp = copy.deepcopy(mufbvar_data_in)
             horizon_mapping = {f'{mufbvar_data_temp.frequencies[0]}' : H}
@@ -415,11 +421,16 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
                 if col.endswith(suffix):
                     pred_col = col.replace(suffix, '')
                     if pred_col in df.columns:
-                        # Calculate RMSE across all H forecast periods (not just last period)
-                        # This provides a more comprehensive measure of forecast quality
-                        errors = df[pred_col][:H] - df[col][:H]
-                        rmse = np.sqrt(np.mean(errors ** 2))
-                        rmse_results.append(rmse)
+                        if h_eval is not None:
+                            # Evaluate error at a single specific forecast horizon (1-indexed)
+                            idx = h_eval - 1  # convert to 0-indexed
+                            errors = df[pred_col].iloc[idx] - df[col].iloc[idx]
+                            error_metric = np.abs(errors)  # single-period absolute error
+                        else:
+                            # Original behavior: RMSE across all H forecast periods
+                            errors = df[pred_col][:H] - df[col][:H]
+                            error_metric = np.sqrt(np.mean(errors ** 2))
+                        rmse_results.append(error_metric)
             mean_rmse = float(np.mean(rmse_results))
             # Return high error if mean_rmse is nan or inf
             if np.isnan(mean_rmse) or np.isinf(mean_rmse):
@@ -433,14 +444,14 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
     @scheduler.parallel(n_jobs = njobs)   
     def calc_rmse_1(lambda1_1, lambda2_1, lambda4_1, lambda5_1):
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1]]   
-        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
+        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval)
 
     @scheduler.parallel(n_jobs = njobs)
     def calc_rmse_2(lambda1_1, lambda2_1, lambda4_1,
                 lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2):
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
                     [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2]]
-        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
+        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval)
 
     @scheduler.parallel(n_jobs = njobs)
     def calc_rmse_3(lambda1_1, lambda2_1, lambda4_1,
@@ -449,7 +460,7 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
                     [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2],
                     [lambda1_3, lambda2_3, 1, lambda4_3, lambda5_3]]
-        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining)
+        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval)
 
     conf_dict = dict(num_iteration = n_iter, initial_random = init_points)
 
