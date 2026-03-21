@@ -312,7 +312,7 @@ def update_hyperparameters_mango(self, mbfvar_data, param_space, init_points, n_
 
 
     
-def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = None, temp_agg = 'mean', h_eval = None, save = False, name = "hyp.txt"):
+def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest = None, temp_agg = 'mean', h_eval = None, n_eval = 1, save = False, name = "hyp.txt"):
     """
     Use Bayesian optimization to select hyperparameters minimizing out-of-sample RMSE for MUFBVAR models.
 
@@ -357,6 +357,12 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
         Specific forecast horizon (1-indexed) at which to evaluate RMSE.
         If None, RMSE is calculated across all H forecast periods (original behavior).
         Must be between 1 and H (inclusive).
+    n_eval : int, default 1
+        Number of rolling forecast origins to use for evaluation. For each origin k
+        (from 0 to n_eval-1), the train/test split is shifted back by k low-frequency
+        periods, and the RMSE is computed across all origins. Using n_eval > 1 produces
+        a more stable and reliable objective function for hyperparameter optimization.
+        When n_eval=1, the behavior is equivalent to a single-origin evaluation.
     save : bool, default False
         If True, saves the best hyperparameters to a file.
     name : str, default "hyp.txt"
@@ -372,66 +378,96 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
     if h_eval is not None and (not isinstance(h_eval, int) or h_eval < 1 or h_eval > H):
         raise ValueError(f"h_eval must be an integer between 1 and H ({H}) inclusive, got {h_eval}.")
 
+    if not isinstance(n_eval, int) or n_eval < 1:
+        raise ValueError(f"n_eval must be a positive integer, got {n_eval}.")
+
     nburn_perc =  self.nburn_perc
     nlags = self.nlags
     thining = self.thining
 
-    def calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval):
+    def calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval, n_eval):
         try:
             mufbvar_data_temp = copy.deepcopy(mufbvar_data_in)
             horizon_mapping = {f'{mufbvar_data_temp.frequencies[0]}' : H}
             for i, freq  in enumerate(mufbvar_data_temp.frequencies[1:]):
                 horizon_mapping.update({f'{freq}' : math.prod(itertools.islice(mufbvar_data_temp.freq_ratio_list, 0 ,i+1)) * H})
 
+            # Ratio of each frequency relative to the lowest frequency (for offset scaling)
+            ratio_mapping = {f'{mufbvar_data_temp.frequencies[0]}' : 1}
+            for i, freq in enumerate(mufbvar_data_temp.frequencies[1:]):
+                ratio_mapping.update({f'{freq}' : math.prod(itertools.islice(mufbvar_data_temp.freq_ratio_list, 0 ,i+1))})
+
             mufbvar_data_temp.input_data.appendleft(mufbvar_data_temp.input_data_Q)
             data_list = list(mufbvar_data_temp.input_data)
 
-            result_in_sample = []
-            result_out_sample = []
-            for df, freq in zip(data_list, mufbvar_data_temp.frequencies):
-                horizon = horizon_mapping.get(freq)
-                if len(df) <= horizon:
-                    raise ValueError(f"DataFrame with frequency {freq} has fewer rows than the required horizon")
-                in_sample = df.iloc[:-horizon].copy()
-                out_sample = df.iloc[-horizon:].copy()
-                result_in_sample.append((in_sample))
-                result_out_sample.append((out_sample))
+            all_squared_errors = []  # collect squared errors across all evaluation origins
 
-            data_in = mbfvar_data(result_in_sample, mufbvar_data_temp.trans, mufbvar_data_temp.frequencies)
+            for k in range(n_eval):
+                # For each origin k, shift the cutoff back by k low-frequency periods
+                result_in_sample = []
+                result_out_sample = []
 
-            model_temp = self.__class__(nsim, nburn_perc, nlags, thining)
-            # Note: check_explosive parameter is passed but not implemented in fit()
-            # The fit() method always performs explosive VAR checks regardless
-            # This parameter should be removed or the fit() method should be updated
-            model_temp.fit(data_in, hyp = hyp_list, var_of_interest = var_of_interest,  temp_agg = temp_agg, check_explosive = False)
-            model_temp.forecast(H * math.prod(data_in.freq_ratio_list))
-            model_temp.aggregate(frequency = data_in.frequencies[0])
+                skip_origin = False
+                for df_freq, freq in zip(data_list, mufbvar_data_temp.frequencies):
+                    horizon = horizon_mapping.get(freq)
+                    ratio = ratio_mapping.get(freq)
+                    # Total rows to hold out: the forecast horizon plus k extra periods
+                    # (k low-frequency periods scaled to the current frequency)
+                    total_holdout = horizon + k * ratio
+                    if len(df_freq) <= total_holdout:
+                        skip_origin = True
+                        break
+                    in_sample = df_freq.iloc[:-total_holdout].copy()
+                    if k > 0:
+                        out_sample = df_freq.iloc[-total_holdout:-k*ratio].copy()
+                    else:
+                        out_sample = df_freq.iloc[-total_holdout:].copy()
+                    result_in_sample.append(in_sample)
+                    result_out_sample.append(out_sample)
 
-            out_sample = result_out_sample[0]
-            out_sample = out_sample[var_of_interest]
-            if (data_in.frequencies[0] == "Q"):
-                out_sample = out_sample.assign(Index = pd.DatetimeIndex(out_sample.index).to_period('Q')).set_index('Index')
-                out_sample = out_sample.add_suffix('_out_sample')
+                if skip_origin:
+                    continue  # not enough data for this origin
 
-            df = model_temp.YY_mean_agg[var_of_interest].join(out_sample, how="inner", lsuffix="_train", rsuffix="_out")
+                data_in = mbfvar_data(result_in_sample, mufbvar_data_temp.trans, mufbvar_data_temp.frequencies)
 
-            suffix = '_out_sample'
-            rmse_results = []
-            for col in df.columns:
-                if col.endswith(suffix):
-                    pred_col = col.replace(suffix, '')
-                    if pred_col in df.columns:
-                        if h_eval is not None:
-                            # Evaluate error at a single specific forecast horizon (1-indexed)
-                            idx = h_eval - 1  # convert to 0-indexed
-                            errors = df[pred_col].iloc[idx] - df[col].iloc[idx]
-                            error_metric = np.abs(errors)  # single-period absolute error
-                        else:
-                            # Original behavior: RMSE across all H forecast periods
-                            errors = df[pred_col][:H] - df[col][:H]
-                            error_metric = np.sqrt(np.mean(errors ** 2))
-                        rmse_results.append(error_metric)
-            mean_rmse = float(np.mean(rmse_results))
+                model_temp = self.__class__(nsim, nburn_perc, nlags, thining)
+                # Note: check_explosive parameter is passed but not implemented in fit()
+                # The fit() method always performs explosive VAR checks regardless
+                # This parameter should be removed or the fit() method should be updated
+                model_temp.fit(data_in, hyp = hyp_list, var_of_interest = var_of_interest, temp_agg = temp_agg, check_explosive = False)
+                model_temp.forecast(H * math.prod(data_in.freq_ratio_list))
+                model_temp.aggregate(frequency = data_in.frequencies[0])
+
+                out_sample = result_out_sample[0]
+                out_sample = out_sample[var_of_interest]
+                if (data_in.frequencies[0] == "Q"):
+                    out_sample = out_sample.assign(Index = pd.DatetimeIndex(out_sample.index).to_period('Q')).set_index('Index')
+                    out_sample = out_sample.add_suffix('_out_sample')
+
+                joined_df = model_temp.YY_mean_agg[var_of_interest].join(out_sample, how="inner", lsuffix="_train", rsuffix="_out")
+
+                suffix = '_out_sample'
+                for col in joined_df.columns:
+                    if col.endswith(suffix):
+                        pred_col = col.replace(suffix, '')
+                        if pred_col in joined_df.columns:
+                            if h_eval is not None:
+                                # Evaluate squared error at the specific forecast horizon (1-indexed)
+                                idx = h_eval - 1  # convert to 0-indexed
+                                if idx < len(joined_df):
+                                    error = joined_df[pred_col].iloc[idx] - joined_df[col].iloc[idx]
+                                    all_squared_errors.append(error ** 2)
+                                else:
+                                    print(f"Warning: h_eval={h_eval} is out of bounds for origin k={k} (joined_df has {len(joined_df)} rows). Skipping this variable/origin.")
+                            else:
+                                # RMSE across all H forecast periods
+                                errors = joined_df[pred_col][:H] - joined_df[col][:H]
+                                all_squared_errors.extend((errors ** 2).tolist())
+
+            if not all_squared_errors:
+                print(f"No valid evaluation origins found. This may be caused by insufficient data for n_eval={n_eval} origins with forecast horizon H={H}. Consider reducing n_eval or using a longer dataset.")
+                return 1e10
+            mean_rmse = float(np.sqrt(np.mean(all_squared_errors)))
             # Return high error if mean_rmse is nan or inf
             if np.isnan(mean_rmse) or np.isinf(mean_rmse):
                 print("RMSE is nan or inf, returning high error.")
@@ -444,14 +480,14 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
     @scheduler.parallel(n_jobs = njobs)   
     def calc_rmse_1(lambda1_1, lambda2_1, lambda4_1, lambda5_1):
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1]]   
-        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval)
+        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval, n_eval)
 
     @scheduler.parallel(n_jobs = njobs)
     def calc_rmse_2(lambda1_1, lambda2_1, lambda4_1,
                 lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2):
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
                     [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2]]
-        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval)
+        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval, n_eval)
 
     @scheduler.parallel(n_jobs = njobs)
     def calc_rmse_3(lambda1_1, lambda2_1, lambda4_1,
@@ -460,7 +496,7 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
         hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
                     [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2],
                     [lambda1_3, lambda2_3, 1, lambda4_3, lambda5_3]]
-        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval)
+        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval, n_eval)
 
     conf_dict = dict(num_iteration = n_iter, initial_random = init_points)
 
