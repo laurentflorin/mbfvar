@@ -774,13 +774,15 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
                 if YYactsim_list:
                     YYactsim_list[0][int(int((j)/self.thining)), :, :] = np.nan
                     XXactsim_list[0][int(int((j)/self.thining)), :, :] = np.nan
-                    YYactsim_list[0][int(int((j)/self.thining)), -tail_len:, :] = YYact[-tail_len:, :]
-                    XXactsim_list[0][int(int((j)/self.thining)), -tail_len:, :] = XXact[-tail_len:, :]
+                    if tail_len > 0:
+                        YYactsim_list[0][int(int((j)/self.thining)), -tail_len:, :] = YYact[-tail_len:, :]
+                        XXactsim_list[0][int(int((j)/self.thining)), -tail_len:, :] = XXact[-tail_len:, :]
                 else:
                     YYactsim_list.append(np.full((math.ceil((self.nsim)/self.thining), freq_ratio_list[0]+1, nv_list[0]), np.nan))
                     XXactsim_list.append(np.full((math.ceil((self.nsim)/self.thining), int(freq_ratio_list[0])+1, int(nv_list[0])*int(p_list[0])+1), np.nan))
-                    YYactsim_list[0][int(int((j)/self.thining)), -tail_len:, :] = YYact[-tail_len:, :]
-                    XXactsim_list[0][int(int((j)/self.thining)), -tail_len:, :] = XXact[-tail_len:, :]
+                    if tail_len > 0:
+                        YYactsim_list[0][int(int((j)/self.thining)), -tail_len:, :] = YYact[-tail_len:, :]
+                        XXactsim_list[0][int(int((j)/self.thining)), -tail_len:, :] = XXact[-tail_len:, :]
             # Draws from posterior distribution
 
             Tdummy, n = YYdum.shape
