@@ -174,7 +174,7 @@ def _kalman_filter_loglik_block(
     return ll
 
 
-def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_it_stable = 1000, return_mdd = False):
+def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_it_stable = 1000, return_mdd = False, check_explosive = True):
 
     '''
     Estimates the model using the model parameter specified in the initialization. \n
@@ -200,6 +200,9 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
         maximum number of attempts to draw non-explosive VAR coefficients
     return_mdd : bool
         if True, returns the marginal data density (used for hyperparameter optimization)
+    check_explosive : bool
+        if True (default), checks for explosive VAR coefficients and rejects them.
+        if False, skips explosive VAR checks (useful for hyperparameter optimization)
 
     Returns
     -------
@@ -839,20 +842,26 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
             # This constraint ensures all sampled parameters satisfy stationarity
             # conditions required for valid VAR forecasting and inference.
             sigma_chol = cholcovOrEigendecomp(np.kron(sigma, inv_x))
-            attempts = 0
-            while attempts < max_it_stable:
+
+            if check_explosive:
+                attempts = 0
+                while attempts < max_it_stable:
+                    phi_new = np.squeeze(Phi_tilde.reshape(n*(n*p+1), 1, order="F")) + sigma_chol @ np.random.standard_normal(sigma_chol.shape[0])
+                    Phi = phi_new.reshape(n*p+1, n, order = "F")
+                    if not is_explosive(Phi, n, p):
+                        break
+                    attempts += 1
+                if attempts == max_it_stable:
+                    explosive_counter += 1
+                    print(f"Explosive VAR detected {explosive_counter} times.")
+                    m = 0
+                    if j == 0:
+                        j -= 1
+                    continue
+            else:
+                # Skip explosive VAR check when check_explosive is False
                 phi_new = np.squeeze(Phi_tilde.reshape(n*(n*p+1), 1, order="F")) + sigma_chol @ np.random.standard_normal(sigma_chol.shape[0])
                 Phi = phi_new.reshape(n*p+1, n, order = "F")
-                if not is_explosive(Phi, n, p):
-                    break
-                attempts += 1
-            if attempts == max_it_stable:
-                explosive_counter += 1
-                print(f"Explosive VAR detected {explosive_counter} times.")
-                m = 0
-                if j == 0:
-                    j -= 1
-                continue
                 
             #while loop bis hier
             
@@ -1325,21 +1334,31 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
                 # accepted by the MH step if we don't enforce this stationarity constraint.
                 # This check ensures the truncated prior (excluding explosive region) is
                 # properly implemented in the Metropolis-within-Gibbs correction step.
-                _explosive_prop = True
-                _Phi_prop = None
-                for _ in range(max_it_stable):
+
+                if check_explosive:
+                    _explosive_prop = True
+                    _Phi_prop = None
+                    for _ in range(max_it_stable):
+                        _sigma_chol_p = cholcovOrEigendecomp(np.kron(_sigma_prop, _inv_x_p))
+                        _phi_new_p = (
+                            np.squeeze(_Phi_tilde_p.reshape(_n_p*(_n_p*_p_spec+1), 1, order="F"))
+                            + _sigma_chol_p @ np.random.standard_normal(_sigma_chol_p.shape[0])
+                        )
+                        _Phi_prop = _phi_new_p.reshape(_n_p*_p_spec+1, _n_p, order="F")
+                        if not is_explosive(_Phi_prop, _n_p, _p_spec):
+                            _explosive_prop = False
+                            break
+
+                    if _explosive_prop:
+                        continue  # auto-reject explosive proposals
+                else:
+                    # Skip explosive VAR check when check_explosive is False
                     _sigma_chol_p = cholcovOrEigendecomp(np.kron(_sigma_prop, _inv_x_p))
                     _phi_new_p = (
                         np.squeeze(_Phi_tilde_p.reshape(_n_p*(_n_p*_p_spec+1), 1, order="F"))
                         + _sigma_chol_p @ np.random.standard_normal(_sigma_chol_p.shape[0])
                     )
                     _Phi_prop = _phi_new_p.reshape(_n_p*_p_spec+1, _n_p, order="F")
-                    if not is_explosive(_Phi_prop, _n_p, _p_spec):
-                        _explosive_prop = False
-                        break
-
-                if _explosive_prop:
-                    continue  # auto-reject explosive proposals
 
                 # Compute proposed downstream input Yq for block _m+1
                 if var_of_interest is None:
