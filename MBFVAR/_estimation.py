@@ -5,7 +5,7 @@ import numpy as np
 import math
 
 from collections import deque
-from scipy.linalg import companion
+from scipy.linalg import companion, solve_discrete_lyapunov
 from scipy.stats import invwishart
 import pandas as pd
 from scipy.stats import multivariate_normal
@@ -445,14 +445,10 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
     At_list.append(np.zeros((Nq_list[0]*(p_list[0]+1))))
     Pt_list.append(np.zeros((Nq_list[0]*(p_list[0]+1), Nq_list[0]*(p_list[0]+1))))
 
-    # Iterate to compute steady-state covariance for Kalman filter initialization
-    # This solves the discrete Lyapunov equation: Pt = GAMMA_S @ Pt @ GAMMA_S^T + GAMMA_U @ sig_qq @ GAMMA_U^T
-    # Converges to unconditional (steady-state) variance of the latent state.
-    # NOTE: Increasing range(5) would NOT reduce explosive VARs - that's handled separately
-    # by is_explosive() checks (lines 804, 1294). This iteration assumes stationarity already.
-    # Five iterations provides adequate convergence for initialization without excess computation.
-    for kk in range(5):
-        Pt_list[0] = GAMMAs_list[0] @ Pt_list[0] @ GAMMAs_list[0].T + GAMMAu_list[0] @ sig_qq_list[0] @ GAMMAu_list[0].T
+    # Solve the discrete Lyapunov equation exactly for the steady-state covariance:
+    # Pt = GAMMAs @ Pt @ GAMMAs^T + GAMMAu @ sig_qq @ GAMMAu^T
+    Q0 = GAMMAu_list[0] @ sig_qq_list[0] @ GAMMAu_list[0].T
+    Pt_list[0] = solve_discrete_lyapunov(GAMMAs_list[0], Q0)
     
     # Lagged HF observations
     Zm_list.append(np.zeros((nobs_list[0], Nm_list[0]*p_list[0])))
@@ -1050,9 +1046,9 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
                     At_list.append(np.zeros((Nq_list[m+1]*(p_list[m+1]+1))))
                     Pt_list.append(np.zeros((Nq_list[m+1]*(p_list[m+1]+1), Nq_list[m+1]*(p_list[m+1]+1))))
 
-                    # Iterate to compute steady-state covariance (see comment at line 438)
-                    for kk in range(5):
-                        Pt_list[m+1] = GAMMAs_list[m+1] @ Pt_list[m+1] @ GAMMAs_list[m+1].T + GAMMAu_list[m+1] @ sig_qq_list[m+1] @ GAMMAu_list[m+1].T
+                    # Solve the discrete Lyapunov equation exactly
+                    Qm = GAMMAu_list[m+1] @ sig_qq_list[m+1] @ GAMMAu_list[m+1].T
+                    Pt_list[m+1] = solve_discrete_lyapunov(GAMMAs_list[m+1], Qm)
                     
                     #YM_short = YM_list[m+1][2*np.prod(np.array(nlags_list_[:(m+2)])):,:]
                     
@@ -1735,19 +1731,25 @@ def forecast(self, H, conditionals = None):
         
     forecast_draws_list.append(YYvector_ml)
     
-    #mean
-    YYftr_m = np.nanmean(YYvector_ml, axis = 0)
-    YYftr_m[:, (self.select_list[-1] == 1)] = 100 * YYftr_m[:, (self.select_list[-1] == 1)]
-    YYftr_m[:, (self.select_list[-1] == 0)] = np.exp(YYftr_m[:, (self.select_list[-1] == 0)])
-    
-    YYnow_m = np.mean(self.YYactsim_list[-1][self.valid_draws,1:(self.freq_ratio_list[-1]+1),:self.Nm_list[-1]], axis = 0) # actual/nowcast monthlies
-    if YYnow_m.size:
-        YYnow_m[:, (self.select_m_list[-1] == 1)] = 100 * YYnow_m[:, (self.select_m_list[-1] == 1)]
-        YYnow_m[:, (self.select_m_list[-1] == 0)] = np.exp(YYnow_m[:,(self.select_m_list[-1] == 0)])
-    
-    lstate_m = np.mean(self.lstate_list[-1][self.valid_draws,:,:], axis = 0).T # hf obs for lf vars
-    lstate_m[:, (self.select_q[-1] == 1)] = 100 * lstate_m[:, (self.select_q[-1] == 1)]
-    lstate_m[:, (self.select_q[-1] == 0)] = np.exp(lstate_m[:, (self.select_q[-1]== 0)])
+    #mean — back-transform each draw to level scale before averaging (Jensen's inequality correction)
+    # For forecasts (YYvector_ml): transform to levels draw-by-draw, then take mean
+    YYvector_ml_levels = YYvector_ml.copy()
+    YYvector_ml_levels[:, :, (self.select_list[-1] == 0)] = np.exp(YYvector_ml_levels[:, :, (self.select_list[-1] == 0)])
+    YYvector_ml_levels[:, :, (self.select_list[-1] == 1)] = 100 * YYvector_ml_levels[:, :, (self.select_list[-1] == 1)]
+    YYftr_m = np.nanmean(YYvector_ml_levels, axis = 0)
+
+    # For nowcasts (YYactsim): transform to levels draw-by-draw, then take mean
+    YYactsim_draws = self.YYactsim_list[-1][self.valid_draws,1:(self.freq_ratio_list[-1]+1),:self.Nm_list[-1]].copy()
+    if YYactsim_draws.size:
+        YYactsim_draws[:, :, (self.select_m_list[-1] == 0)] = np.exp(YYactsim_draws[:, :, (self.select_m_list[-1] == 0)])
+        YYactsim_draws[:, :, (self.select_m_list[-1] == 1)] = 100 * YYactsim_draws[:, :, (self.select_m_list[-1] == 1)]
+    YYnow_m = np.mean(YYactsim_draws, axis = 0)
+
+    # For latent states (lstate): transform to levels draw-by-draw, then take mean
+    lstate_draws = self.lstate_list[-1][self.valid_draws,:,:].copy()
+    lstate_draws[:, (self.select_q[-1] == 0), :] = np.exp(lstate_draws[:, (self.select_q[-1] == 0), :])
+    lstate_draws[:, (self.select_q[-1] == 1), :] = 100 * lstate_draws[:, (self.select_q[-1] == 1), :]
+    lstate_m = np.mean(lstate_draws, axis = 0).T
     
     YMh_list = copy.deepcopy(self.YMh_list)
     

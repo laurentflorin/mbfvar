@@ -75,15 +75,17 @@ def to_excel(self, filename, agg = False):
         else:
             index = range(self.lstate_list[-1][0,:,:].shape[1])
         
-        #mean
-        YYnow_m = np.mean(self.YYactsim_list[-1][self.nburn:,1:(self.freq_ratio_list[-1]+1),:self.Nm_list[-1]], axis = 0) # actual/nowcast monthlies
-        if YYnow_m.size:
-            YYnow_m[:, (self.select_m_list[-1] == 1)] = 100 * YYnow_m[:, (self.select_m_list[-1] == 1)]
-            YYnow_m[:, (self.select_m_list[-1] == 0)] = np.exp(YYnow_m[:,(self.select_m_list[-1] == 0)])
-        
-        lstate_m = np.mean(self.lstate_list[-1][self.nburn:,:,:], axis = 0).T # hf obs for lf vars
-        lstate_m[:, (self.select_q[-1] == 1)] = 100 * lstate_m[:, (self.select_q[-1] == 1)]
-        lstate_m[:, (self.select_q[-1] == 0)] = np.exp(lstate_m[:, (self.select_q[-1]== 0)])
+        #mean — back-transform each draw to level scale before averaging (Jensen's inequality correction)
+        YYactsim_draws = self.YYactsim_list[-1][self.nburn:,1:(self.freq_ratio_list[-1]+1),:self.Nm_list[-1]].copy()
+        if YYactsim_draws.size:
+            YYactsim_draws[:, :, (self.select_m_list[-1] == 0)] = np.exp(YYactsim_draws[:, :, (self.select_m_list[-1] == 0)])
+            YYactsim_draws[:, :, (self.select_m_list[-1] == 1)] = 100 * YYactsim_draws[:, :, (self.select_m_list[-1] == 1)]
+        YYnow_m = np.mean(YYactsim_draws, axis = 0)
+
+        lstate_draws = self.lstate_list[-1][self.nburn:,:,:].copy()
+        lstate_draws[:, (self.select_q[-1] == 0), :] = np.exp(lstate_draws[:, (self.select_q[-1] == 0), :])
+        lstate_draws[:, (self.select_q[-1] == 1), :] = 100 * lstate_draws[:, (self.select_q[-1] == 1), :]
+        lstate_m = np.mean(lstate_draws, axis = 0).T
         
         YMh_list = copy.deepcopy(self.YMh_list)
         
