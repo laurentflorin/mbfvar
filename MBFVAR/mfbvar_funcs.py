@@ -258,12 +258,8 @@ def _filter_valid_var_rows(YYact, XXact):
     YYact_f = YYact[valid, :]
     XXact_f = XXact[valid, :]
 
-    if YYact_f.shape[0] == 0:
-        raise ValueError(
-            "No valid VAR regression rows remain after masking missing observations. "
-            "The sample is too short or too ragged for the requested lag length."
-        )
-
+    # If no valid rows remain, return empty arrays with correct column dimensions.
+    # Callers should check YYact_f.shape[0] == 0 and handle gracefully.
     return YYact_f, XXact_f, valid
 
 
@@ -319,6 +315,8 @@ def mdd_(hyp, YY, spec):
 
     # Filter out ragged-edge rows with missing values
     YYact, XXact, _ = _filter_valid_var_rows(YYact, XXact)
+    if YYact.shape[0] == 0:
+        return -1e16, YYact, YYdum, XXact, XXdum
     nobs_eff = YYact.shape[0]
 
     #dummy: YYdum, XXdum

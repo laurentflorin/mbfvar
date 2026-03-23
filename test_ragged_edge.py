@@ -45,6 +45,17 @@ def test_filter_valid_var_rows():
     assert YYact_f.shape[0] == XXact_f.shape[0], "Filtered arrays should have same number of rows"
     assert YYact_f.shape[0] < YYact.shape[0], "Filtered array should have fewer rows"
 
+    # Test all-NaN case: should return empty arrays without raising
+    print("  Testing all-NaN case...")
+    YYact_all_nan = np.full((nobs, nv), np.nan)
+    XXact_all_nan = np.full((nobs, nv * nlags + 1), np.nan)
+    YYact_empty, XXact_empty, valid_empty = _filter_valid_var_rows(YYact_all_nan, XXact_all_nan)
+    assert YYact_empty.shape[0] == 0, "All-NaN case should return empty YYact"
+    assert XXact_empty.shape[0] == 0, "All-NaN case should return empty XXact"
+    assert YYact_empty.shape[1] == nv, "Empty YYact should preserve column count"
+    assert XXact_empty.shape[1] == nv * nlags + 1, "Empty XXact should preserve column count"
+    print("  ✓ All-NaN case returns empty arrays without raising")
+
     print("  ✓ _filter_valid_var_rows test passed!")
     return True
 
@@ -90,6 +101,36 @@ def test_calc_yyact_with_ragged_edge():
     except Exception as e:
         print(f"  ✗ Test failed with error: {e}")
         raise
+
+
+def test_mdd_all_nan():
+    """Test mdd_ returns -1e16 penalty when all rows are NaN."""
+    print("\nTesting mdd_ with all-NaN data...")
+
+    nv = 3
+    nlags = 2
+    T0 = 20
+    nobs = 30
+
+    # Create YY matrix where the actual observations region is entirely NaN
+    YY = np.random.randn(T0 + nobs, nv)
+    YY[T0:, :] = np.nan  # All actual observations are NaN
+
+    spec = np.array([nlags, T0, 1, nv, nobs])
+    hyp = np.array([0.1, 2.0, 1, 1.0, 1.0])
+
+    mdd, YYact, YYdum, XXact, XXdum = mdd_(hyp, YY, spec)
+
+    print(f"  MDD value: {mdd}")
+    print(f"  YYact shape: {YYact.shape}")
+    print(f"  XXact shape: {XXact.shape}")
+
+    assert mdd == -1e16, f"All-NaN case should return -1e16 penalty, got {mdd}"
+    assert YYact.shape[0] == 0, "YYact should be empty when all rows are NaN"
+    assert XXact.shape[0] == 0, "XXact should be empty when all rows are NaN"
+
+    print("  ✓ mdd_ all-NaN penalty test passed!")
+    return True
 
 
 def test_mdd_with_ragged_edge():
@@ -147,6 +188,7 @@ def run_all_tests():
     try:
         test_filter_valid_var_rows()
         test_calc_yyact_with_ragged_edge()
+        test_mdd_all_nan()
         test_mdd_with_ragged_edge()
 
         print("\n" + "="*70)
