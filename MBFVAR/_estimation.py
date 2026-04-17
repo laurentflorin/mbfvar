@@ -710,6 +710,11 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
             # Kalman Smoother
             #####################
             
+            # Fallback: use filtered covariance in case smoother loop runs 0
+            # iterations (nobs_list[m] == 1).  The smoother overwrites this
+            # with the proper smoothed covariance when it does run.
+            Pmean = Pt_list[m].copy()
+
             for i in range(nobs_list[m]-1):
                 Att = At_mat_list[m][nobs_list[m]-(i+2),:]#[:, np.newaxis]
                 Ptt = Pt_mat_list[m][nobs_list[m]-(i+2),:].reshape(Nq_list[m]*(p_list[m]+1), Nq_list[m]*(p_list[m]+1), order = "F")
@@ -792,6 +797,9 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
 
             if Tobs == 0:
                 warnings.warn("Skipping iteration: no valid VAR rows after ragged-edge masking.")
+                if j == 0:
+                    At_draw_list.append(At_draw)
+                    Pmean_list.append(Pmean)
                 continue
 
             X = np.vstack((XXact, XXdum))
@@ -801,10 +809,16 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
 
             if np.isnan(X).any() or np.isnan(Y).any():
                 warnings.warn("Skipping iteration: regression matrices contain NaNs after ragged-edge masking.")
+                if j == 0:
+                    At_draw_list.append(At_draw)
+                    Pmean_list.append(Pmean)
                 continue
 
             if np.isinf(X).any() or np.isinf(Y).any():
                 warnings.warn("Skipping iteration: regression design contains inf values.")
+                if j == 0:
+                    At_draw_list.append(At_draw)
+                    Pmean_list.append(Pmean)
                 continue
 
             # Need positive degrees of freedom for inverse-Wishart draw.
@@ -814,6 +828,9 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
                     f"Skipping iteration: insufficient effective sample after ragged-edge masking: "
                     f"T={T}, n={n}, p={p}, df={df_sigma}. Need T > n*p + 1."
                 )
+                if j == 0:
+                    At_draw_list.append(At_draw)
+                    Pmean_list.append(Pmean)
                 continue
 
             F = np.zeros((int(n*p), int(n*p)))
@@ -860,6 +877,8 @@ def fit(self, mbfvar_data, hyp, var_of_interest = None, temp_agg = 'mean', max_i
                     m = 0
                     if j == 0:
                         j -= 1
+                        At_draw_list.append(At_draw)
+                        Pmean_list.append(Pmean)
                     continue
             else:
                 # Skip explosive VAR check when check_explosive is False
