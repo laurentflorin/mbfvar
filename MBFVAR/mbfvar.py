@@ -85,6 +85,9 @@ class MixedFrequencyBVAR:
     update_hyperparameters_mango_rmse(data_in, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest=None, temp_agg='mean', save=False, name=None)
         Optimize hyperparameters using Mango optimizer with RMSE criterion
 
+    update_hyperparameters_mango_rmse_random(data_in, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest=None, temp_agg='mean', h_eval=None, n_eval=1, min_T=None, random_seed=None, save=False, name=None)
+        Optimize hyperparameters using Mango with RMSE criterion over randomly sampled forecast origins
+
     to_excel(filename, agg=False)
         Export forecasts to Excel file
 
@@ -174,4 +177,4 @@ class MixedFrequencyBVAR:
     from ._estimation import fit, forecast, aggregate, scenario_forecast
     from ._plots import fanchart, mean_plot, scenario_plot, compare_models
     from ._save import to_excel, save
-    from ._hyp_opt import update_hyperparameters, update_hyperparameters_mango, update_hyperparameters_mango_rmse
+    from ._hyp_opt import update_hyperparameters, update_hyperparameters_mango, update_hyperparameters_mango_rmse, update_hyperparameters_mango_rmse_random

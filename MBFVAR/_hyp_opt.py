@@ -518,3 +518,294 @@ def update_hyperparameters_mango_rmse(self, mufbvar_data_in, param_space, H, ini
         with open(name, 'w') as f:
             print(hyp, file=f)
     return hyp
+
+
+def update_hyperparameters_mango_rmse_random(self, mufbvar_data_in, param_space, H, init_points, n_iter, nsim, njobs, var_of_interest=None, temp_agg='mean', h_eval=None, n_eval=1, min_T=None, random_seed=None, save=False, name="hyp.txt"):
+    """
+    Use Bayesian optimization to select hyperparameters minimizing out-of-sample RMSE,
+    evaluating on a randomly sampled set of forecast origins.
+
+    This method is identical to ``update_hyperparameters_mango_rmse`` except that the
+    ``n_eval`` evaluation origins are drawn **at random** (without replacement) from all
+    valid origins, rather than using the last ``n_eval`` consecutive periods.  The random
+    draw is performed once before optimization begins, so every hyperparameter configuration
+    is evaluated on the same set of origins (ensuring a fair comparison).
+
+    Valid origins are those for which:
+
+    * every frequency has enough observations to produce the required holdout window, AND
+    * the resulting lowest-frequency in-sample period contains at least ``min_T``
+      observations (when ``min_T`` is not ``None``).
+
+    NOTE: This function uses the main fit() function from _estimation.py, which includes
+    the Metropolis-within-Gibbs backward correction for cross-block feedback.
+    This ensures hyperparameters are optimized for the full model.
+
+    Hyperparameters:
+        - lambda1: overall tightness
+        - lambda2: scaling factor for the variance of distant lags
+        - lambda3: number of observations for the prior on the error covariance (fixed to 1)
+        - lambda4: tuning for coefficients of the constant
+        - lambda5: tuning for covariance between coefficients
+
+    Parameters
+    ----------
+    mufbvar_data_in : MUFBVAR.mbfvar_data object
+        Holds the input data for multifrequency VAR estimation.
+    param_space : dict
+        Dictionary with bounds for each hyperparameter, structured according to the number
+        of frequencies:
+            - Two frequencies: lambda1_1, lambda2_1, lambda4_1, lambda5_1
+            - Three frequencies: add lambda1_2, lambda2_2, lambda4_2, lambda5_2
+            - Four frequencies: add lambda1_3, lambda2_3, lambda4_3, lambda5_3
+    H : int
+        Forecast horizon in the lowest frequency.
+    init_points : int
+        Number of initial random exploration steps for Bayesian optimization.
+    n_iter : int
+        Number of optimization iterations.
+    nsim : int
+        Number of simulation draws in MUFBVAR estimation.
+    njobs : int
+        Number of parallel jobs.
+    var_of_interest : list of str or None, default None
+        List of variable names to consider. If None, all variables are used.
+    temp_agg : str, default 'mean'
+        Temporal aggregation method ('mean' or 'sum'), defining the measurement equation.
+    h_eval : int or None, default None
+        Specific forecast horizon (1-indexed) at which to evaluate RMSE.
+        If None, RMSE is calculated across all H forecast periods.
+        Must be between 1 and H (inclusive).
+    n_eval : int, default 1
+        Number of forecast origins to draw at random for evaluation. Must not exceed the
+        total number of valid origins available in the data (raises ValueError otherwise).
+    min_T : int or None, default None
+        Minimum number of in-sample observations required in the lowest frequency after
+        holding out the forecast window. Origins that would result in fewer than ``min_T``
+        lowest-frequency observations are excluded from the pool of valid origins. When
+        ``None``, no minimum sample-size constraint is applied.
+    random_seed : int or None, default None
+        Seed for the random number generator used to draw the evaluation origins. Set to
+        a fixed integer for reproducible results across runs.
+    save : bool, default False
+        If True, saves the best hyperparameters to a file.
+    name : str, default "hyp.txt"
+        Path to file for saving hyperparameters if ``save`` is True.
+
+    Returns
+    -------
+    hyp : list
+        List of optimized hyperparameters (best set found).
+
+    Raises
+    ------
+    ValueError
+        If ``h_eval`` is outside [1, H].
+    ValueError
+        If ``n_eval`` is not a positive integer.
+    ValueError
+        If ``min_T`` is not a positive integer (when provided).
+    ValueError
+        If no valid origins exist (data too short or ``min_T`` too large).
+    ValueError
+        If ``n_eval`` exceeds the number of valid origins available.
+    """
+    from mango import scheduler, Tuner
+
+    if h_eval is not None and (not isinstance(h_eval, int) or h_eval < 1 or h_eval > H):
+        raise ValueError(f"h_eval must be an integer between 1 and H ({H}) inclusive, got {h_eval}.")
+
+    if not isinstance(n_eval, int) or n_eval < 1:
+        raise ValueError(f"n_eval must be a positive integer, got {n_eval}.")
+
+    if min_T is not None and (not isinstance(min_T, int) or min_T < 1):
+        raise ValueError(f"min_T must be a positive integer or None, got {min_T}.")
+
+    nburn_perc = self.nburn_perc
+    nlags = self.nlags
+    thining = self.thining
+
+    # ------------------------------------------------------------------
+    # Compute the pool of valid origins and draw sampled_ks once so that
+    # every hyperparameter configuration is evaluated on the same origins.
+    # ------------------------------------------------------------------
+    _data_tmp = copy.deepcopy(mufbvar_data_in)
+    _horizon_mapping = {f'{_data_tmp.frequencies[0]}': H}
+    for i, freq in enumerate(_data_tmp.frequencies[1:]):
+        _horizon_mapping[f'{freq}'] = math.prod(itertools.islice(_data_tmp.freq_ratio_list, 0, i + 1)) * H
+
+    _ratio_mapping = {f'{_data_tmp.frequencies[0]}': 1}
+    for i, freq in enumerate(_data_tmp.frequencies[1:]):
+        _ratio_mapping[f'{freq}'] = math.prod(itertools.islice(_data_tmp.freq_ratio_list, 0, i + 1))
+
+    _data_tmp.input_data.appendleft(_data_tmp.input_data_Q)
+    _data_list = list(_data_tmp.input_data)
+
+    # Largest k allowed by data length at every frequency
+    max_k_data = min(
+        (len(df) - _horizon_mapping[str(freq)] - 1) // _ratio_mapping[str(freq)]
+        for df, freq in zip(_data_list, _data_tmp.frequencies)
+    )
+
+    # Largest k allowed by the minimum in-sample size constraint (lowest frequency)
+    if min_T is not None:
+        len_lowest = len(_data_list[0])
+        horizon_lowest = _horizon_mapping[str(_data_tmp.frequencies[0])]
+        # in-sample length at origin k = len_lowest - horizon_lowest - k >= min_T
+        # => k <= len_lowest - horizon_lowest - min_T
+        max_k_min_T = len_lowest - horizon_lowest - min_T
+        max_k = min(max_k_data, max_k_min_T)
+    else:
+        max_k = max_k_data
+
+    if max_k < 0:
+        if min_T is not None:
+            raise ValueError(
+                f"No valid forecast origins exist. The data may be too short or min_T={min_T} "
+                f"is too large. Consider reducing min_T or using a longer dataset."
+            )
+        else:
+            raise ValueError(
+                f"No valid forecast origins exist. The data is too short for a forecast "
+                f"horizon of H={H}."
+            )
+
+    n_valid = max_k + 1  # origins k = 0, 1, ..., max_k
+    if n_eval > n_valid:
+        raise ValueError(
+            f"n_eval={n_eval} exceeds the number of valid forecast origins ({n_valid}). "
+            f"Reduce n_eval or relax min_T."
+        )
+
+    rng = np.random.default_rng(random_seed)
+    sampled_ks = sorted(rng.choice(n_valid, size=n_eval, replace=False).tolist())
+
+    # ------------------------------------------------------------------
+    # Inner RMSE function — identical to update_hyperparameters_mango_rmse
+    # except the loop iterates over sampled_ks instead of range(n_eval).
+    # ------------------------------------------------------------------
+    def calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval, sampled_ks):
+        try:
+            mufbvar_data_temp = copy.deepcopy(mufbvar_data_in)
+            horizon_mapping = {f'{mufbvar_data_temp.frequencies[0]}': H}
+            for i, freq in enumerate(mufbvar_data_temp.frequencies[1:]):
+                horizon_mapping.update({f'{freq}': math.prod(itertools.islice(mufbvar_data_temp.freq_ratio_list, 0, i + 1)) * H})
+
+            ratio_mapping = {f'{mufbvar_data_temp.frequencies[0]}': 1}
+            for i, freq in enumerate(mufbvar_data_temp.frequencies[1:]):
+                ratio_mapping.update({f'{freq}': math.prod(itertools.islice(mufbvar_data_temp.freq_ratio_list, 0, i + 1))})
+
+            mufbvar_data_temp.input_data.appendleft(mufbvar_data_temp.input_data_Q)
+            data_list = list(mufbvar_data_temp.input_data)
+
+            all_squared_errors = []
+
+            for k in sampled_ks:
+                result_in_sample = []
+                result_out_sample = []
+
+                skip_origin = False
+                for df_freq, freq in zip(data_list, mufbvar_data_temp.frequencies):
+                    horizon = horizon_mapping.get(freq)
+                    ratio = ratio_mapping.get(freq)
+                    total_holdout = horizon + k * ratio
+                    if len(df_freq) <= total_holdout:
+                        skip_origin = True
+                        break
+                    in_sample = df_freq.iloc[:-total_holdout].copy()
+                    if k > 0:
+                        out_sample = df_freq.iloc[-total_holdout:-k * ratio].copy()
+                    else:
+                        out_sample = df_freq.iloc[-total_holdout:].copy()
+                    result_in_sample.append(in_sample)
+                    result_out_sample.append(out_sample)
+
+                if skip_origin:
+                    continue
+
+                data_in = mbfvar_data(result_in_sample, mufbvar_data_temp.trans, mufbvar_data_temp.frequencies)
+
+                model_temp = self.__class__(nsim, nburn_perc, nlags, thining)
+                model_temp.fit(data_in, hyp=hyp_list, var_of_interest=var_of_interest, temp_agg=temp_agg, check_explosive=False)
+                model_temp.forecast(H * math.prod(data_in.freq_ratio_list))
+                model_temp.aggregate(frequency=data_in.frequencies[0])
+
+                out_sample = result_out_sample[0]
+                out_sample = out_sample[var_of_interest]
+                if data_in.frequencies[0] == "Q":
+                    out_sample = out_sample.assign(Index=pd.DatetimeIndex(out_sample.index).to_period('Q')).set_index('Index')
+                    out_sample = out_sample.add_suffix('_out_sample')
+
+                joined_df = model_temp.YY_mean_agg[var_of_interest].join(out_sample, how="inner", lsuffix="_train", rsuffix="_out")
+
+                suffix = '_out_sample'
+                for col in joined_df.columns:
+                    if col.endswith(suffix):
+                        pred_col = col.replace(suffix, '')
+                        if pred_col in joined_df.columns:
+                            if h_eval is not None:
+                                idx = h_eval - 1
+                                if idx < len(joined_df):
+                                    error = joined_df[pred_col].iloc[idx] - joined_df[col].iloc[idx]
+                                    all_squared_errors.append(error ** 2)
+                                else:
+                                    print(f"Warning: h_eval={h_eval} is out of bounds for origin k={k} (joined_df has {len(joined_df)} rows). Skipping this variable/origin.")
+                            else:
+                                errors = joined_df[pred_col][:H] - joined_df[col][:H]
+                                all_squared_errors.extend((errors ** 2).tolist())
+
+            if not all_squared_errors:
+                print(f"No valid evaluation origins found for sampled_ks={sampled_ks}.")
+                return 1e10
+            mean_rmse = float(np.sqrt(np.mean(all_squared_errors)))
+            if np.isnan(mean_rmse) or np.isinf(mean_rmse):
+                print("RMSE is nan or inf, returning high error.")
+                return 1e10
+            return mean_rmse
+        except Exception as e:
+            print(f"Error in calc_rmse: {e}")
+            return 1e10
+
+    @scheduler.parallel(n_jobs=njobs)
+    def calc_rmse_1(lambda1_1, lambda2_1, lambda4_1, lambda5_1):
+        hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1]]
+        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval, sampled_ks)
+
+    @scheduler.parallel(n_jobs=njobs)
+    def calc_rmse_2(lambda1_1, lambda2_1, lambda4_1,
+                    lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2):
+        hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
+                    [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2]]
+        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval, sampled_ks)
+
+    @scheduler.parallel(n_jobs=njobs)
+    def calc_rmse_3(lambda1_1, lambda2_1, lambda4_1,
+                    lambda5_1, lambda1_2, lambda2_2, lambda4_2, lambda5_2,
+                    lambda1_3, lambda2_3, lambda4_3, lambda5_3):
+        hyp_list = [[lambda1_1, lambda2_1, 1, lambda4_1, lambda5_1],
+                    [lambda1_2, lambda2_2, 1, lambda4_2, lambda5_2],
+                    [lambda1_3, lambda2_3, 1, lambda4_3, lambda5_3]]
+        return calc_rmse(hyp_list, mufbvar_data_in, H, nsim, var_of_interest, temp_agg, nlags, nburn_perc, thining, h_eval, sampled_ks)
+
+    conf_dict = dict(num_iteration=n_iter, initial_random=init_points)
+
+    if len(mufbvar_data_in.frequencies) - 1 == 1:
+        tuner = Tuner(param_space, calc_rmse_1, conf_dict)
+    if len(mufbvar_data_in.frequencies) - 1 == 2:
+        tuner = Tuner(param_space, calc_rmse_2, conf_dict)
+    if len(mufbvar_data_in.frequencies) - 1 == 3:
+        tuner = Tuner(param_space, calc_rmse_3, conf_dict)
+
+    results = tuner.minimize()
+    best_params = results["best_params"]
+
+    sublists = [list(best_params.values())[i:i + 4] for i in range(0, len(list(best_params.values())), 4)]
+    hyp = []
+    for i in sublists:
+        i.insert(2, 1)
+        hyp.append(i)
+
+    if save == True:
+        with open(name, 'w') as f:
+            print(hyp, file=f)
+    return hyp
