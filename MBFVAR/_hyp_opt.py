@@ -98,10 +98,24 @@ def update_hyperparameters(self, mbfvar_data, pbounds, init_points, n_iter, nsim
         self.nsim = nsim
         self.nburn_perc = self.nburn_perc  # Keep the same burn-in proportion
 
-        # Call the main fit() function with return_mdd=True
-        mdd = self.fit(mbfvar_data, hyp_list, var_of_interest=var_of_interest,
-                      temp_agg=temp_agg, return_mdd=True)
+        
+        try:
+            # Call the main fit() function with return_mdd=True
+            mdd = self.fit(mbfvar_data, hyp_list, var_of_interest=var_of_interest,
+                          temp_agg=temp_agg, return_mdd=True)
+        except Exception:
+            # Any numerical failure (IndexError, LinAlgError, etc.) for a bad
+            # hyperparameter combination must return a penalty so joblib does
+            # not propagate the exception and kill the optimisation.
+            return -1e16
+        
+        finally:
+            # Always restore the original values
+            self.nsim = original_nsim
+            self.nburn_perc = original_nburn
 
+        if not np.isfinite(mdd):
+            return -1e16
         # Restore original values
         self.nsim = original_nsim
         self.nburn_perc = original_nburn
@@ -244,9 +258,23 @@ def update_hyperparameters_mango(self, mbfvar_data, param_space, init_points, n_
         self.nburn_perc = self.nburn_perc  # Keep the same burn-in proportion
 
         # Call the main fit() function with return_mdd=True
-        mdd = self.fit(mbfvar_data, hyp_list, var_of_interest=var_of_interest,
-                      temp_agg=temp_agg, return_mdd=True)
+        try:
+            # Call the main fit() function with return_mdd=True
+            mdd = self.fit(mbfvar_data, hyp_list, var_of_interest=var_of_interest,
+                          temp_agg=temp_agg, return_mdd=True)
+        except Exception:
+            # Any numerical failure (IndexError, LinAlgError, etc.) for a bad
+            # hyperparameter combination must return a penalty so joblib does
+            # not propagate the exception and kill the optimisation.
+            return -1e16
+        finally:
+            # Always restore the original values
+            self.nsim = original_nsim
+            self.nburn_perc = original_nburn
 
+        if not np.isfinite(mdd):
+            return -1e16
+        
         # Restore original values
         self.nsim = original_nsim
         self.nburn_perc = original_nburn
